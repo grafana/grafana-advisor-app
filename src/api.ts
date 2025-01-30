@@ -1,15 +1,18 @@
 import { getBackendSrv, isFetchError } from '@grafana/runtime';
-import { Check } from 'types';
+import { Check } from 'plugin/src/generated/check/v0alpha1/check_object_gen';
+import { CheckClient } from 'plugin/src/api/check_client';
 
 // TODO: should we always fetch the preffered version from the API?
 export const API_VERSION = 'v0alpha1';
 export const API_BASE_URL = `/apis/advisor.grafana.app`;
 
+const client = new CheckClient();
+
 export async function getChecks(): Promise<Check[]> {
   try {
-    const response = await getBackendSrv().get(`${API_BASE_URL}/${API_VERSION}/checks`);
-    console.log(response.items);
-    return response.items;
+    const response = await client.list();
+    console.log(response.data.items);
+    return response.data.items;
   } catch (error) {
     if (isFetchError(error)) {
       error.isHandled = true;
