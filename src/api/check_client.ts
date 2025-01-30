@@ -1,7 +1,7 @@
-import { Check } from '../generated/check/v0alpha1/check_object_gen';
-import { Spec } from '../generated/check/v0alpha1/types.spec.gen';
 import { BackendSrvRequest, getBackendSrv, FetchResponse, config } from '@grafana/runtime';
 import { lastValueFrom } from 'rxjs';
+import { Check } from 'types/check_object_gen';
+import { Spec } from 'types/types.spec.gen';
 
 export interface ListResponse<T> {
   items: T[];
@@ -14,13 +14,16 @@ export class CheckClient {
     this.apiEndpoint = `/apis/advisor.grafana.app/v0alpha1/namespaces/${config.namespace}/checks`;
   }
 
-  async create(spec?: Spec): Promise<FetchResponse<Check>> {
+  async create(type: 'datasource' | 'plugin', spec?: Spec): Promise<FetchResponse<Check>> {
     const check = {
       kind: 'Check',
       apiVersion: 'advisor.grafana.app/v0alpha1',
       spec: spec ?? { data: {} },
       metadata: {
         name: 'check-' + makeid(10),
+        labels: {
+          'advisor.grafana.app/type': type,
+        },
         namespace: config.namespace,
       },
     };
