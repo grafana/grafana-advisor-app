@@ -8,10 +8,10 @@ import { ReportError } from 'types';
 interface Props {
   title: string;
   icon?: IconName;
-  errors: Record<string, { count: number; errors: ReportError[] }>;
+  checks: Record<string, { count: number; errors: ReportError[] }>;
 }
 
-export function CheckSummary({ title, icon, errors }: Props) {
+export function CheckSummary({ title, icon, checks }: Props) {
   const styles = useStyles2(getStyles);
   const typeTitles: Record<string, string> = {
     datasource: 'Datasources',
@@ -28,15 +28,15 @@ export function CheckSummary({ title, icon, errors }: Props) {
       </div>
 
       <div className={styles.errorsRow}>
-        {Object.entries(errors).length === 0 && <div>All is good 🎉.</div>}
-        {Object.entries(errors).length > 0 &&
-          Object.entries(errors).map(([type, { count, errors }]) => (
+        {Object.entries(checks).length === 0 && <div>All is good 🎉</div>}
+        {Object.entries(checks).length > 0 &&
+          Object.entries(checks).map(([type, { count, errors }]) => (
             <div key={type}>
               <div className={styles.errorsTypeHeader}>
-                <strong>{typeTitles[type]}</strong> - {errors.length} error(s), {count} checked
+                <strong>{typeTitles[type]}</strong> - {errors.length} issue(s), {count} checked
               </div>
               <div>
-                {errors.length === 0 && <div>No errors</div>}
+                {errors.length === 0 && <div>No issues 🎉</div>}
                 {errors.length > 0 && errors.map((error, i) => <ErrorRow key={i} error={error} />)}
               </div>
             </div>
@@ -58,8 +58,8 @@ export function ErrorRow({ error }: { error: ReportError }) {
         <strong>Reason:</strong> {error.reason}
       </div>
       <div>
-        <div>Action:</div>
-        <div dangerouslySetInnerHTML={{ __html: error.action }}></div>
+        <div className={styles.actionTitle}>Action: </div>
+        <div className={styles.actionContent} dangerouslySetInnerHTML={{ __html: error.action }}></div>
       </div>
     </div>
   );
@@ -97,5 +97,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2),
+  }),
+  actionTitle: css({
+    display: 'inline',
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
+  actionContent: css({
+    display: 'inline',
+    '> a': {
+      color: theme.colors.text.link,
+      cursor: 'pointer',
+      ':hover': {
+        textDecoration: 'underline',
+      },
+    },
   }),
 });
