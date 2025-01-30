@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "app",
-  "name": "Advisor",
+  "name": "Grafana Advisor",
   "id": "grafana-advisor-app",
   "info": {
     "keywords": ["app"],
@@ -20,39 +20,10 @@
   "includes": [
     {
       "type": "page",
-      "name": "Page One",
-      "path": "/a/%PLUGIN_ID%/one",
+      "name": "Advisor",
+      "path": "/admin/advisor",
       "addToNav": true,
       "defaultNav": true
-    },
-    {
-      "type": "page",
-      "name": "Page Two",
-      "path": "/a/%PLUGIN_ID%/two",
-      "addToNav": true,
-      "defaultNav": false
-    },
-    {
-      "type": "page",
-      "name": "Page Three",
-      "path": "/a/%PLUGIN_ID%/three",
-      "addToNav": true,
-      "defaultNav": false
-    },
-    {
-      "type": "page",
-      "name": "Page Four",
-      "path": "/a/%PLUGIN_ID%/four",
-      "addToNav": true,
-      "defaultNav": false
-    },
-    {
-      "type": "page",
-      "icon": "cog",
-      "name": "Configuration",
-      "path": "/plugins/%PLUGIN_ID%",
-      "role": "Admin",
-      "addToNav": true
     }
   ],
   "dependencies": {
