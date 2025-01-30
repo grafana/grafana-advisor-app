@@ -58,7 +58,8 @@ export function ErrorRow({ error }: { error: ReportError }) {
         <strong>Reason:</strong> {error.reason}
       </div>
       <div>
-        <strong>Action:</strong> {error.action}
+        <div>Action:</div>
+        <div dangerouslySetInnerHTML={{ __html: error.action }}></div>
       </div>
     </div>
   );
