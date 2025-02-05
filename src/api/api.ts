@@ -13,8 +13,15 @@ export async function getChecksBySeverity() {
   const checks = await getLastChecks();
 
   for (const check of checks) {
-    // TODO: can type be undefined?
     const type = check.metadata.labels!['advisor.grafana.app/type'];
+
+    if (type === undefined) {
+      console.error(
+        'No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.',
+        check
+      );
+      continue;
+    }
 
     for (const error of check.status.report.errors) {
       if (checksBySeverity[error.severity][type] === undefined) {
