@@ -1,7 +1,7 @@
 import { BackendSrvRequest, getBackendSrv, FetchResponse, config } from '@grafana/runtime';
 import { lastValueFrom } from 'rxjs';
-import { Check } from 'types/check_object_gen';
-import { Spec } from 'types/types.spec.gen';
+import { Check } from 'generated/check/v0alpha1/check_object_gen';
+import { Spec } from 'generated/check/v0alpha1/types.spec.gen';
 
 export interface ListResponse<T> {
   items: T[];

@@ -1,4 +1,4 @@
-import { Check } from 'types/check_object_gen';
+import { Check } from 'generated/check/v0alpha1/check_object_gen';
 import { CheckClient } from 'api/check_client';
 import { ReportError, Severity } from 'types';
 
