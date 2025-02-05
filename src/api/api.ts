@@ -44,33 +44,31 @@ export async function getLastChecks(): Promise<Check[]> {
 
   for (const check of checks) {
     const type = check.metadata.labels?.['advisor.grafana.app/type'];
+    const getUpdatedTimestamp = (check: Check) => check.metadata.annotations?.['advisor.grafana.app/updatedTimestamp'];
 
     if (!type) {
-      console.log('No type found for check', check);
+      console.log('No type found for check, skipping.', check);
       continue;
     }
 
+    if (!getUpdatedTimestamp(check)) {
+      console.log(
+        'Empty updateTimestamp for check at "check.metadata.annotations?.[\'advisor.grafana.app/updatedTimestamp\']", skipping.',
+        check
+      );
+      continue;
+    }
+
+    // If the check is the first one of its type, store it
     if (!checkByType[type]) {
       checkByType[type] = check;
       continue;
     }
 
-    const prevTimestamp =
-      checkByType[type].metadata.annotations?.['advisor.grafana.app/updatedTimestamp'] ??
-      checkByType[type].metadata.creationTimestamp;
-    const currentTimestamp =
-      check.metadata.annotations?.['advisor.grafana.app/updatedTimestamp'] ?? check.metadata.creationTimestamp;
+    const prevTimestamp = getUpdatedTimestamp(checkByType[type])!;
+    const currentTimestamp = getUpdatedTimestamp(check)!;
 
-    if (!prevTimestamp) {
-      checkByType[type] = check;
-      continue;
-    }
-
-    if (!currentTimestamp) {
-      continue;
-    }
-
-    if (prevTimestamp < currentTimestamp) {
+    if (currentTimestamp > prevTimestamp) {
       checkByType[type] = check;
     }
   }
