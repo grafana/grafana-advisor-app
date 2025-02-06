@@ -11,7 +11,6 @@ describe('Components/App', () => {
     jest.resetAllMocks();
 
     props = {
-      basename: 'a/sample-app',
       meta: {
         id: 'sample-app',
         name: 'Sample App',
@@ -32,6 +31,7 @@ describe('Components/App', () => {
       </BrowserRouter>
     );
 
-    expect(await screen.findByText(/this is page one./i)).toBeInTheDocument();
+    // Checks if the temporary "Run checks" button is rendered
+    expect(await screen.findByText(/Run checks/i)).toBeInTheDocument();
   });
 });
