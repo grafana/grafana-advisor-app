@@ -43,8 +43,13 @@ export default function Home() {
       {!checks.loading && !checks.error && checks.value && (
         <div className={styles.checks}>
           <Stack direction="row">
-            <CheckSummary icon="exclamation-circle" title="Action needed" checks={checks.value.high} />
-            <CheckSummary icon="exclamation-triangle" title="Investigation needed" checks={checks.value.low} />
+            <CheckSummary icon="exclamation-circle" title="Action needed" checks={checks.value.high} severity="high" />
+            <CheckSummary
+              icon="exclamation-triangle"
+              title="Investigation needed"
+              checks={checks.value.low}
+              severity="low"
+            />
           </Stack>
         </div>
       )}

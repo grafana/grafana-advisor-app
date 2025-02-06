@@ -3,15 +3,16 @@ import { css, cx } from '@emotion/css';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, IconName, Icon, Stack } from '@grafana/ui';
-import { ReportError } from 'types';
+import { ReportError, Severity } from 'types';
 
 interface Props {
   title: string;
-  icon?: IconName;
   checks: Record<string, { count: number; errors: ReportError[] }>;
+  icon?: IconName;
+  severity?: Severity;
 }
 
-export function CheckSummary({ title, icon, checks }: Props) {
+export function CheckSummary({ title, icon, checks, severity = 'low' }: Props) {
   const styles = useStyles2(getStyles);
   const typeTitles: Record<string, string> = {
     datasource: 'Datasources',
@@ -20,10 +21,10 @@ export function CheckSummary({ title, icon, checks }: Props) {
 
   return (
     <div className={styles.content}>
-      <div className={styles.titleRow}>
-        <Stack>
-          {icon && <Icon name={icon} />}
-          <div className={styles.title}>{title}</div>
+      <div className={cx(styles.title, severity === 'high' ? styles.errorColor : styles.warningColor)}>
+        <Stack alignItems={'center'} gap={1}>
+          {icon && <Icon name={icon} size="xl" />}
+          <div>{title}</div>
         </Stack>
       </div>
 
@@ -52,7 +53,15 @@ export function ErrorRow({ error }: { error: ReportError }) {
   return (
     <div className={cx(styles.error)}>
       <div>
-        <strong>Severity:</strong> {error.severity}
+        <strong>Severity:</strong>{' '}
+        <span
+          className={cx(
+            error.severity === 'high' && styles.errorColor,
+            error.severity === 'low' && styles.warningColor
+          )}
+        >
+          {error.severity}
+        </span>
       </div>
       <div>
         <strong>Reason:</strong> {error.reason}
@@ -66,14 +75,17 @@ export function ErrorRow({ error }: { error: ReportError }) {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  titleRow: css({
+  title: css({
     padding: theme.spacing(2),
     backgrounColor: theme.colors.background.secondary,
-  }),
-  title: css({
-    color: theme.colors.text.primary,
-    fontSize: theme.typography.body.fontSize,
+    fontSize: theme.typography.h4.fontSize,
     fontWeight: theme.typography.fontWeightMedium,
+  }),
+  errorColor: css({
+    color: theme.colors.error.text,
+  }),
+  warningColor: css({
+    color: theme.colors.warning.text,
   }),
   errorsRow: css({
     padding: theme.spacing(2),
