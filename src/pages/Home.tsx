@@ -1,38 +1,64 @@
-import React, { useState } from 'react';
-import { css } from '@emotion/css';
+import React from 'react';
+import { Button, Stack, useStyles2 } from '@grafana/ui';
+import { isFetchError, PluginPage } from '@grafana/runtime';
+import { useAsync, useAsyncFn } from 'react-use';
+import * as api from 'api/api';
+import { CheckSummary } from 'components/CheckSummary';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, Drawer, Button } from '@grafana/ui';
-import { DevPanel } from '../components/DevPanel';
-import { testIds } from '../components/testIds';
-import { PluginPage } from '@grafana/runtime';
+import { css } from '@emotion/css';
 
 export default function Home() {
-  const s = useStyles2(getStyles);
-  const [isDevPanelOpen, setIsDevPanelOpen] = useState(false);
+  const styles = useStyles2(getStyles);
+  const checks = useAsync(api.getChecksBySeverity);
+  const [createChecksState, createChecks] = useAsyncFn(async () => {
+    const response = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
+    return response;
+  }, []);
 
   return (
     <PluginPage>
-      <div data-testid={testIds.pageOne.container}>
-        This is page one.
-        <div className={s.marginTop}>
-          <Button data-testid={testIds.pageOne.navigateToFour} onClick={() => setIsDevPanelOpen(true)}>
-            Open Dev Panel
-          </Button>
-        </div>
-      </div>
+      {/* Temporary (=will be here forever) */}
+      <Stack>
+        <Button onClick={createChecks} disabled={createChecksState.loading}>
+          Run checks
+        </Button>
+        {createChecksState.error && isFetchError(createChecksState.error) && (
+          <div>
+            Error: {createChecksState.error.status} {createChecksState.error.statusText}
+          </div>
+        )}
+      </Stack>
 
-      {/* Dev Panel */}
-      {isDevPanelOpen && (
-        <Drawer title="Advisor (dev panel)" size="md" onClose={() => setIsDevPanelOpen(false)}>
-          <DevPanel />
-        </Drawer>
+      {/* Loading */}
+      {checks.loading && <div>Loading...</div>}
+
+      {/* Error */}
+      {checks.error && isFetchError(checks.error) && (
+        <div>
+          Error: {checks.error.status} {checks.error.statusText}
+        </div>
+      )}
+
+      {/* Checks */}
+      {!checks.loading && !checks.error && checks.value && (
+        <div className={styles.checks}>
+          <Stack direction="row">
+            <CheckSummary icon="exclamation-circle" title="Action needed" checks={checks.value.high} severity="high" />
+            <CheckSummary
+              icon="exclamation-triangle"
+              title="Investigation needed"
+              checks={checks.value.low}
+              severity="low"
+            />
+          </Stack>
+        </div>
       )}
     </PluginPage>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  marginTop: css`
-    margin-top: ${theme.spacing(2)};
-  `,
+  checks: css({
+    marginTop: theme.spacing(2),
+  }),
 });
