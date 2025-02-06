@@ -17,47 +17,57 @@ export default function Home() {
 
   return (
     <PluginPage>
-      {/* Temporary (=will be here forever) */}
-      <Stack>
-        <Button onClick={createChecks} disabled={createChecksState.loading}>
-          Run checks
-        </Button>
-        {createChecksState.error && isFetchError(createChecksState.error) && (
+      <div className={styles.page}>
+        {/* Temporary (=will be here forever) */}
+        <Stack>
+          <Button onClick={createChecks} disabled={createChecksState.loading}>
+            Run checks
+          </Button>
+          {createChecksState.error && isFetchError(createChecksState.error) && (
+            <div>
+              Error: {createChecksState.error.status} {createChecksState.error.statusText}
+            </div>
+          )}
+        </Stack>
+
+        {/* Loading */}
+        {checks.loading && <div>Loading...</div>}
+
+        {/* Error */}
+        {checks.error && isFetchError(checks.error) && (
           <div>
-            Error: {createChecksState.error.status} {createChecksState.error.statusText}
+            Error: {checks.error.status} {checks.error.statusText}
           </div>
         )}
-      </Stack>
 
-      {/* Loading */}
-      {checks.loading && <div>Loading...</div>}
-
-      {/* Error */}
-      {checks.error && isFetchError(checks.error) && (
-        <div>
-          Error: {checks.error.status} {checks.error.statusText}
-        </div>
-      )}
-
-      {/* Checks */}
-      {!checks.loading && !checks.error && checks.value && (
-        <div className={styles.checks}>
-          <Stack direction="row">
-            <CheckSummary icon="exclamation-circle" title="Action needed" checks={checks.value.high} severity="high" />
-            <CheckSummary
-              icon="exclamation-triangle"
-              title="Investigation needed"
-              checks={checks.value.low}
-              severity="low"
-            />
-          </Stack>
-        </div>
-      )}
+        {/* Checks */}
+        {!checks.loading && !checks.error && checks.value && (
+          <div className={styles.checks}>
+            <Stack direction="row">
+              <CheckSummary
+                icon="exclamation-circle"
+                title="Action needed"
+                checks={checks.value.high}
+                severity="high"
+              />
+              <CheckSummary
+                icon="exclamation-triangle"
+                title="Investigation needed"
+                checks={checks.value.low}
+                severity="low"
+              />
+            </Stack>
+          </div>
+        )}
+      </div>
     </PluginPage>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  page: css({
+    maxWidth: theme.breakpoints.values.xxl,
+  }),
   checks: css({
     marginTop: theme.spacing(2),
   }),
