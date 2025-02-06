@@ -2,6 +2,8 @@
 
 An app for visualising checks that require immediate action or investigation.
 
+![Screenshot](docs/screenshot.png)
+
 ## Development
 Follow these steps once you have pulled the repo:
 
@@ -33,5 +35,29 @@ Click on the "Run checks" button in case you don't see anything, and refresh the
 (Clicking the button initiates the checks, but it "doesn't wait" for them to finish, that can take some time.)
 
 
-### How to run the plugin with the `grafana/grafana` repo?
-This is gonna be interesting, as running Grafana from the repo gives us much more issues! 
+### Run in `grafana/grafana`
+Running the plugin in `grafana/grafana` can make development easier, since the dev build of the grafana repo has a lot of plugins and datasources provisioned that we can test against.
+
+```bash
+# 1. Build the plugin
+# -------------------
+# (This will produce a dist/ directory under the plugin.)
+npm run build
+
+# 2. Link to grafana/grafana
+# --------------------------
+# We want to create a symbolic link in grafana/grafana that points to our plugins dist/ folder, so any time we change the plugins frontend it gets reflected.
+# PATH_TO_YOUR_PLUGIN: path to the local copy of grafana-advisor-app, e.g. "/Users/leventebalogh/grafana-advisor-app"
+# PATH_TO_GRAFANA: path to the local copy of grafana/grafana, e.g. "/Users/leventebalogh/grafana"
+ln -s <PATH_TO_YOUR_PLUGIN>/dist/ <PATH_TO_LOCAL_GRAFANA>/data/plugins/grafana-advisor-app
+
+# 3. Run Grafana locally
+# ----------------------
+# (Run this from the root of your local grafana/grafana.) 
+make run
+
+# 4. Enable the plugin
+# ----------------------
+# The plugin needs to be enabled first on the UI:
+open http://localhost:3000/plugins/grafana-advisor-app
+```
