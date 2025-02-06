@@ -60,6 +60,8 @@ We want to create a symbolic link in grafana/grafana that points to our plugins 
 `PATH_TO_GRAFANA`: path to the local copy of grafana/grafana, e.g. `"/Users/leventebalogh/grafana"`
 
 ```bash
+# PATH_TO_YOUR_PLUGIN: path to the local copy of grafana-advisor-app, e.g. "/Users/leventebalogh/grafana-advisor-app"<br>
+# PATH_TO_GRAFANA: path to the local copy of grafana/grafana, e.g. "/Users/leventebalogh/grafana"
 ln -s <PATH_TO_YOUR_PLUGIN>/dist/ <PATH_TO_LOCAL_GRAFANA>/data/plugins/grafana-advisor-app
 ```
 
