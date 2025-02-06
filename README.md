@@ -55,8 +55,8 @@ npm run build
 
 #### 2. Link to grafana/grafana
 
-We want to create a symbolic link in grafana/grafana that points to our plugins dist/ folder, so any time we change the plugins frontend it gets reflected.
-`PATH_TO_YOUR_PLUGIN`: path to the local copy of grafana-advisor-app, e.g. `"/Users/leventebalogh/grafana-advisor-app"`
+We want to create a symbolic link in grafana/grafana that points to our plugins dist/ folder, so any time we change the plugins frontend it gets reflected.<br>
+`PATH_TO_YOUR_PLUGIN`: path to the local copy of grafana-advisor-app, e.g. `"/Users/leventebalogh/grafana-advisor-app"`<br>
 `PATH_TO_GRAFANA`: path to the local copy of grafana/grafana, e.g. `"/Users/leventebalogh/grafana"`
 
 ```bash
