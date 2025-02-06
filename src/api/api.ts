@@ -44,7 +44,7 @@ export async function getLastChecks(): Promise<Check[]> {
 
   for (const check of checks) {
     const type = check.metadata.labels?.['advisor.grafana.app/type'];
-    const getUpdatedTimestamp = (check: Check) => check.metadata.annotations?.['advisor.grafana.app/updatedTimestamp'];
+    const getUpdatedTimestamp = (check: Check) => check.metadata.annotations?.['grafana.app/updatedTimestamp'];
 
     if (!type) {
       console.log('No type found for check, skipping.', check);
