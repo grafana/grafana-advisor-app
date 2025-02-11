@@ -17,7 +17,7 @@ export default function Home() {
   const [deleteChecksState, deleteChecks] = useAsyncFn(async () => {
     const response = await api.deleteChecks();
     return response;
-  }, []);
+const [deleteChecksState, deleteChecks] = useAsyncFn(() => api.deleteChecks(), []);
 
   return (
     <PluginPage>
