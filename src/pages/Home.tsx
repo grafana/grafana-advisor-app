@@ -1,61 +1,59 @@
 import React from 'react';
+import { useAsync, useAsyncFn } from 'react-use';
+import { css } from '@emotion/css';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
-import { useAsync, useAsyncFn } from 'react-use';
+import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
-import { GrafanaTheme2 } from '@grafana/data';
-import { css } from '@emotion/css';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
-  const checks = useAsync(api.getChecksBySeverity);
+  const checkSummaries = useAsync(api.getCheckSummaries);
   const [createChecksState, createChecks] = useAsyncFn(async () => {
     const response = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
     return response;
   }, []);
 
   return (
-    <PluginPage>
+    <PluginPage
+      actions={
+        <Button onClick={createChecks} disabled={createChecksState.loading} size="sm">
+          Run checks
+        </Button>
+      }
+    >
       <div className={styles.page}>
-        {/* Temporary (=will be here forever) */}
-        <Stack>
-          <Button onClick={createChecks} disabled={createChecksState.loading}>
-            Run checks
-          </Button>
-          {createChecksState.error && isFetchError(createChecksState.error) && (
-            <div>
-              Error: {createChecksState.error.status} {createChecksState.error.statusText}
-            </div>
-          )}
+        {/* Header */}
+        <Stack direction="row">
+          <div className={styles.headerLeftColumn}>
+            Keep Grafana running smoothly and securely.
+            {createChecksState.error && isFetchError(createChecksState.error) && (
+              <div className={styles.errorMessage}>
+                Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
+              </div>
+            )}
+          </div>
+          <div className={styles.headerRightColumn}>Last checked: ...</div>
         </Stack>
 
         {/* Loading */}
-        {checks.loading && <div>Loading...</div>}
+        {checkSummaries.loading && <div>Loading...</div>}
 
         {/* Error */}
-        {checks.error && isFetchError(checks.error) && (
+        {checkSummaries.error && isFetchError(checkSummaries.error) && (
           <div>
-            Error: {checks.error.status} {checks.error.statusText}
+            Error: {checkSummaries.error.status} {checkSummaries.error.statusText}
           </div>
         )}
 
         {/* Checks */}
-        {!checks.loading && !checks.error && checks.value && (
+        {!checkSummaries.loading && !checkSummaries.error && checkSummaries.value && (
           <div className={styles.checks}>
             <Stack direction="row">
-              <CheckSummary
-                icon="exclamation-circle"
-                title="Action needed"
-                checks={checks.value.high}
-                severity="high"
-              />
-              <CheckSummary
-                icon="exclamation-triangle"
-                title="Investigation needed"
-                checks={checks.value.low}
-                severity="low"
-              />
+              <CheckSummary checkSummary={checkSummaries.value.high} />
+              <CheckSummary checkSummary={checkSummaries.value.low} />
+              <CheckSummary checkSummary={checkSummaries.value.success} />
             </Stack>
           </div>
         )}
@@ -70,5 +68,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   checks: css({
     marginTop: theme.spacing(2),
+  }),
+  errorMessage: css({
+    marginTop: theme.spacing(2),
+    color: theme.colors.error.text,
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  headerLeftColumn: css({
+    flexGrow: 1,
+  }),
+  headerRightColumn: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    width: '200px',
   }),
 });

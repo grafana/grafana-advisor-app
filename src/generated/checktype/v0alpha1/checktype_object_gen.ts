@@ -40,7 +40,7 @@ export interface ManagedFieldsEntry {
     subresource?: string;
 }
 
-export interface Check {
+export interface CheckType {
     kind: string;
     apiVersion: string;
     metadata: Metadata;

@@ -1,53 +1,58 @@
 import React from 'react';
 import { css, cx } from '@emotion/css';
-
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, IconName, Icon, Stack } from '@grafana/ui';
-import { ReportError, Severity } from 'types';
+import { ReportFailure } from 'generated/check/v0alpha1/types.status.gen';
+import { type CheckSummary as CheckSummaryType } from 'types';
+
+// TODO: this should come from the backend (be part of the data)
+const checkTitles: Record<string, string> = {
+  datasource: 'Datasources',
+  plugin: 'Plugins',
+};
 
 interface Props {
-  title: string;
-  checks: Record<string, { count: number; errors: ReportError[] }>;
-  icon?: IconName;
-  severity?: Severity;
+  checkSummary: CheckSummaryType;
 }
 
-export function CheckSummary({ title, icon, checks, severity = 'low' }: Props) {
+const IconBySeverity: Record<string, IconName> = {
+  high: 'exclamation-circle',
+  low: 'exclamation-triangle',
+  success: 'check-circle',
+};
+
+export function CheckSummary({ checkSummary }: Props) {
   const styles = useStyles2(getStyles);
-  const typeTitles: Record<string, string> = {
-    datasource: 'Datasources',
-    plugin: 'Plugins',
-  };
+  const icon = IconBySeverity[checkSummary.severity];
+  const textColor = cx(
+    checkSummary.severity === 'high' && styles.errorText,
+    checkSummary.severity === 'low' && styles.warningText,
+    checkSummary.severity === 'success' && styles.successText
+  );
 
   return (
     <div className={styles.content}>
-      <div className={cx(styles.title, severity === 'high' ? styles.errorColor : styles.warningColor)}>
+      <div className={cx(styles.title, textColor)}>
         <Stack alignItems={'center'} gap={1}>
           {icon && <Icon name={icon} size="xl" />}
-          <div>{title}</div>
+          <div>{checkSummary.name}</div>
         </Stack>
       </div>
 
+      {/* Checks */}
       <div className={styles.errorsRow}>
-        {Object.entries(checks).length === 0 && <div>All is good 🎉</div>}
-        {Object.entries(checks).length > 0 &&
-          Object.entries(checks).map(([type, { count, errors }]) => (
-            <div key={type}>
-              <div className={styles.errorsTypeHeader}>
-                <strong>{typeTitles[type]}</strong> - {errors.length} issue(s), {count} checked
-              </div>
-              <div>
-                {errors.length === 0 && <div>No issues 🎉</div>}
-                {errors.length > 0 && errors.map((error, i) => <ErrorRow key={i} error={error} />)}
-              </div>
-            </div>
-          ))}
+        {Object.values(checkSummary.checks).map((check) => (
+          <div key={check.name} className={styles.check}>
+            <div className={cx(styles.checkCount, textColor)}>{check.issueCount}</div>
+            <div className={styles.checkName}>{checkTitles[check.name] ?? check.name}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-export function ErrorRow({ error }: { error: ReportError }) {
+export function ErrorRow({ error }: { error: ReportFailure }) {
   const styles = useStyles2(getStyles);
 
   return (
@@ -55,10 +60,7 @@ export function ErrorRow({ error }: { error: ReportError }) {
       <div>
         <strong>Severity:</strong>{' '}
         <span
-          className={cx(
-            error.severity === 'high' && styles.errorColor,
-            error.severity === 'low' && styles.warningColor
-          )}
+          className={cx(error.severity === 'high' && styles.errorText, error.severity === 'low' && styles.warningText)}
         >
           {error.severity}
         </span>
@@ -81,11 +83,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.h4.fontSize,
     fontWeight: theme.typography.fontWeightMedium,
   }),
-  errorColor: css({
+  errorText: css({
     color: theme.colors.error.text,
   }),
-  warningColor: css({
+  warningText: css({
     color: theme.colors.warning.text,
+  }),
+  successText: css({
+    color: theme.colors.success.text,
   }),
   errorsRow: css({
     padding: theme.spacing(2),
@@ -109,6 +114,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2),
+    cursor: 'pointer',
+    '&:hover': {
+      border: `1px solid ${theme.colors.border.strong}`,
+    },
+  }),
+  contentActive: css({
+    border: `1px solid ${theme.colors.border.strong}`,
   }),
   actionTitle: css({
     display: 'inline',
@@ -124,4 +136,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
       },
     },
   }),
+  check: css({
+    display: 'flex',
+    paddingX: theme.spacing(1),
+  }),
+  checkCount: css({
+    fontWeight: theme.typography.fontWeightBold,
+    marginRight: theme.spacing(1),
+  }),
+  checkName: css({}),
 });
