@@ -62,11 +62,11 @@ export class CheckClient {
     return lastValueFrom(getBackendSrv().fetch<ListResponse<Check>>(options));
   }
 
-  async delete(name: string): Promise<FetchResponse<void>> {
+  async delete(name?: string): Promise<FetchResponse<void>> {
     const options: BackendSrvRequest = {
       headers: {},
       method: 'DELETE',
-      url: this.apiEndpoint + '/' + name,
+      url: this.apiEndpoint + (name ? '/' + name : ''),
       showErrorAlert: false,
     };
     return lastValueFrom(getBackendSrv().fetch<void>(options));

@@ -14,6 +14,10 @@ export default function Home() {
     const response = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
     return response;
   }, []);
+  const [deleteChecksState, deleteChecks] = useAsyncFn(async () => {
+    const response = await api.deleteChecks();
+    return response;
+const [deleteChecksState, deleteChecks] = useAsyncFn(() => api.deleteChecks(), []);
 
   return (
     <PluginPage>
@@ -27,6 +31,9 @@ export default function Home() {
             Error: {createChecksState.error.status} {createChecksState.error.statusText}
           </div>
         )}
+        <Button onClick={deleteChecks} disabled={deleteChecksState.loading} variant="destructive">
+          Delete checks
+        </Button>
       </Stack>
 
       {/* Loading */}

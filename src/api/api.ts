@@ -86,3 +86,7 @@ export async function getChecks(): Promise<Check[]> {
 export function createChecks(type: 'datasource' | 'plugin') {
   return client.create(type);
 }
+
+export function deleteChecks(name?: string) {
+  return client.delete(name);
+}
