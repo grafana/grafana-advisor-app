@@ -96,8 +96,8 @@ export default function Home() {
                 element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummaries.value.low} />}
               />
               <Route
-                path={SUB_ROUTES[Severity.Low]}
-                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummaries.value.low} />}
+                path={SUB_ROUTES[Severity.Success]}
+                element={<CheckDrillDown severity={Severity.Success} checkSummary={checkSummaries.value.success} />}
               />
             </Routes>
           </>

@@ -3,6 +3,7 @@ import { css, cx } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
+import { formatCheckName } from 'utils';
 
 export default function CheckDrillDown({
   severity,
@@ -20,7 +21,7 @@ export default function CheckDrillDown({
           {/* Check header */}
           <div>
             <h4 className={cx(styles.highlightColor, styles.checkHeader)}>
-              {check.name} ({check.issueCount})
+              {formatCheckName(check.name)} - {check.issueCount}
             </h4>
             {check.description && <p>{check.description}</p>}
           </div>
@@ -31,7 +32,7 @@ export default function CheckDrillDown({
               <div key={step.stepID} className={styles.spacingTopMd}>
                 <div>
                   <h5 className={cx(styles.highlightColor, styles.stepHeader)}>
-                    {step.name} ({step.issueCount})
+                    {step.name} - <span className={styles.bold}>{step.issueCount}</span>
                   </h5>
                   <p className={styles.description}>{step.description}</p>
                 </div>
@@ -100,6 +101,9 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
     issueReason: css({
       color: theme.colors.text.primary,
       fontWeight: theme.typography.fontWeightMedium,
+    }),
+    bold: css({
+      fontWeight: theme.typography.fontWeightBold,
     }),
   };
 };

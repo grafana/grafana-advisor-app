@@ -92,6 +92,9 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
     // Prefill the successfull count
     // (We will deduct from it the number of issues found in the check)
     checkSummary.success.checks[checkType].issueCount = check.status.report.count;
+    for (const step of Object.keys(checkSummary.success.checks[checkType].steps)) {
+      checkSummary.success.checks[checkType].steps[step].issueCount = check.status.report.count;
+    }
 
     // Handle failures
     if (check.status.report.failures) {
