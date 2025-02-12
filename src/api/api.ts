@@ -8,19 +8,64 @@ import { Spec as SpecRaw } from 'generated/checktype/v0alpha1/types.spec.gen';
 const checkClient = new CheckClient();
 const checkTypeClient = new CheckTypeClient();
 
-export async function getCheckTypes(): Promise<Record<string, SpecRaw>> {
-  const checkTypesRaw = await checkTypeClient.list();
+// Transforms the data into a structure that is easier to work with on the frontend
+export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary>> {
+  const checks = await getLastChecks();
+  const checkSummary = await getEmptyCheckSummary();
 
-  return checkTypesRaw.data.items.reduce(
-    (acc, checkType) => ({
-      ...acc,
-      [checkType.metadata.name]: {
-        name: checkType.spec.name,
-        steps: checkType.spec.steps,
-      },
-    }),
-    {}
-  );
+  // Loop through checks by type
+  for (const check of checks) {
+    const checkType = check.metadata.labels!['advisor.grafana.app/type'];
+
+    if (checkType === undefined) {
+      console.error(
+        'No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.',
+        check
+      );
+      continue;
+    }
+
+    // Successful checks
+    // (The concept of a "successful check" only exists on the frontend, so we need to fill them out here.)
+    checkSummary.success.checks[checkType].issueCount = check.status.report.count;
+    for (const step of Object.keys(checkSummary.success.checks[checkType].steps)) {
+      checkSummary.success.checks[checkType].steps[step].issueCount = check.status.report.count;
+    }
+
+    // Last checked time (we take the oldest timestamp)
+    // TODO - we could do a much more sophisticated way of doing this
+    const updatedTimestamp = new Date(check.metadata.annotations!['grafana.app/updatedTimestamp']);
+    const prevUpdatedTimestamp = checkSummary[Severity.High].updated;
+    if (updatedTimestamp < prevUpdatedTimestamp) {
+      checkSummary[Severity.High].updated = updatedTimestamp;
+      checkSummary[Severity.High].updated = updatedTimestamp;
+      checkSummary[Severity.High].updated = updatedTimestamp;
+    }
+
+    // Handle failures
+    if (check.status.report.failures) {
+      // Loop through each failure
+      for (const failure of check.status.report.failures) {
+        // Adjust successful counts
+        checkSummary.success.checks[checkType].issueCount--;
+        checkSummary.success.checks[checkType].steps[failure.stepID].issueCount--;
+
+        const severity = failure.severity as Severity;
+        const persistedCheck = checkSummary[severity].checks[checkType];
+        const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
+        persistedCheck.issueCount++;
+        persistedStep.issueCount++;
+        persistedStep.issues.push({
+          severity,
+          reason: failure.reason,
+          action: failure.action,
+          itemID: failure.itemID,
+        });
+      }
+    }
+  }
+
+  return checkSummary;
 }
 
 export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSummary>> {
@@ -57,69 +102,38 @@ export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSumm
       description: 'These checks require immediate action.',
       severity: Severity.High,
       checks: generateChecks(),
+      updated: new Date(),
     },
     low: {
       name: 'Investigation needed',
       description: 'These checks require further investigation.',
       severity: Severity.Low,
       checks: generateChecks(),
+      updated: new Date(),
     },
     success: {
       name: 'All good',
       description: 'No issues found.',
       severity: Severity.Success,
       checks: generateChecks(),
+      updated: new Date(),
     },
   };
 }
 
-export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary>> {
-  const checks = await getLastChecks();
-  const checkSummary = await getEmptyCheckSummary();
+export async function getCheckTypes(): Promise<Record<string, SpecRaw>> {
+  const checkTypesRaw = await checkTypeClient.list();
 
-  // Loop through checks by type
-  for (const check of checks) {
-    const checkType = check.metadata.labels!['advisor.grafana.app/type'];
-
-    if (checkType === undefined) {
-      console.error(
-        'No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.',
-        check
-      );
-      continue;
-    }
-
-    // Prefill the successfull count
-    // (We will deduct from it the number of issues found in the check)
-    checkSummary.success.checks[checkType].issueCount = check.status.report.count;
-    for (const step of Object.keys(checkSummary.success.checks[checkType].steps)) {
-      checkSummary.success.checks[checkType].steps[step].issueCount = check.status.report.count;
-    }
-
-    // Handle failures
-    if (check.status.report.failures) {
-      // Loop through each failure
-      for (const failure of check.status.report.failures) {
-        const severity = failure.severity as Severity;
-        const persistedCheck = checkSummary[severity].checks[checkType];
-        const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
-
-        checkSummary.success.checks[checkType].issueCount--;
-        checkSummary.success.checks[checkType].steps[failure.stepID].issueCount--;
-        persistedCheck.issueCount++;
-        persistedStep.issueCount++;
-        persistedStep.issues.push({
-          severity,
-          reason: failure.reason,
-          action: failure.action,
-          itemID: failure.itemID,
-        });
-      }
-    }
-  }
-
-  console.log({ checks, checkSummary });
-  return checkSummary;
+  return checkTypesRaw.data.items.reduce(
+    (acc, checkType) => ({
+      ...acc,
+      [checkType.metadata.name]: {
+        name: checkType.spec.name,
+        steps: checkType.spec.steps,
+      },
+    }),
+    {}
+  );
 }
 
 // Returns the latest checks grouped by severity ("high", "low")

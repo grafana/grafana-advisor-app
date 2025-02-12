@@ -12,6 +12,7 @@ export type CheckSummary = {
   description: string;
   severity: Severity;
   checks: Record<string, Check>;
+  updated: Date;
 };
 
 // A check is a group of related validation steps (e.g. for datasources or plugins)

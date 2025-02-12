@@ -9,6 +9,7 @@ import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
 import CheckDrillDown from 'components/CheckDrillDown';
 import { Severity } from 'types';
+import { formatDate } from 'utils';
 
 const BASE_PATH = '/admin/advisor';
 const SUB_ROUTES = {
@@ -50,12 +51,15 @@ export default function Home() {
           <div className={styles.headerLeftColumn}>
             Keep Grafana running smoothly and securely.
             {createChecksState.error && isFetchError(createChecksState.error) && (
-              <div className={styles.errorMessage}>
+              <div className={styles.apiErrorMessage}>
                 Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
               </div>
             )}
           </div>
-          <div className={styles.headerRightColumn}>Last checked: ...</div>
+          <div className={styles.headerRightColumn}>
+            Last checked:{' '}
+            <strong>{checkSummaries.value ? formatDate(checkSummaries.value.high.updated) : '...'}</strong>
+          </div>
         </Stack>
 
         {/* Loading */}
@@ -71,15 +75,15 @@ export default function Home() {
         {!checkSummaries.loading && !checkSummaries.error && checkSummaries.value && (
           <>
             {/* Check summaries */}
-            <div className={styles.checks}>
+            <div className={styles.checksSummaries}>
               <Stack direction="row">
-                <Link to={SUB_ROUTES[Severity.High]} className={styles.summaryLink}>
+                <Link to={SUB_ROUTES[Severity.High]} className={styles.checkSummaryLink}>
                   <CheckSummary checkSummary={checkSummaries.value.high} isActive={isHighActive !== null} />
                 </Link>
-                <Link to={SUB_ROUTES[Severity.Low]} className={styles.summaryLink}>
+                <Link to={SUB_ROUTES[Severity.Low]} className={styles.checkSummaryLink}>
                   <CheckSummary checkSummary={checkSummaries.value.low} isActive={isLowActive !== null} />
                 </Link>
-                <Link to={SUB_ROUTES[Severity.Success]} className={styles.summaryLink}>
+                <Link to={SUB_ROUTES[Severity.Success]} className={styles.checkSummaryLink}>
                   <CheckSummary checkSummary={checkSummaries.value.success} isActive={isSuccessActive !== null} />
                 </Link>
               </Stack>
@@ -87,8 +91,9 @@ export default function Home() {
 
             {/* Check drilldowns */}
             <Routes>
+              {/* Default route */}
               <Route
-                path={SUB_ROUTES[Severity.High]}
+                path="*"
                 element={<CheckDrillDown severity={Severity.High} checkSummary={checkSummaries.value.high} />}
               />
               <Route
@@ -111,13 +116,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
   page: css({
     maxWidth: theme.breakpoints.values.xxl,
   }),
-  summaryLink: css({
+  checkSummaryLink: css({
     flex: 1,
   }),
-  checks: css({
+  checksSummaries: css({
     marginTop: theme.spacing(2),
   }),
-  errorMessage: css({
+  apiErrorMessage: css({
     marginTop: theme.spacing(2),
     color: theme.colors.error.text,
     fontSize: theme.typography.bodySmall.fontSize,
