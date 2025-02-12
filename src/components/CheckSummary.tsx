@@ -13,6 +13,7 @@ const checkTitles: Record<string, string> = {
 
 interface Props {
   checkSummary: CheckSummaryType;
+  isActive?: boolean;
 }
 
 const IconBySeverity: Record<string, IconName> = {
@@ -21,7 +22,7 @@ const IconBySeverity: Record<string, IconName> = {
   success: 'check-circle',
 };
 
-export function CheckSummary({ checkSummary }: Props) {
+export function CheckSummary({ checkSummary, isActive }: Props) {
   const styles = useStyles2(getStyles);
   const icon = IconBySeverity[checkSummary.severity];
   const textColor = cx(
@@ -31,7 +32,7 @@ export function CheckSummary({ checkSummary }: Props) {
   );
 
   return (
-    <div className={styles.content}>
+    <div className={cx(styles.content, isActive && styles.contentActive)}>
       <div className={cx(styles.title, textColor)}>
         <Stack alignItems={'center'} gap={1}>
           {icon && <Icon name={icon} size="xl" />}
@@ -107,10 +108,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginTop: theme.spacing(1),
   }),
   content: css({
-    minWidth: 300,
-    width: '50%',
+    width: '100%',
     backgroundColor: theme.colors.background.secondary,
     border: `1px solid ${theme.colors.border.weak}`,
+    borderRadius: theme.shape.radius.default,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2),

@@ -25,40 +25,50 @@ export async function getCheckTypes(): Promise<Record<string, SpecRaw>> {
 
 export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSummary>> {
   const checkTypes = await getCheckTypes();
-  const checks = Object.values(checkTypes).reduce(
-    (acc, checkType) => ({
-      ...acc,
-      [checkType.name]: {
-        name: checkType.name,
-        description: '',
-        issueCount: 0,
-        steps: checkType.steps.reduce(
-          (acc, step) => ({ ...acc, [step.stepID]: { ...step, issueCount: 0, issues: [] } }),
-          {}
-        ),
-      },
-    }),
-    {}
-  );
+  const generateChecks = () =>
+    Object.values(checkTypes).reduce(
+      (acc, checkType) => ({
+        ...acc,
+        [checkType.name]: {
+          name: checkType.name,
+          description: '',
+          issueCount: 0,
+          steps: checkType.steps.reduce(
+            (acc, step) => ({
+              ...acc,
+              [step.stepID]: {
+                name: step.title,
+                description: step.description,
+                stepID: step.stepID,
+                issueCount: 0,
+                issues: [],
+              },
+            }),
+            {}
+          ),
+        },
+      }),
+      {}
+    );
 
   return {
     high: {
       name: 'Action needed',
       description: 'These checks require immediate action.',
-      severity: 'high',
-      checks,
+      severity: Severity.High,
+      checks: generateChecks(),
     },
     low: {
       name: 'Investigation needed',
       description: 'These checks require further investigation.',
-      severity: 'low',
-      checks,
+      severity: Severity.Low,
+      checks: generateChecks(),
     },
     success: {
-      name: 'All is good',
+      name: 'All good',
       description: 'No issues found.',
-      severity: 'success',
-      checks,
+      severity: Severity.Success,
+      checks: generateChecks(),
     },
   };
 }
@@ -105,6 +115,7 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
     }
   }
 
+  console.log({ checks, checkSummary });
   return checkSummary;
 }
 
@@ -191,4 +202,8 @@ export async function getChecks(): Promise<CheckRaw[]> {
 // Temporary (should be called only from the backend in the future)
 export function createChecks(type: 'datasource' | 'plugin') {
   return checkClient.create(type);
+}
+
+export function deleteChecks(name?: string) {
+  return checkClient.delete(name);
 }

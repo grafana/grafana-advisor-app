@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, Route, Routes, useMatch } from 'react-router-dom';
 import { useAsync, useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
@@ -6,10 +7,25 @@ import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
+import CheckDrillDown from 'components/CheckDrillDown';
+import { Severity } from 'types';
+
+const BASE_PATH = '/admin/advisor';
+const SUB_ROUTES = {
+  [Severity.High]: 'action-needed',
+  [Severity.Low]: 'investigation-needed',
+  [Severity.Success]: 'all-good',
+};
+
+const getDrilldownPath = (severity: Severity) => `${BASE_PATH}/${SUB_ROUTES[severity]}`;
 
 export default function Home() {
+  const isHighActive = useMatch(getDrilldownPath(Severity.High));
+  const isLowActive = useMatch(getDrilldownPath(Severity.Low));
+  const isSuccessActive = useMatch(getDrilldownPath(Severity.Success));
   const styles = useStyles2(getStyles);
   const checkSummaries = useAsync(api.getCheckSummaries);
+  const [deleteChecksState, deleteChecks] = useAsyncFn(() => api.deleteChecks(), []);
   const [createChecksState, createChecks] = useAsyncFn(async () => {
     const response = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
     return response;
@@ -18,9 +34,14 @@ export default function Home() {
   return (
     <PluginPage
       actions={
-        <Button onClick={createChecks} disabled={createChecksState.loading} size="sm">
-          Run checks
-        </Button>
+        <>
+          <Button onClick={createChecks} disabled={createChecksState.loading}>
+            Run checks
+          </Button>
+          <Button onClick={deleteChecks} disabled={deleteChecksState.loading} variant="destructive">
+            Delete checks
+          </Button>
+        </>
       }
     >
       <div className={styles.page}>
@@ -47,15 +68,39 @@ export default function Home() {
           </div>
         )}
 
-        {/* Checks */}
         {!checkSummaries.loading && !checkSummaries.error && checkSummaries.value && (
-          <div className={styles.checks}>
-            <Stack direction="row">
-              <CheckSummary checkSummary={checkSummaries.value.high} />
-              <CheckSummary checkSummary={checkSummaries.value.low} />
-              <CheckSummary checkSummary={checkSummaries.value.success} />
-            </Stack>
-          </div>
+          <>
+            {/* Check summaries */}
+            <div className={styles.checks}>
+              <Stack direction="row">
+                <Link to={SUB_ROUTES[Severity.High]} className={styles.summaryLink}>
+                  <CheckSummary checkSummary={checkSummaries.value.high} isActive={isHighActive !== null} />
+                </Link>
+                <Link to={SUB_ROUTES[Severity.Low]} className={styles.summaryLink}>
+                  <CheckSummary checkSummary={checkSummaries.value.low} isActive={isLowActive !== null} />
+                </Link>
+                <Link to={SUB_ROUTES[Severity.Success]} className={styles.summaryLink}>
+                  <CheckSummary checkSummary={checkSummaries.value.success} isActive={isSuccessActive !== null} />
+                </Link>
+              </Stack>
+            </div>
+
+            {/* Check drilldowns */}
+            <Routes>
+              <Route
+                path={SUB_ROUTES[Severity.High]}
+                element={<CheckDrillDown severity={Severity.High} checkSummary={checkSummaries.value.high} />}
+              />
+              <Route
+                path={SUB_ROUTES[Severity.Low]}
+                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummaries.value.low} />}
+              />
+              <Route
+                path={SUB_ROUTES[Severity.Low]}
+                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummaries.value.low} />}
+              />
+            </Routes>
+          </>
         )}
       </div>
     </PluginPage>
@@ -65,6 +110,9 @@ export default function Home() {
 const getStyles = (theme: GrafanaTheme2) => ({
   page: css({
     maxWidth: theme.breakpoints.values.xxl,
+  }),
+  summaryLink: css({
+    flex: 1,
   }),
   checks: css({
     marginTop: theme.spacing(2),

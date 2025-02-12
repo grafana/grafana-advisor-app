@@ -1,7 +1,11 @@
 // Types used by the frontend part of the Grafana Advisor.
 // (These are on purpose structured a bit differently than the backend generated ones.)
 
-export type Severity = 'high' | 'low' | 'success';
+export enum Severity {
+  High = 'high',
+  Low = 'low',
+  Success = 'success',
+}
 
 export type CheckSummary = {
   name: string;
