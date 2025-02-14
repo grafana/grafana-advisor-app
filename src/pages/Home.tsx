@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, Route, Routes, useMatch } from 'react-router-dom';
-import { useAsync, useAsyncFn } from 'react-use';
+import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
@@ -25,23 +25,40 @@ export default function Home() {
   const isLowActive = useMatch(getDrilldownPath(Severity.Low));
   const isSuccessActive = useMatch(getDrilldownPath(Severity.Success));
   const styles = useStyles2(getStyles);
-  const checkSummaries = useAsync(api.getCheckSummaries);
-  const [deleteChecksState, deleteChecks] = useAsyncFn(() => api.deleteChecks(), []);
-  const [createChecksState, createChecks] = useAsyncFn(async () => {
-    const response = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
-    return response;
+  const [checkSummariesState, checkSummaries] = useAsyncFn(async () => {
+    return await api.getCheckSummaries();
   }, []);
+  const [deleteChecksState, deleteChecks] = useAsyncFn(async () => {
+    try {
+      await api.deleteChecks();
+      await checkSummaries();
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+  const [createChecksState, createChecks] = useAsyncFn(async () => {
+    try {
+      const checks = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
+      const names = checks.map((check) => check.data.metadata.name);
+      await api.waitForChecks(names);
+      await checkSummaries();
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+  useEffect(() => {
+    checkSummaries();
+  }, [checkSummaries]);
+  const isLoading = createChecksState.loading || deleteChecksState.loading || checkSummariesState.loading;
 
   return (
     <PluginPage
       actions={
         <>
-          <Button onClick={createChecks} disabled={createChecksState.loading}>
-            Run checks
+          <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
+            Refresh
           </Button>
-          <Button onClick={deleteChecks} disabled={deleteChecksState.loading} variant="destructive">
-            Delete checks
-          </Button>
+          <Button onClick={deleteChecks} disabled={isLoading} variant="secondary" icon="trash-alt"></Button>
         </>
       }
     >
@@ -55,36 +72,41 @@ export default function Home() {
                 Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
               </div>
             )}
+            {deleteChecksState.error && isFetchError(deleteChecksState.error) && (
+              <div className={styles.apiErrorMessage}>
+                Error deleting checks: {deleteChecksState.error.status} {deleteChecksState.error.statusText}
+              </div>
+            )}
           </div>
           <div className={styles.headerRightColumn}>
             Last checked:{' '}
-            <strong>{checkSummaries.value ? formatDate(checkSummaries.value.high.updated) : '...'}</strong>
+            <strong>{checkSummariesState.value ? formatDate(checkSummariesState.value.high.updated) : '...'}</strong>
           </div>
         </Stack>
 
         {/* Loading */}
-        {checkSummaries.loading && <div>Loading...</div>}
+        {checkSummariesState.loading && <div>Loading...</div>}
 
         {/* Error */}
-        {checkSummaries.error && isFetchError(checkSummaries.error) && (
+        {checkSummariesState.error && isFetchError(checkSummariesState.error) && (
           <div>
-            Error: {checkSummaries.error.status} {checkSummaries.error.statusText}
+            Error: {checkSummariesState.error.status} {checkSummariesState.error.statusText}
           </div>
         )}
 
-        {!checkSummaries.loading && !checkSummaries.error && checkSummaries.value && (
+        {!checkSummariesState.loading && !checkSummariesState.error && checkSummariesState.value && (
           <>
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
               <Stack direction="row">
                 <Link to={SUB_ROUTES[Severity.High]} className={styles.checkSummaryLink}>
-                  <CheckSummary checkSummary={checkSummaries.value.high} isActive={isHighActive !== null} />
+                  <CheckSummary checkSummary={checkSummariesState.value.high} isActive={isHighActive !== null} />
                 </Link>
                 <Link to={SUB_ROUTES[Severity.Low]} className={styles.checkSummaryLink}>
-                  <CheckSummary checkSummary={checkSummaries.value.low} isActive={isLowActive !== null} />
+                  <CheckSummary checkSummary={checkSummariesState.value.low} isActive={isLowActive !== null} />
                 </Link>
                 <Link to={SUB_ROUTES[Severity.Success]} className={styles.checkSummaryLink}>
-                  <CheckSummary checkSummary={checkSummaries.value.success} isActive={isSuccessActive !== null} />
+                  <CheckSummary checkSummary={checkSummariesState.value.success} isActive={isSuccessActive !== null} />
                 </Link>
               </Stack>
             </div>
@@ -94,15 +116,17 @@ export default function Home() {
               {/* Default route */}
               <Route
                 path="*"
-                element={<CheckDrillDown severity={Severity.High} checkSummary={checkSummaries.value.high} />}
+                element={<CheckDrillDown severity={Severity.High} checkSummary={checkSummariesState.value.high} />}
               />
               <Route
                 path={SUB_ROUTES[Severity.Low]}
-                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummaries.value.low} />}
+                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummariesState.value.low} />}
               />
               <Route
                 path={SUB_ROUTES[Severity.Success]}
-                element={<CheckDrillDown severity={Severity.Success} checkSummary={checkSummaries.value.success} />}
+                element={
+                  <CheckDrillDown severity={Severity.Success} checkSummary={checkSummariesState.value.success} />
+                }
               />
             </Routes>
           </>

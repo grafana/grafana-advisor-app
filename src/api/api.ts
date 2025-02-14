@@ -216,6 +216,12 @@ export async function getChecks(): Promise<CheckRaw[]> {
   return response.data.items;
 }
 
+export async function getCheck(name: string): Promise<CheckRaw> {
+  const response = await checkClient.get(name);
+
+  return response.data;
+}
+
 // Temporary (should be called only from the backend in the future)
 export function createChecks(type: 'datasource' | 'plugin') {
   return checkClient.create(type);
@@ -223,4 +229,20 @@ export function createChecks(type: 'datasource' | 'plugin') {
 
 export function deleteChecks(name?: string) {
   return checkClient.delete(name);
+}
+
+export async function waitForChecks(names: string[]) {
+  return new Promise((resolve) => {
+    let namesToWaitFor = names;
+    const interval = setInterval(async () => {
+      const checks = await Promise.all(namesToWaitFor.map((name) => getCheck(name)));
+      const incompleteChecks = checks.filter((c) => !c.metadata.annotations?.['advisor.grafana.app/status']);
+      namesToWaitFor = incompleteChecks.map((c) => c.metadata.name);
+
+      if (namesToWaitFor.length === 0) {
+        clearInterval(interval);
+        resolve(undefined);
+      }
+    }, 2000);
+  });
 }
