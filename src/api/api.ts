@@ -224,7 +224,3 @@ export function createChecks(type: 'datasource' | 'plugin') {
 export function deleteChecks(name?: string) {
   return checkClient.delete(name);
 }
-
-export function deleteChecks(name?: string) {
-  return client.delete(name);
-}
