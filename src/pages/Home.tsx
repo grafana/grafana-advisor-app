@@ -1,71 +1,137 @@
 import React from 'react';
+import { Link, Route, Routes, useMatch } from 'react-router-dom';
+import { useAsync, useAsyncFn } from 'react-use';
+import { css } from '@emotion/css';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
-import { useAsync, useAsyncFn } from 'react-use';
+import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
-import { GrafanaTheme2 } from '@grafana/data';
-import { css } from '@emotion/css';
+import CheckDrillDown from 'components/CheckDrillDown';
+import { Severity } from 'types';
+import { formatDate } from 'utils';
+
+const BASE_PATH = '/admin/advisor';
+const SUB_ROUTES = {
+  [Severity.High]: 'action-needed',
+  [Severity.Low]: 'investigation-needed',
+  [Severity.Success]: 'all-good',
+};
+
+const getDrilldownPath = (severity: Severity) => `${BASE_PATH}/${SUB_ROUTES[severity]}`;
 
 export default function Home() {
+  const isHighActive = useMatch(getDrilldownPath(Severity.High));
+  const isLowActive = useMatch(getDrilldownPath(Severity.Low));
+  const isSuccessActive = useMatch(getDrilldownPath(Severity.Success));
   const styles = useStyles2(getStyles);
-  const checks = useAsync(api.getChecksBySeverity);
+  const checkSummaries = useAsync(api.getCheckSummaries);
+  const [deleteChecksState, deleteChecks] = useAsyncFn(() => api.deleteChecks(), []);
   const [createChecksState, createChecks] = useAsyncFn(async () => {
     const response = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
     return response;
   }, []);
-  const [deleteChecksState, deleteChecks] = useAsyncFn(async () => {
-    const response = await api.deleteChecks();
-    return response;
-const [deleteChecksState, deleteChecks] = useAsyncFn(() => api.deleteChecks(), []);
 
   return (
-    <PluginPage>
-      {/* Temporary (=will be here forever) */}
-      <Stack>
-        <Button onClick={createChecks} disabled={createChecksState.loading}>
-          Run checks
-        </Button>
-        {createChecksState.error && isFetchError(createChecksState.error) && (
+    <PluginPage
+      actions={
+        <>
+          <Button onClick={createChecks} disabled={createChecksState.loading}>
+            Run checks
+          </Button>
+          <Button onClick={deleteChecks} disabled={deleteChecksState.loading} variant="destructive">
+            Delete checks
+          </Button>
+        </>
+      }
+    >
+      <div className={styles.page}>
+        {/* Header */}
+        <Stack direction="row">
+          <div className={styles.headerLeftColumn}>
+            Keep Grafana running smoothly and securely.
+            {createChecksState.error && isFetchError(createChecksState.error) && (
+              <div className={styles.apiErrorMessage}>
+                Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
+              </div>
+            )}
+          </div>
+          <div className={styles.headerRightColumn}>
+            Last checked:{' '}
+            <strong>{checkSummaries.value ? formatDate(checkSummaries.value.high.updated) : '...'}</strong>
+          </div>
+        </Stack>
+
+        {/* Loading */}
+        {checkSummaries.loading && <div>Loading...</div>}
+
+        {/* Error */}
+        {checkSummaries.error && isFetchError(checkSummaries.error) && (
           <div>
-            Error: {createChecksState.error.status} {createChecksState.error.statusText}
+            Error: {checkSummaries.error.status} {checkSummaries.error.statusText}
           </div>
         )}
-        <Button onClick={deleteChecks} disabled={deleteChecksState.loading} variant="destructive">
-          Delete checks
-        </Button>
-      </Stack>
 
-      {/* Loading */}
-      {checks.loading && <div>Loading...</div>}
+        {!checkSummaries.loading && !checkSummaries.error && checkSummaries.value && (
+          <>
+            {/* Check summaries */}
+            <div className={styles.checksSummaries}>
+              <Stack direction="row">
+                <Link to={SUB_ROUTES[Severity.High]} className={styles.checkSummaryLink}>
+                  <CheckSummary checkSummary={checkSummaries.value.high} isActive={isHighActive !== null} />
+                </Link>
+                <Link to={SUB_ROUTES[Severity.Low]} className={styles.checkSummaryLink}>
+                  <CheckSummary checkSummary={checkSummaries.value.low} isActive={isLowActive !== null} />
+                </Link>
+                <Link to={SUB_ROUTES[Severity.Success]} className={styles.checkSummaryLink}>
+                  <CheckSummary checkSummary={checkSummaries.value.success} isActive={isSuccessActive !== null} />
+                </Link>
+              </Stack>
+            </div>
 
-      {/* Error */}
-      {checks.error && isFetchError(checks.error) && (
-        <div>
-          Error: {checks.error.status} {checks.error.statusText}
-        </div>
-      )}
-
-      {/* Checks */}
-      {!checks.loading && !checks.error && checks.value && (
-        <div className={styles.checks}>
-          <Stack direction="row">
-            <CheckSummary icon="exclamation-circle" title="Action needed" checks={checks.value.high} severity="high" />
-            <CheckSummary
-              icon="exclamation-triangle"
-              title="Investigation needed"
-              checks={checks.value.low}
-              severity="low"
-            />
-          </Stack>
-        </div>
-      )}
+            {/* Check drilldowns */}
+            <Routes>
+              {/* Default route */}
+              <Route
+                path="*"
+                element={<CheckDrillDown severity={Severity.High} checkSummary={checkSummaries.value.high} />}
+              />
+              <Route
+                path={SUB_ROUTES[Severity.Low]}
+                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummaries.value.low} />}
+              />
+              <Route
+                path={SUB_ROUTES[Severity.Success]}
+                element={<CheckDrillDown severity={Severity.Success} checkSummary={checkSummaries.value.success} />}
+              />
+            </Routes>
+          </>
+        )}
+      </div>
     </PluginPage>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  checks: css({
+  page: css({
+    maxWidth: theme.breakpoints.values.xxl,
+  }),
+  checkSummaryLink: css({
+    flex: 1,
+  }),
+  checksSummaries: css({
     marginTop: theme.spacing(2),
+  }),
+  apiErrorMessage: css({
+    marginTop: theme.spacing(2),
+    color: theme.colors.error.text,
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  headerLeftColumn: css({
+    flexGrow: 1,
+  }),
+  headerRightColumn: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    width: '200px',
   }),
 });
