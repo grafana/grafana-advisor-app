@@ -36,7 +36,7 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
     // TODO - we could do a much more sophisticated way of doing this
     const updatedTimestamp = new Date(check.metadata.annotations!['grafana.app/updatedTimestamp']);
     const prevUpdatedTimestamp = checkSummary[Severity.High].updated;
-    if (updatedTimestamp < prevUpdatedTimestamp) {
+    if (updatedTimestamp > prevUpdatedTimestamp) {
       checkSummary[Severity.High].updated = updatedTimestamp;
       checkSummary[Severity.High].updated = updatedTimestamp;
       checkSummary[Severity.High].updated = updatedTimestamp;
@@ -102,21 +102,21 @@ export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSumm
       description: 'These checks require immediate action.',
       severity: Severity.High,
       checks: generateChecks(),
-      updated: new Date(),
+      updated: new Date(0),
     },
     low: {
       name: 'Investigation needed',
       description: 'These checks require further investigation.',
       severity: Severity.Low,
       checks: generateChecks(),
-      updated: new Date(),
+      updated: new Date(0),
     },
     success: {
       name: 'All good',
       description: 'No issues found.',
       severity: Severity.Success,
       checks: generateChecks(),
-      updated: new Date(),
+      updated: new Date(0),
     },
   };
 }

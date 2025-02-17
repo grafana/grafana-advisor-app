@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Route, Routes, useMatch } from 'react-router-dom';
 import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
-import { Button, Stack, useStyles2 } from '@grafana/ui';
+import { Button, ConfirmModal, EmptyState, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
@@ -50,6 +50,8 @@ export default function Home() {
     checkSummaries();
   }, [checkSummaries]);
   const isLoading = createChecksState.loading || deleteChecksState.loading || checkSummariesState.loading;
+  const emptyState = checkSummariesState.value?.high.updated.getTime() === 0;
+  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
   return (
     <PluginPage
@@ -58,10 +60,27 @@ export default function Home() {
           <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
             Refresh
           </Button>
-          <Button onClick={deleteChecks} disabled={isLoading} variant="secondary" icon="trash-alt"></Button>
+          <Button
+            onClick={() => setConfirmDeleteModalOpen(true)}
+            disabled={isLoading}
+            variant="secondary"
+            icon="trash-alt"
+          ></Button>
         </>
       }
     >
+      <ConfirmModal
+        isOpen={confirmDeleteModalOpen}
+        title="Delete every report stored?"
+        body="This action is not reversible."
+        confirmText="Confirm"
+        onConfirm={() => {
+          deleteChecks();
+          setConfirmDeleteModalOpen(false);
+        }}
+        onDismiss={() => setConfirmDeleteModalOpen(false)}
+      />
+
       <div className={styles.page}>
         {/* Header */}
         <Stack direction="row">
@@ -78,10 +97,12 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className={styles.headerRightColumn}>
-            Last checked:{' '}
-            <strong>{checkSummariesState.value ? formatDate(checkSummariesState.value.high.updated) : '...'}</strong>
-          </div>
+          {!emptyState && (
+            <div className={styles.headerRightColumn}>
+              Last checked:{' '}
+              <strong>{checkSummariesState.value ? formatDate(checkSummariesState.value?.high.updated) : '...'}</strong>
+            </div>
+          )}
         </Stack>
 
         {/* Loading */}
@@ -94,7 +115,17 @@ export default function Home() {
           </div>
         )}
 
-        {!checkSummariesState.loading && !checkSummariesState.error && checkSummariesState.value && (
+        {/* Empty state */}
+        {!checkSummariesState.loading && !checkSummariesState.error && emptyState && (
+          <EmptyState variant="not-found" message="No report found.">
+            <Button onClick={createChecks} disabled={isLoading} variant="primary">
+              Run analysis
+            </Button>
+          </EmptyState>
+        )}
+
+        {/* Checks */}
+        {!checkSummariesState.loading && !checkSummariesState.error && checkSummariesState.value && !emptyState && (
           <>
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
