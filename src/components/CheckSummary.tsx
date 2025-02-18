@@ -19,25 +19,20 @@ const IconBySeverity: Record<string, IconName> = {
 export function CheckSummary({ checkSummary, isActive }: Props) {
   const styles = useStyles2(getStyles(checkSummary.severity));
   const icon = IconBySeverity[checkSummary.severity];
-  const hasIssues = Object.values(checkSummary.checks).some((check) => check.issueCount > 0);
-  const canBeHighlighted = checkSummary.severity !== Severity.Success;
 
   return (
     <div className={cx(styles.container, isActive && styles.containerActive)}>
       <div className={styles.title}>
         <Stack alignItems={'center'} gap={1}>
           {icon && <Icon name={icon} size="xl" className={styles.highlightColor} />}
-          <div className={cx(hasIssues && canBeHighlighted && styles.highlightColor)}>{checkSummary.name}</div>
+          <div>{checkSummary.name}</div>
         </Stack>
       </div>
 
       {/* Checks */}
       <div className={styles.checks}>
         {Object.values(checkSummary.checks).map((check) => (
-          <div
-            key={check.name}
-            className={cx(styles.check, check.issueCount > 0 && canBeHighlighted && styles.highlightColor)}
-          >
+          <div key={check.name} className={cx(styles.check, check.issueCount > 0 && styles.highlightColor)}>
             <div className={styles.checkCount}>{check.issueCount}</div>
             <div className={styles.checkName}>{formatCheckName(check.name)}</div>
           </div>
