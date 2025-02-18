@@ -32,14 +32,14 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
       checkSummary.success.checks[checkType].steps[step].issueCount = check.status.report.count;
     }
 
-    // Last checked time (we take the oldest timestamp)
-    // TODO - we could do a much more sophisticated way of doing this
+    // Last checked time (we take the latest timestamp)
+    // This assumes that the checks are created in batches so a batch will have a similar creation time
     const updatedTimestamp = new Date(check.metadata.annotations!['grafana.app/updatedTimestamp']);
     const prevUpdatedTimestamp = checkSummary[Severity.High].updated;
-    if (updatedTimestamp < prevUpdatedTimestamp) {
+    if (updatedTimestamp > prevUpdatedTimestamp) {
       checkSummary[Severity.High].updated = updatedTimestamp;
-      checkSummary[Severity.High].updated = updatedTimestamp;
-      checkSummary[Severity.High].updated = updatedTimestamp;
+      checkSummary[Severity.Low].updated = updatedTimestamp;
+      checkSummary[Severity.Success].updated = updatedTimestamp;
     }
 
     // Handle failures
@@ -102,21 +102,21 @@ export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSumm
       description: 'These checks require immediate action.',
       severity: Severity.High,
       checks: generateChecks(),
-      updated: new Date(),
+      updated: new Date(0),
     },
     low: {
       name: 'Investigation needed',
       description: 'These checks require further investigation.',
       severity: Severity.Low,
       checks: generateChecks(),
-      updated: new Date(),
+      updated: new Date(0),
     },
     success: {
       name: 'All good',
       description: 'No issues found.',
       severity: Severity.Success,
       checks: generateChecks(),
-      updated: new Date(),
+      updated: new Date(0),
     },
   };
 }
