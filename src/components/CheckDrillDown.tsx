@@ -96,6 +96,7 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
       color: theme.colors.text.secondary,
       backgroundColor: theme.colors.background.secondary,
       padding: theme.spacing(2),
+      marginTop: theme.spacing(1),
       a: {
         color: theme.colors.text.link,
         cursor: 'pointer',
