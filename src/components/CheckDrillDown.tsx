@@ -1,9 +1,10 @@
 import React from 'react';
 import { css, cx } from '@emotion/css';
-import { useStyles2 } from '@grafana/ui';
-import { GrafanaTheme2 } from '@grafana/data';
+import { Button, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { formatCheckName } from 'utils';
+import { useNavigate } from 'react-router-dom';
 
 export default function CheckDrillDown({
   severity,
@@ -13,6 +14,7 @@ export default function CheckDrillDown({
   checkSummary: CheckSummaryType;
 }) {
   const styles = useStyles2(getStyles(severity));
+  const navigate = useNavigate();
 
   return (
     <div className={styles.container}>
@@ -34,15 +36,42 @@ export default function CheckDrillDown({
                   <h5 className={cx(styles.highlightColor, styles.stepHeader)}>
                     {step.name} - <span className={styles.bold}>{step.issueCount}</span>
                   </h5>
-                  <p className={styles.description}>{step.description}</p>
+                  <p className={styles.description}>
+                    {step.description}
+                    <br />
+                    {step.name} failed for:
+                  </p>
                 </div>
 
                 {/* Step issues */}
                 <div>
                   {step.issues.map((issue) => (
-                    <div key={issue.itemID} className={styles.issue}>
-                      <div className={styles.issueReason}>{issue.reason}</div>
-                      <div dangerouslySetInnerHTML={{ __html: issue.action }}></div>
+                    <div key={issue.item} className={styles.issue}>
+                      <div className={styles.issueReason}>
+                        {issue.item}
+                        {issue.links.map((link) => {
+                          const b = (
+                            <Button
+                              className={styles.issueLink}
+                              key={link.url}
+                              onClick={() => (link.url.startsWith('http') ? null : navigate(link.url))}
+                              size="sm"
+                              icon={link.icon as IconName}
+                              variant={link.variant || 'secondary'}
+                            >
+                              {link.message}
+                            </Button>
+                          );
+                          if (link.url.startsWith('http')) {
+                            return (
+                              <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
+                                {b}
+                              </a>
+                            );
+                          }
+                          return b;
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -101,6 +130,9 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
     issueReason: css({
       color: theme.colors.text.primary,
       fontWeight: theme.typography.fontWeightMedium,
+    }),
+    issueLink: css({
+      marginLeft: theme.spacing(1),
     }),
     bold: css({
       fontWeight: theme.typography.fontWeightBold,

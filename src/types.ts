@@ -1,6 +1,8 @@
 // Types used by the frontend part of the Grafana Advisor.
 // (These are on purpose structured a bit differently than the backend generated ones.)
 
+import { ReportFailure } from 'generated/check/v0alpha1/types.status.gen';
+
 export enum Severity {
   High = 'high',
   Low = 'low',
@@ -29,12 +31,5 @@ export type CheckStep = {
   description: string;
   stepID: string;
   issueCount: number;
-  issues: CheckStepIssue[];
-};
-
-export type CheckStepIssue = {
-  severity: Severity;
-  reason: string;
-  action: string;
-  itemID: string;
+  issues: ReportFailure[];
 };

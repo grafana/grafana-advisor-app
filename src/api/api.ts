@@ -55,12 +55,7 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
         const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
         persistedCheck.issueCount++;
         persistedStep.issueCount++;
-        persistedStep.issues.push({
-          severity,
-          reason: failure.reason,
-          action: failure.action,
-          itemID: failure.itemID,
-        });
+        persistedStep.issues.push(failure);
       }
     }
   }
