@@ -10,7 +10,7 @@ interface Props {
   isActive?: boolean;
 }
 
-const IconBySeverity: Record<string, IconName> = {
+export const IconBySeverity: Record<string, IconName> = {
   high: 'exclamation-circle',
   low: 'exclamation-triangle',
   success: 'check-circle',

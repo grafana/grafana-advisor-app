@@ -1,9 +1,10 @@
 import React from 'react';
 import { css, cx } from '@emotion/css';
-import { useStyles2 } from '@grafana/ui';
+import { Icon, Stack, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Check, CheckStep, Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { formatCheckName } from 'utils';
+import { IconBySeverity } from './CheckSummary';
 
 export default function CheckDrillDown({
   severity,
@@ -15,6 +16,7 @@ export default function CheckDrillDown({
   const styles = useStyles2(getStyles(severity));
   const hasIssues = Object.values(checkSummary.checks).some((check) => check.issueCount > 0);
   const shouldHighlight = (item: Check | CheckStep) => item.issueCount > 0;
+  const icon = IconBySeverity[checkSummary.severity];
 
   return (
     <div className={styles.container}>
@@ -62,7 +64,12 @@ export default function CheckDrillDown({
                     <div>
                       {step.issues.map((issue) => (
                         <div key={issue.itemID} className={styles.issue}>
-                          <div className={styles.issueReason}>{issue.reason}</div>
+                          <div className={styles.issueReason}>
+                            <Stack alignItems="center" gap={1}>
+                              <Icon name={icon} size="sm" />
+                              {issue.reason}
+                            </Stack>
+                          </div>
                           <div dangerouslySetInnerHTML={{ __html: issue.action }}></div>
                         </div>
                       ))}
