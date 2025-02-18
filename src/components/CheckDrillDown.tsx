@@ -2,7 +2,7 @@ import React from 'react';
 import { css, cx } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Severity, type CheckSummary as CheckSummaryType } from 'types';
+import { Check, CheckStep, Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { formatCheckName } from 'utils';
 
 export default function CheckDrillDown({
@@ -13,6 +13,7 @@ export default function CheckDrillDown({
   checkSummary: CheckSummaryType;
 }) {
   const styles = useStyles2(getStyles(severity));
+  const shouldHighlight = (item: Check | CheckStep) => item.issueCount > 0;
 
   return (
     <div className={styles.container}>
@@ -20,7 +21,7 @@ export default function CheckDrillDown({
         <div key={check.name} className={styles.spacingTopLg}>
           {/* Check header */}
           <div>
-            <h4 className={cx(styles.highlightColor, styles.checkHeader)}>
+            <h4 className={cx(styles.checkHeader, shouldHighlight(check) && styles.highlightColor)}>
               {formatCheckName(check.name)} {check.issueCount > 0 && ` - ${check.issueCount}`}
             </h4>
             {check.description && <p>{check.description}</p>}
@@ -31,7 +32,7 @@ export default function CheckDrillDown({
             {Object.values(check.steps).map((step) => (
               <div key={step.stepID} className={styles.spacingTopMd}>
                 <div>
-                  <h5 className={cx(styles.highlightColor, styles.stepHeader)}>
+                  <h5 className={cx(styles.stepHeader, shouldHighlight(step) && styles.highlightColor)}>
                     {step.name}
                     {step.issueCount > 0 && (
                       <>
