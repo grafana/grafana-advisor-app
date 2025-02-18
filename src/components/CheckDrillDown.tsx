@@ -21,7 +21,7 @@ export default function CheckDrillDown({
           {/* Check header */}
           <div>
             <h4 className={cx(styles.highlightColor, styles.checkHeader)}>
-              {formatCheckName(check.name)} - {check.issueCount}
+              {formatCheckName(check.name)} {check.issueCount > 0 && ` - ${check.issueCount}`}
             </h4>
             {check.description && <p>{check.description}</p>}
           </div>
@@ -32,7 +32,12 @@ export default function CheckDrillDown({
               <div key={step.stepID} className={styles.spacingTopMd}>
                 <div>
                   <h5 className={cx(styles.highlightColor, styles.stepHeader)}>
-                    {step.name} - <span className={styles.bold}>{step.issueCount}</span>
+                    {step.name}
+                    {step.issueCount > 0 && (
+                      <>
+                        - <span className={styles.bold}>{step.issueCount}</span>
+                      </>
+                    )}
                   </h5>
                   <p className={styles.description}>{step.description}</p>
                 </div>
