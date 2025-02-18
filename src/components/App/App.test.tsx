@@ -31,7 +31,7 @@ describe('Components/App', () => {
       </BrowserRouter>
     );
 
-    // Checks if the temporary "Run checks" button is rendered
-    expect(await screen.findByText(/Run checks/i)).toBeInTheDocument();
+    // Checks if the temporary "Refresh" button is rendered
+    expect(await screen.findByText(/Refresh/i)).toBeInTheDocument();
   });
 });

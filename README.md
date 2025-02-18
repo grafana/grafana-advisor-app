@@ -35,7 +35,7 @@ npm run server
 
 #### 5. Run checks
 
-Click on the "Run checks" button in case you don't see anything, and refresh the page after a few seconds.
+Click on the "Refresh" button in case you don't see anything, and refresh the page after a few seconds.
 
 (Clicking the button initiates the checks, but it "doesn't wait" for them to finish, that can take some time.)
 
