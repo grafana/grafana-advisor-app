@@ -71,8 +71,8 @@ export default function Home() {
     >
       <ConfirmModal
         isOpen={confirmDeleteModalOpen}
-        title="Delete every report stored?"
-        body="This action is not reversible."
+        title="Delete reports?"
+        body="Grafana keeps a history of reports, this action will delete all of them. It is not reversible."
         confirmText="Confirm"
         onConfirm={() => {
           deleteChecks();
