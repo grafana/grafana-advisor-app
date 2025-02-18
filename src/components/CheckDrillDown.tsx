@@ -36,7 +36,7 @@ export default function CheckDrillDown({
                     {step.name}
                     {step.issueCount > 0 && (
                       <>
-                        - <span className={styles.bold}>{step.issueCount}</span>
+                        {' -'} <span className={styles.bold}>{step.issueCount}</span>
                       </>
                     )}
                   </h5>
