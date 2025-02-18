@@ -13,50 +13,66 @@ export default function CheckDrillDown({
   checkSummary: CheckSummaryType;
 }) {
   const styles = useStyles2(getStyles(severity));
+  const hasIssues = Object.values(checkSummary.checks).some((check) => check.issueCount > 0);
   const shouldHighlight = (item: Check | CheckStep) => item.issueCount > 0;
 
   return (
     <div className={styles.container}>
-      {Object.values(checkSummary.checks).map((check) => (
-        <div key={check.name} className={styles.spacingTopLg}>
-          {/* Check header */}
-          <div>
-            <h4 className={cx(styles.checkHeader, shouldHighlight(check) && styles.highlightColor)}>
-              {formatCheckName(check.name)} {check.issueCount > 0 && ` - ${check.issueCount}`}
-            </h4>
-            {check.description && <p>{check.description}</p>}
-          </div>
-
-          {/* Check steps */}
-          <div>
-            {Object.values(check.steps).map((step) => (
-              <div key={step.stepID} className={styles.spacingTopMd}>
-                <div>
-                  <h5 className={cx(styles.stepHeader, shouldHighlight(step) && styles.highlightColor)}>
-                    {step.name}
-                    {step.issueCount > 0 && (
-                      <>
-                        {' -'} <span className={styles.bold}>{step.issueCount}</span>
-                      </>
-                    )}
-                  </h5>
-                  <p className={styles.description}>{step.description}</p>
-                </div>
-
-                {/* Step issues */}
-                <div>
-                  {step.issues.map((issue) => (
-                    <div key={issue.itemID} className={styles.issue}>
-                      <div className={styles.issueReason}>{issue.reason}</div>
-                      <div dangerouslySetInnerHTML={{ __html: issue.action }}></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+      {!hasIssues && (
+        <div>
+          {checkSummary.severity === Severity.High && <p>There are no issues that need immediate action.</p>}
+          {checkSummary.severity === Severity.Low && <p>There are no issues that need investigation.</p>}
         </div>
-      ))}
+      )}
+
+      {hasIssues &&
+        Object.values(checkSummary.checks).map((check) => {
+          // Dont' display a drilldown for empty checks
+          if (check.issueCount === 0 && severity !== Severity.Success) {
+            return null;
+          }
+
+          return (
+            <div key={check.name} className={styles.spacingTopLg}>
+              {/* Check header */}
+              <div>
+                <h4 className={cx(styles.checkHeader, shouldHighlight(check) && styles.highlightColor)}>
+                  {formatCheckName(check.name)} {check.issueCount > 0 && ` - ${check.issueCount}`}
+                </h4>
+                {check.description && <p>{check.description}</p>}
+              </div>
+
+              {/* Check steps */}
+              <div>
+                {Object.values(check.steps).map((step) => (
+                  <div key={step.stepID} className={styles.spacingTopMd}>
+                    <div>
+                      <h5 className={cx(styles.stepHeader, shouldHighlight(step) && styles.highlightColor)}>
+                        {step.name}
+                        {step.issueCount > 0 && (
+                          <>
+                            {' -'} <span className={styles.bold}>{step.issueCount}</span>
+                          </>
+                        )}
+                      </h5>
+                      <p className={styles.description}>{step.description}</p>
+                    </div>
+
+                    {/* Step issues */}
+                    <div>
+                      {step.issues.map((issue) => (
+                        <div key={issue.itemID} className={styles.issue}>
+                          <div className={styles.issueReason}>{issue.reason}</div>
+                          <div dangerouslySetInnerHTML={{ __html: issue.action }}></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
     </div>
   );
 }
