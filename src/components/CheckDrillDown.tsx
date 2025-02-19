@@ -109,7 +109,6 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
 
 const getIcon = (message: string) => {
   message = message.toLowerCase();
-  console.log('message', message);
   let icon: IconName = 'info-circle';
   if (message.includes('fix')) {
     icon = 'wrench';
