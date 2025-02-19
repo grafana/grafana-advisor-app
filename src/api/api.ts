@@ -34,7 +34,6 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
     if (updatedTimestamp > prevUpdatedTimestamp) {
       checkSummary[Severity.High].updated = updatedTimestamp;
       checkSummary[Severity.Low].updated = updatedTimestamp;
-      checkSummary[Severity.Success].updated = updatedTimestamp;
     }
 
     // Handle failures
