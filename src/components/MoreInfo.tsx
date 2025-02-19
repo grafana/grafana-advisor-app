@@ -9,11 +9,11 @@ interface Props {
 }
 
 export function MoreInfo({ checkSummaries }: Props) {
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles);
 
   return (
-    <Collapse label={'More info'} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)}>
+    <Collapse label={'More info'} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible={true}>
       <div className={styles.container}>
         {Object.values(checkSummaries.high.checks).map((check) => (
           <div key={check.name} className={styles.check}>

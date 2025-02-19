@@ -24,6 +24,7 @@ export function CheckSummary({ checkSummary }: Props) {
     <Collapse
       label={<CheckSummaryTitle checkSummary={checkSummary} />}
       isOpen={isOpen}
+      collapsible={true}
       onToggle={() => setIsOpen(!isOpen)}
     >
       {/* Issues */}
