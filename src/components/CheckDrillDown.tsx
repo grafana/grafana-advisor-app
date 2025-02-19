@@ -1,96 +1,34 @@
 import React from 'react';
-import { css, cx } from '@emotion/css';
-import { Icon, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Check, CheckStep, Severity, type CheckSummary as CheckSummaryType } from 'types';
-import { formatCheckName } from 'utils';
-import { IconBySeverity } from './CheckSummary';
+import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 
-export default function CheckDrillDown({
-  severity,
-  checkSummary,
-}: {
-  severity: Severity;
-  checkSummary: CheckSummaryType;
-}) {
-  const styles = useStyles2(getStyles(severity));
-  const hasIssues = Object.values(checkSummary.checks).some((check) => check.issueCount > 0);
-  const shouldHighlight = (item: Check | CheckStep) => item.issueCount > 0;
-  const icon = IconBySeverity[checkSummary.severity];
+export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSummaryType }) {
+  const styles = useStyles2(getStyles(checkSummary.severity));
 
   return (
     <div className={styles.container}>
-      {!hasIssues && (
-        <div>
-          {checkSummary.severity === Severity.High && <p>There are no issues that need immediate action.</p>}
-          {checkSummary.severity === Severity.Low && <p>There are no issues that need investigation.</p>}
-        </div>
-      )}
+      {Object.values(checkSummary.checks).map((check) => {
+        // Dont' display a drilldown for empty checks
+        if (check.issueCount === 0) {
+          return null;
+        }
 
-      {hasIssues &&
-        Object.values(checkSummary.checks).map((check) => {
-          // Dont' display a drilldown for empty checks
-          if (check.issueCount === 0 && severity !== Severity.Success) {
-            return null;
-          }
-
-          return (
-            <div key={check.name} className={styles.spacingTopLg}>
-              {/* Check header */}
-              <div>
-                <h4 className={cx(styles.checkHeader, shouldHighlight(check) && styles.highlightColor)}>
-                  {formatCheckName(check.name)} {check.issueCount > 0 && ` - ${check.issueCount}`}
-                </h4>
-                {check.description && <p>{check.description}</p>}
-              </div>
-
-              {/* Check steps */}
-              <div>
-                {Object.values(check.steps).map((step) => (
-                  <div key={step.stepID} className={styles.spacingTopMd}>
-                    <div>
-                      <h5 className={cx(styles.stepHeader, shouldHighlight(step) && styles.highlightColor)}>
-                        {step.name}
-                        {step.issueCount > 0 && (
-                          <>
-                            {' -'} <span className={styles.bold}>{step.issueCount}</span>
-                          </>
-                        )}
-                      </h5>
-                      <p className={styles.description}>{step.description}</p>
-                    </div>
-
-                    {/* Step issues */}
-                    <div>
-                      {step.issues.map((issue) => (
-                        <div key={issue.itemID} className={styles.issue}>
-                          <div className={styles.issueReason}>
-                            <Stack alignItems="center" gap={1}>
-                              <Icon name={icon} size="sm" />
-                              {issue.reason}
-                            </Stack>
-                          </div>
-                          <div dangerouslySetInnerHTML={{ __html: issue.action }}></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        return Object.values(check.steps).map((step) =>
+          step.issues.map((issue) => (
+            <div key={issue.itemID} className={styles.issue}>
+              <div className={styles.issueReason}>{issue.reason}</div>
+              <div dangerouslySetInnerHTML={{ __html: issue.action }}></div>
             </div>
-          );
-        })}
+          ))
+        );
+      })}
     </div>
   );
 }
 
 const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
-  const severityColor: Record<Severity, string> = {
-    [Severity.High]: theme.colors.error.text,
-    [Severity.Low]: theme.colors.warning.text,
-    [Severity.Success]: theme.colors.success.text,
-  };
-
   return {
     container: css({
       marginTop: theme.spacing(2),
@@ -101,17 +39,6 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
     spacingTopMd: css({
       marginTop: theme.spacing(2),
     }),
-    highlightColor: css({
-      color: severityColor[severity],
-    }),
-    checkHeader: css({
-      fontSize: theme.typography.h4.fontSize,
-      fontWeight: theme.typography.fontWeightMedium,
-    }),
-    stepHeader: css({
-      opacity: 0.8,
-      marginBottom: 0,
-    }),
     description: css({
       color: theme.colors.text.secondary,
     }),
@@ -119,7 +46,7 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
       color: theme.colors.text.secondary,
       backgroundColor: theme.colors.background.secondary,
       padding: theme.spacing(2),
-      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
       a: {
         color: theme.colors.text.link,
         cursor: 'pointer',
