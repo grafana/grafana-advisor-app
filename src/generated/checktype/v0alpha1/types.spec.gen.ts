@@ -4,12 +4,14 @@ export interface Step {
 	title: string;
 	description: string;
 	stepID: string;
+	resolution: string;
 }
 
 export const defaultStep = (): Step => ({
 	title: "",
 	description: "",
 	stepID: "",
+	resolution: "",
 });
 
 export interface Spec {

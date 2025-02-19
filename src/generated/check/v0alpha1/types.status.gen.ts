@@ -5,10 +5,6 @@ export interface ErrorLink {
 	url: string;
 	// Human readable error message
 	message: string;
-	// Icon to display next to the error message
-	icon?: string;
-	// Variant of the button that will render the link
-	variant?: "primary" | "secondary" | "destructive" | "success";
 }
 
 export const defaultErrorLink = (): ErrorLink => ({

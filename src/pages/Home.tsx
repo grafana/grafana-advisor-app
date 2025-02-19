@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Route, Routes, useMatch } from 'react-router-dom';
 import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
 import { Button, ConfirmModal, EmptyState, Stack, useStyles2 } from '@grafana/ui';
@@ -7,23 +6,10 @@ import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
-import CheckDrillDown from 'components/CheckDrillDown';
-import { Severity } from 'types';
 import { formatDate } from 'utils';
-
-const BASE_PATH = '/admin/advisor';
-const SUB_ROUTES = {
-  [Severity.High]: 'action-needed',
-  [Severity.Low]: 'investigation-needed',
-  [Severity.Success]: 'all-good',
-};
-
-const getDrilldownPath = (severity: Severity) => `${BASE_PATH}/${SUB_ROUTES[severity]}`;
+import { MoreInfo } from 'components/MoreInfo';
 
 export default function Home() {
-  const isHighActive = useMatch(getDrilldownPath(Severity.High));
-  const isLowActive = useMatch(getDrilldownPath(Severity.Low));
-  const isSuccessActive = useMatch(getDrilldownPath(Severity.Success));
   const styles = useStyles2(getStyles);
   const [checkSummariesState, checkSummaries] = useAsyncFn(async () => {
     return await api.getCheckSummaries();
@@ -129,37 +115,12 @@ export default function Home() {
           <>
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
-              <Stack direction="row">
-                <Link to={SUB_ROUTES[Severity.High]} className={styles.checkSummaryLink}>
-                  <CheckSummary checkSummary={checkSummariesState.value.high} isActive={isHighActive !== null} />
-                </Link>
-                <Link to={SUB_ROUTES[Severity.Low]} className={styles.checkSummaryLink}>
-                  <CheckSummary checkSummary={checkSummariesState.value.low} isActive={isLowActive !== null} />
-                </Link>
-                <Link to={SUB_ROUTES[Severity.Success]} className={styles.checkSummaryLink}>
-                  <CheckSummary checkSummary={checkSummariesState.value.success} isActive={isSuccessActive !== null} />
-                </Link>
+              <Stack direction="column">
+                <CheckSummary checkSummary={checkSummariesState.value.high} />
+                <CheckSummary checkSummary={checkSummariesState.value.low} />
+                <MoreInfo checkSummaries={checkSummariesState.value} />
               </Stack>
             </div>
-
-            {/* Check drilldowns */}
-            <Routes>
-              {/* Default route */}
-              <Route
-                path="*"
-                element={<CheckDrillDown severity={Severity.High} checkSummary={checkSummariesState.value.high} />}
-              />
-              <Route
-                path={SUB_ROUTES[Severity.Low]}
-                element={<CheckDrillDown severity={Severity.Low} checkSummary={checkSummariesState.value.low} />}
-              />
-              <Route
-                path={SUB_ROUTES[Severity.Success]}
-                element={
-                  <CheckDrillDown severity={Severity.Success} checkSummary={checkSummariesState.value.success} />
-                }
-              />
-            </Routes>
           </>
         )}
       </div>

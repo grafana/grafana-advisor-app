@@ -2,14 +2,14 @@ import { Check as CheckRaw } from 'generated/check/v0alpha1/check_object_gen';
 import { ReportFailure } from 'generated/check/v0alpha1/types.status.gen';
 import { CheckClient } from 'api/check_client';
 import { CheckTypeClient } from 'api/checktype_client';
-import { CheckSummary, Severity } from 'types';
+import { CheckSummaries, Severity } from 'types';
 import { Spec as SpecRaw } from 'generated/checktype/v0alpha1/types.spec.gen';
 
 const checkClient = new CheckClient();
 const checkTypeClient = new CheckTypeClient();
 
 // Transforms the data into a structure that is easier to work with on the frontend
-export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary>> {
+export async function getCheckSummaries(): Promise<CheckSummaries> {
   const checks = await getLastChecks();
   const checkSummary = await getEmptyCheckSummary();
 
@@ -25,12 +25,7 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
       continue;
     }
 
-    // Successful checks
-    // (The concept of a "successful check" only exists on the frontend, so we need to fill them out here.)
-    checkSummary.success.checks[checkType].issueCount = check.status.report.count;
-    for (const step of Object.keys(checkSummary.success.checks[checkType].steps)) {
-      checkSummary.success.checks[checkType].steps[step].issueCount = check.status.report.count;
-    }
+    checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
 
     // Last checked time (we take the latest timestamp)
     // This assumes that the checks are created in batches so a batch will have a similar creation time
@@ -39,17 +34,12 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
     if (updatedTimestamp > prevUpdatedTimestamp) {
       checkSummary[Severity.High].updated = updatedTimestamp;
       checkSummary[Severity.Low].updated = updatedTimestamp;
-      checkSummary[Severity.Success].updated = updatedTimestamp;
     }
 
     // Handle failures
     if (check.status.report.failures) {
       // Loop through each failure
       for (const failure of check.status.report.failures) {
-        // Adjust successful counts
-        checkSummary.success.checks[checkType].issueCount--;
-        checkSummary.success.checks[checkType].steps[failure.stepID].issueCount--;
-
         const severity = failure.severity as Severity;
         const persistedCheck = checkSummary[severity].checks[checkType];
         const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
@@ -63,7 +53,7 @@ export async function getCheckSummaries(): Promise<Record<Severity, CheckSummary
   return checkSummary;
 }
 
-export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSummary>> {
+export async function getEmptyCheckSummary(): Promise<CheckSummaries> {
   const checkTypes = await getCheckTypes();
   const generateChecks = () =>
     Object.values(checkTypes).reduce(
@@ -72,6 +62,7 @@ export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSumm
         [checkType.name]: {
           name: checkType.name,
           description: '',
+          totalCheckCount: 0,
           issueCount: 0,
           steps: checkType.steps.reduce(
             (acc, step) => ({
@@ -82,6 +73,7 @@ export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSumm
                 stepID: step.stepID,
                 issueCount: 0,
                 issues: [],
+                resolution: step.resolution,
               },
             }),
             {}
@@ -103,13 +95,6 @@ export async function getEmptyCheckSummary(): Promise<Record<Severity, CheckSumm
       name: 'Investigation needed',
       description: 'These checks require further investigation.',
       severity: Severity.Low,
-      checks: generateChecks(),
-      updated: new Date(0),
-    },
-    success: {
-      name: 'All good',
-      description: 'No issues found.',
-      severity: Severity.Success,
       checks: generateChecks(),
       updated: new Date(0),
     },
@@ -136,7 +121,6 @@ export async function getChecksBySeverity() {
   const checksBySeverity: Record<Severity, Record<string, { count: number; errors: ReportFailure[] }>> = {
     high: {},
     low: {},
-    success: {},
   };
   const checks = await getLastChecks();
 

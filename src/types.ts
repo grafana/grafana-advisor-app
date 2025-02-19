@@ -6,8 +6,9 @@ import { ReportFailure } from 'generated/check/v0alpha1/types.status.gen';
 export enum Severity {
   High = 'high',
   Low = 'low',
-  Success = 'success',
 }
+
+export type CheckSummaries = Record<Severity, CheckSummary>;
 
 export type CheckSummary = {
   name: string;
@@ -21,6 +22,7 @@ export type CheckSummary = {
 export type Check = {
   name: string;
   description: string;
+  totalCheckCount: number;
   issueCount: number;
   steps: Record<string, CheckStep>;
 };
@@ -29,6 +31,7 @@ export type Check = {
 export type CheckStep = {
   name: string;
   description: string;
+  resolution: string;
   stepID: string;
   issueCount: number;
   issues: ReportFailure[];
