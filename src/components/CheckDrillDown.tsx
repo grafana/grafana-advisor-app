@@ -1,13 +1,11 @@
 import React from 'react';
 import { css } from '@emotion/css';
-import { Button, ButtonVariant, useStyles2 } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
-import { useNavigate } from 'react-router-dom';
 
 export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSummaryType }) {
   const styles = useStyles2(getStyles(checkSummary.severity));
-  const navigate = useNavigate();
 
   return (
     <div className={styles.container}>
@@ -33,26 +31,17 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                 <div className={styles.issueReason}>
                   {issue.item}
                   {issue.links.map((link) => {
-                    const b = (
-                      <Button
-                        className={styles.issueLink}
-                        key={link.url}
-                        onClick={() => (link.url.startsWith('http') ? null : navigate(link.url))}
-                        size="sm"
-                        icon={getIcon(link.message)}
-                        variant={getVariant(link.message)}
-                      >
-                        {link.message}
-                      </Button>
+                    const extraProps = link.url.startsWith('http')
+                      ? { target: '_self', rel: 'noopener noreferrer' }
+                      : {};
+
+                    return (
+                      <a key={link.url} href={link.url} {...extraProps}>
+                        <Button size="sm" className={styles.issueLink} icon={getIcon(link.message)} variant="secondary">
+                          {link.message}
+                        </Button>
+                      </a>
                     );
-                    if (link.url.startsWith('http')) {
-                      return (
-                        <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer">
-                          {b}
-                        </a>
-                      );
-                    }
-                    return b;
                   })}
                 </div>
               </div>
@@ -122,17 +111,4 @@ const getIcon = (message: string) => {
     icon = 'cog';
   }
   return icon;
-};
-
-const getVariant = (message: string) => {
-  message = message.toLowerCase();
-  let variant: ButtonVariant = 'secondary';
-  if (message.includes('fix') || message.includes('upgrade')) {
-    variant = 'primary';
-  } else if (message.includes('info')) {
-    variant = 'secondary';
-  } else if (message.includes('delete')) {
-    variant = 'destructive';
-  }
-  return variant;
 };
