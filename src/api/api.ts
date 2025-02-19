@@ -45,12 +45,7 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
         const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
         persistedCheck.issueCount++;
         persistedStep.issueCount++;
-        persistedStep.issues.push({
-          severity,
-          reason: failure.reason,
-          action: failure.action,
-          itemID: failure.itemID,
-        });
+        persistedStep.issues.push(failure);
       }
     }
   }
@@ -78,6 +73,7 @@ export async function getEmptyCheckSummary(): Promise<CheckSummaries> {
                 stepID: step.stepID,
                 issueCount: 0,
                 issues: [],
+                resolution: step.resolution,
               },
             }),
             {}
@@ -101,7 +97,7 @@ export async function getEmptyCheckSummary(): Promise<CheckSummaries> {
       severity: Severity.Low,
       checks: generateChecks(),
       updated: new Date(0),
-    }
+    },
   };
 }
 
