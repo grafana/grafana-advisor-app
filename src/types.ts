@@ -4,8 +4,9 @@
 export enum Severity {
   High = 'high',
   Low = 'low',
-  Success = 'success',
 }
+
+export type CheckSummaries = Record<Severity, CheckSummary>;
 
 export type CheckSummary = {
   name: string;
@@ -19,6 +20,7 @@ export type CheckSummary = {
 export type Check = {
   name: string;
   description: string;
+  totalCheckCount: number;
   issueCount: number;
   steps: Record<string, CheckStep>;
 };

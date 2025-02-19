@@ -1,44 +1,37 @@
 import React from 'react';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, IconName, Icon, Stack } from '@grafana/ui';
+import { useStyles2, Collapse } from '@grafana/ui';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
-import { formatCheckName } from 'utils';
+import { CheckSummaryTitle } from './CheckSummaryTitle';
+import CheckDrillDown from './CheckDrillDown';
 
 interface Props {
   checkSummary: CheckSummaryType;
   isActive?: boolean;
 }
 
-const IconBySeverity: Record<string, IconName> = {
-  high: 'exclamation-circle',
-  low: 'exclamation-triangle',
-  success: 'check-circle',
-};
-
-export function CheckSummary({ checkSummary, isActive }: Props) {
+export function CheckSummary({ checkSummary }: Props) {
+  const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles(checkSummary.severity));
-  const icon = IconBySeverity[checkSummary.severity];
+  const issueCount = Object.values(checkSummary.checks).reduce((acc, check) => acc + check.issueCount, 0);
+
+  if (issueCount === 0) {
+    return null;
+  }
 
   return (
-    <div className={cx(styles.container, isActive && styles.containerActive)}>
-      <div className={cx(styles.title, styles.highlightColor)}>
-        <Stack alignItems={'center'} gap={1}>
-          {icon && <Icon name={icon} size="xl" />}
-          <div>{checkSummary.name}</div>
-        </Stack>
+    <Collapse
+      label={<CheckSummaryTitle checkSummary={checkSummary} />}
+      isOpen={isOpen}
+      collapsible={true}
+      onToggle={() => setIsOpen(!isOpen)}
+    >
+      {/* Issues */}
+      <div className={styles.issues}>
+        <CheckDrillDown checkSummary={checkSummary} />
       </div>
-
-      {/* Checks */}
-      <div className={styles.checks}>
-        {Object.values(checkSummary.checks).map((check) => (
-          <div key={check.name} className={styles.check}>
-            <div className={cx(styles.checkCount, styles.highlightColor)}>{check.issueCount}</div>
-            <div className={styles.checkName}>{formatCheckName(check.name)}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+    </Collapse>
   );
 }
 
@@ -46,48 +39,15 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
   const severityColor: Record<Severity, string> = {
     [Severity.High]: theme.colors.error.text,
     [Severity.Low]: theme.colors.warning.text,
-    [Severity.Success]: theme.colors.success.text,
   };
 
   return {
-    title: css({
-      padding: theme.spacing(2),
-      backgrounColor: theme.colors.background.secondary,
-      fontSize: theme.typography.h4.fontSize,
-      fontWeight: theme.typography.fontWeightMedium,
-    }),
     highlightColor: css({
       color: severityColor[severity],
     }),
-    checks: css({
+    issues: css({
       padding: theme.spacing(2),
       paddingTop: 0,
-      backgrounColor: theme.colors.background.primary,
     }),
-    container: css({
-      width: '100%',
-      backgroundColor: theme.colors.background.secondary,
-      border: `1px solid ${theme.colors.border.weak}`,
-      borderRadius: theme.shape.radius.default,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(2),
-      cursor: 'pointer',
-      '&:hover': {
-        border: `1px solid ${theme.colors.border.strong}`,
-      },
-    }),
-    containerActive: css({
-      border: `1px solid ${theme.colors.border.strong}`,
-    }),
-    check: css({
-      display: 'flex',
-      paddingX: theme.spacing(1),
-    }),
-    checkCount: css({
-      fontWeight: theme.typography.fontWeightBold,
-      marginRight: theme.spacing(1),
-    }),
-    checkName: css({}),
   };
 };
