@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AppRootProps, PluginType } from '@grafana/data';
 import { render, screen } from '@testing-library/react';
 import App from './App';
+import { HEADING_TEXT } from 'pages/Home';
 
 describe('Components/App', () => {
   let props: AppRootProps;
@@ -26,12 +27,11 @@ describe('Components/App', () => {
 
   test('renders without an error"', async () => {
     render(
-      <BrowserRouter>
+      <BrowserRouter basename="/" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App {...props} />
       </BrowserRouter>
     );
 
-    // Checks if the temporary "Refresh" button is rendered
-    expect(await screen.findByText(/Refresh/i)).toBeInTheDocument();
+    expect(await screen.findByText(HEADING_TEXT)).toBeInTheDocument();
   });
 });

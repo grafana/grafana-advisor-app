@@ -4,6 +4,7 @@ import { CheckClient } from 'api/check_client';
 import { CheckTypeClient } from 'api/checktype_client';
 import { CheckSummaries, Severity } from 'types';
 import { Spec as SpecRaw } from 'generated/checktype/v0alpha1/types.spec.gen';
+import { getEmptyCheckSummary } from 'utils';
 
 const checkClient = new CheckClient();
 const checkTypeClient = new CheckTypeClient();
@@ -11,7 +12,8 @@ const checkTypeClient = new CheckTypeClient();
 // Transforms the data into a structure that is easier to work with on the frontend
 export async function getCheckSummaries(): Promise<CheckSummaries> {
   const checks = await getLastChecks();
-  const checkSummary = await getEmptyCheckSummary();
+  const checkTypes = await getCheckTypes();
+  const checkSummary = getEmptyCheckSummary(checkTypes);
 
   // Loop through checks by type
   for (const check of checks) {
@@ -51,54 +53,6 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
   }
 
   return checkSummary;
-}
-
-export async function getEmptyCheckSummary(): Promise<CheckSummaries> {
-  const checkTypes = await getCheckTypes();
-  const generateChecks = () =>
-    Object.values(checkTypes).reduce(
-      (acc, checkType) => ({
-        ...acc,
-        [checkType.name]: {
-          name: checkType.name,
-          description: '',
-          totalCheckCount: 0,
-          issueCount: 0,
-          steps: checkType.steps.reduce(
-            (acc, step) => ({
-              ...acc,
-              [step.stepID]: {
-                name: step.title,
-                description: step.description,
-                stepID: step.stepID,
-                issueCount: 0,
-                issues: [],
-                resolution: step.resolution,
-              },
-            }),
-            {}
-          ),
-        },
-      }),
-      {}
-    );
-
-  return {
-    high: {
-      name: 'Action needed',
-      description: 'These checks require immediate action.',
-      severity: Severity.High,
-      checks: generateChecks(),
-      updated: new Date(0),
-    },
-    low: {
-      name: 'Investigation needed',
-      description: 'These checks require further investigation.',
-      severity: Severity.Low,
-      checks: generateChecks(),
-      updated: new Date(0),
-    },
-  };
 }
 
 export async function getCheckTypes(): Promise<Record<string, SpecRaw>> {
