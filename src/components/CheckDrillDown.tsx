@@ -15,6 +15,7 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
           return null;
         }
 
+        // Steps
         return Object.values(check.steps).map((step) => (
           <div key={step.name} className={styles.spacingTopMd}>
             {step.issues.length > 0 && (
@@ -26,6 +27,8 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                 <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
               </div>
             )}
+
+            {/* Issues */}
             {step.issues.map((issue) => (
               <div key={issue.item} className={styles.issue}>
                 <div className={styles.issueReason}>

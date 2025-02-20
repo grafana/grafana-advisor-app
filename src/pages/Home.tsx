@@ -9,6 +9,8 @@ import { CheckSummary } from 'components/CheckSummary';
 import { formatDate } from 'utils';
 import { MoreInfo } from 'components/MoreInfo';
 
+export const HEADING_TEXT = 'Keep Grafana running smoothly and securely.';
+
 export default function Home() {
   const styles = useStyles2(getStyles);
   const [checkSummariesState, checkSummaries] = useAsyncFn(async () => {
@@ -71,7 +73,7 @@ export default function Home() {
         {/* Header */}
         <Stack direction="row">
           <div className={styles.headerLeftColumn}>
-            Keep Grafana running smoothly and securely.
+            {HEADING_TEXT}
             {createChecksState.error && isFetchError(createChecksState.error) && (
               <div className={styles.apiErrorMessage}>
                 Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
