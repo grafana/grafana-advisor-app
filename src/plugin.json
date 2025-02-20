@@ -21,9 +21,10 @@
     {
       "type": "page",
       "name": "Advisor",
-      "path": "/admin/advisor",
+      "path": "/a/%PLUGIN_ID%",
       "addToNav": true,
-      "defaultNav": true
+      "defaultNav": true,
+      "role": "Admin"
     }
   ],
   "dependencies": {
