@@ -31,7 +31,7 @@ npm run server
 
 #### 4. Visit in the browser
 
-[http://localhost:3000/admin/advisor](http://localhost:3000/admin/advisor)
+[http://localhost:3000/a/grafana-advisor-app](http://localhost:3000/a/grafana-advisor-app)
 
 #### 5. Run checks
 
@@ -63,16 +63,7 @@ We want to create a symbolic link in grafana/grafana that points to our plugins 
 ln -s <PATH_TO_YOUR_PLUGIN>/dist/ <PATH_TO_LOCAL_GRAFANA>/data/plugins/grafana-advisor-app
 ```
 
-#### 3. Update your `custom.ini`
-
-To add the "Administration / Advisor" menu item in the left nav-bar, make sure to have the following in your `conf/custom.ini` file:
-
-```ini
-[navigation.app_standalone_pages]
-/admin/advisor = cfg
-```
-
-#### 4. Run Grafana locally
+#### 3. Run Grafana locally
 
 (Run this from the root of your local grafana/grafana.)
 
@@ -80,6 +71,6 @@ To add the "Administration / Advisor" menu item in the left nav-bar, make sure t
 make run
 ```
 
-#### 5. Enable the plugin
+#### 4. Enable the plugin
 
 Only for the first time: the plugin needs to be enabled on the UI: http://localhost:3000/plugins/grafana-advisor-app
