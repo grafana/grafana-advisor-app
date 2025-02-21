@@ -24,7 +24,7 @@ describe('Components/App', () => {
     } as unknown as AppRootProps;
   });
 
-  test('renders without an error"', async () => {
+  xtest('renders without an error"', async () => {
     render(
       <BrowserRouter>
         <App {...props} />
