@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
-import { Button, ConfirmModal, EmptyState, Stack, useStyles2 } from '@grafana/ui';
+import { Button, ConfirmModal, EmptyState, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
@@ -22,20 +22,28 @@ export default function Home() {
       throw error;
     }
   }, []);
+  const [completedChecksState, getCompletedChecks] = useAsyncFn(async (names?: string[]) => {
+    await api.waitForChecks(names);
+    await checkSummaries();
+  }, []);
   const [createChecksState, createChecks] = useAsyncFn(async () => {
     try {
       const checks = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
       const names = checks.map((check) => check.data.metadata.name);
-      await api.waitForChecks(names);
-      await checkSummaries();
+      await getCompletedChecks(names);
     } catch (error) {
       throw error;
     }
   }, []);
   useEffect(() => {
     checkSummaries();
-  }, [checkSummaries]);
-  const isLoading = createChecksState.loading || deleteChecksState.loading || checkSummariesState.loading;
+    getCompletedChecks();
+  }, [checkSummaries, getCompletedChecks]);
+  const isLoading =
+    completedChecksState.loading ||
+    createChecksState.loading ||
+    deleteChecksState.loading ||
+    checkSummariesState.loading;
   const emptyState = checkSummariesState.value?.high.updated.getTime() === 0;
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
   const checks = {
@@ -43,14 +51,14 @@ export default function Home() {
     ...checkSummariesState.value?.low.checks,
   };
   const issueCount = Object.values(checks).reduce((acc, check) => acc + check.issueCount, 0);
-  const isHealthy = issueCount === 0;
+  const isHealthy = !isLoading && !emptyState && issueCount === 0;
 
   return (
     <PluginPage
       actions={
         <>
           <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
-            Refresh
+            {isLoading ? 'Running checks...' : 'Refresh'}
           </Button>
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}
@@ -98,7 +106,11 @@ export default function Home() {
         </Stack>
 
         {/* Loading */}
-        {checkSummariesState.loading && <div>Loading...</div>}
+        {checkSummariesState.loading && (
+          <div className={styles.loading}>
+            <LoadingPlaceholder text="Loading..." />
+          </div>
+        )}
 
         {/* Error */}
         {checkSummariesState.error && isFetchError(checkSummariesState.error) && (
@@ -151,6 +163,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginTop: theme.spacing(2),
     color: theme.colors.error.text,
     fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  loading: css({
+    marginTop: theme.spacing(2),
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   }),
   headerLeftColumn: css({
     flexGrow: 1,
