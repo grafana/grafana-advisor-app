@@ -38,6 +38,12 @@ export default function Home() {
   const isLoading = createChecksState.loading || deleteChecksState.loading || checkSummariesState.loading;
   const emptyState = checkSummariesState.value?.high.updated.getTime() === 0;
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
+  const checks = {
+    ...checkSummariesState.value?.high.checks,
+    ...checkSummariesState.value?.low.checks,
+  };
+  const issueCount = Object.values(checks).reduce((acc, check) => acc + check.issueCount, 0);
+  const isHealthy = issueCount === 0;
 
   return (
     <PluginPage
@@ -109,6 +115,9 @@ export default function Home() {
             </Button>
           </EmptyState>
         )}
+
+        {/* All issues resolved */}
+        {isHealthy && <EmptyState variant="completed" message="No issues found." />}
 
         {/* Checks */}
         {!checkSummariesState.loading && !checkSummariesState.error && checkSummariesState.value && !emptyState && (
