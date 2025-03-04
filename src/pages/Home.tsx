@@ -3,7 +3,7 @@ import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
 import { Button, ConfirmModal, EmptyState, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
 import { formatDate } from 'utils';
@@ -47,6 +47,19 @@ export default function Home() {
 
   return (
     <PluginPage
+      // info={[
+      //   {
+      //     label: 'Grafana Advisor',
+      //     value: 'Grafana Advisor',
+      //   },
+      // ]}
+      // layout={PageLayoutType.Custom}
+      pageNav={{
+        text: 'Advisor',
+        subTitle: 'Keep Grafana running smoothly and securely',
+      }}
+      // renderTitle={(title) => <h1>{title}</h1>}
+      // subTitle="Grafana Advisorr"
       actions={
         <>
           <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
@@ -77,7 +90,6 @@ export default function Home() {
         {/* Header */}
         <Stack direction="row">
           <div className={styles.headerLeftColumn}>
-            Keep Grafana running smoothly and securely.
             {createChecksState.error && isFetchError(createChecksState.error) && (
               <div className={styles.apiErrorMessage}>
                 Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
