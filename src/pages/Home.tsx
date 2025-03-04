@@ -3,7 +3,7 @@ import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
 import { Button, ConfirmModal, EmptyState, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
-import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
 import { formatDate } from 'utils';
