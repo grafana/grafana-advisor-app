@@ -47,6 +47,10 @@ export default function Home() {
 
   return (
     <PluginPage
+      pageNav={{
+        text: 'Advisor',
+        subTitle: 'Keep Grafana running smoothly and securely',
+      }}
       actions={
         <>
           <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
@@ -77,7 +81,6 @@ export default function Home() {
         {/* Header */}
         <Stack direction="row">
           <div className={styles.headerLeftColumn}>
-            Keep Grafana running smoothly and securely.
             {createChecksState.error && isFetchError(createChecksState.error) && (
               <div className={styles.apiErrorMessage}>
                 Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
