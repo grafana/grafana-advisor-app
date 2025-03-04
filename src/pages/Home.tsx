@@ -47,19 +47,10 @@ export default function Home() {
 
   return (
     <PluginPage
-      // info={[
-      //   {
-      //     label: 'Grafana Advisor',
-      //     value: 'Grafana Advisor',
-      //   },
-      // ]}
-      // layout={PageLayoutType.Custom}
       pageNav={{
         text: 'Advisor',
         subTitle: 'Keep Grafana running smoothly and securely',
       }}
-      // renderTitle={(title) => <h1>{title}</h1>}
-      // subTitle="Grafana Advisorr"
       actions={
         <>
           <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
