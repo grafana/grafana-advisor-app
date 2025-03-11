@@ -10,7 +10,7 @@ const checkTypeClient = new CheckTypeClient();
 
 const UPDATE_TIMESTAMP_ANNOTATION = 'grafana.app/updatedTimestamp';
 const STATUS_ANNOTATION = 'advisor.grafana.app/status';
-const TYPE_LABEL = 'advisor.grafana.app/type';
+const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 
 // Transforms the data into a structure that is easier to work with on the frontend
 export async function getCheckSummaries(): Promise<CheckSummaries> {
@@ -19,7 +19,7 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
 
   // Loop through checks by type
   for (const check of checks) {
-    const checkType = check.metadata.labels?.[TYPE_LABEL];
+    const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
     if (checkType === undefined) {
       // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
@@ -126,7 +126,7 @@ export async function getChecksBySeverity() {
   const checks = await getLastChecks();
 
   for (const check of checks) {
-    const checkType = check.metadata.labels?.[TYPE_LABEL];
+    const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
     if (checkType === undefined) {
       // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
@@ -154,7 +154,7 @@ export async function getLastChecks(): Promise<CheckRaw[]> {
   const checks = await getChecks();
 
   for (const check of checks) {
-    const type = check.metadata.labels?.[TYPE_LABEL];
+    const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
     const getUpdatedTimestamp = (check: CheckRaw) => check.metadata.annotations?.[UPDATE_TIMESTAMP_ANNOTATION];
 
     if (!type) {
