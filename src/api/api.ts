@@ -8,6 +8,10 @@ import { Spec as SpecRaw } from 'generated/checktype/v0alpha1/types.spec.gen';
 const checkClient = new CheckClient();
 const checkTypeClient = new CheckTypeClient();
 
+const UPDATE_TIMESTAMP_ANNOTATION = 'grafana.app/updatedTimestamp';
+const STATUS_ANNOTATION = 'advisor.grafana.app/status';
+const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
+
 // Transforms the data into a structure that is easier to work with on the frontend
 export async function getCheckSummaries(): Promise<CheckSummaries> {
   const checks = await getLastChecks();
@@ -15,13 +19,10 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
 
   // Loop through checks by type
   for (const check of checks) {
-    const checkType = check.metadata.labels!['advisor.grafana.app/type'];
+    const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
     if (checkType === undefined) {
-      console.error(
-        'No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.',
-        check
-      );
+      // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
       continue;
     }
 
@@ -29,7 +30,7 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
 
     // Last checked time (we take the latest timestamp)
     // This assumes that the checks are created in batches so a batch will have a similar creation time
-    const updatedTimestamp = new Date(check.metadata.annotations!['grafana.app/updatedTimestamp']);
+    const updatedTimestamp = new Date(check.metadata.annotations![UPDATE_TIMESTAMP_ANNOTATION]);
     const prevUpdatedTimestamp = checkSummary[Severity.High].updated;
     if (updatedTimestamp > prevUpdatedTimestamp) {
       checkSummary[Severity.High].updated = updatedTimestamp;
@@ -125,13 +126,10 @@ export async function getChecksBySeverity() {
   const checks = await getLastChecks();
 
   for (const check of checks) {
-    const checkType = check.metadata.labels!['advisor.grafana.app/type'];
+    const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
     if (checkType === undefined) {
-      console.error(
-        'No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.',
-        check
-      );
+      // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
       continue;
     }
 
@@ -156,19 +154,16 @@ export async function getLastChecks(): Promise<CheckRaw[]> {
   const checks = await getChecks();
 
   for (const check of checks) {
-    const type = check.metadata.labels?.['advisor.grafana.app/type'];
-    const getUpdatedTimestamp = (check: CheckRaw) => check.metadata.annotations?.['grafana.app/updatedTimestamp'];
+    const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
+    const getUpdatedTimestamp = (check: CheckRaw) => check.metadata.annotations?.[UPDATE_TIMESTAMP_ANNOTATION];
 
     if (!type) {
-      console.log('No type found for check, skipping.', check);
+      // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
       continue;
     }
 
     if (!getUpdatedTimestamp(check)) {
-      console.log(
-        'Empty updateTimestamp for check at "check.metadata.annotations?.[\'advisor.grafana.app/updatedTimestamp\']", skipping.',
-        check
-      );
+      // Empty updateTimestamp for check at "check.metadata.annotations?.['advisor.grafana.app/updatedTimestamp']", skipping.
       continue;
     }
 
@@ -210,14 +205,26 @@ export function deleteChecks(name?: string) {
   return checkClient.delete(name);
 }
 
-export async function waitForChecks(names: string[]) {
-  return new Promise((resolve) => {
-    let namesToWaitFor = names;
-    const interval = setInterval(async () => {
-      const checks = await Promise.all(namesToWaitFor.map((name) => getCheck(name)));
-      const incompleteChecks = checks.filter((c) => !c.metadata.annotations?.['advisor.grafana.app/status']);
-      namesToWaitFor = incompleteChecks.map((c) => c.metadata.name);
+async function getIncompleteChecks(names?: string[]): Promise<string[]> {
+  let checks: CheckRaw[] = [];
+  if (!names) {
+    checks = await getChecks();
+  } else {
+    checks = await Promise.all(names.map((name) => getCheck(name)));
+  }
+  const incompleteChecks = checks.filter((c) => !c.metadata.annotations?.[STATUS_ANNOTATION]);
+  return incompleteChecks.map((c) => c.metadata.name);
+}
 
+export async function waitForChecks(names?: string[]) {
+  return new Promise(async (resolve) => {
+    let namesToWaitFor = await getIncompleteChecks(names);
+    if (namesToWaitFor.length === 0) {
+      resolve(undefined);
+      return;
+    }
+    const interval = setInterval(async () => {
+      namesToWaitFor = await getIncompleteChecks(names);
       if (namesToWaitFor.length === 0) {
         clearInterval(interval);
         resolve(undefined);
