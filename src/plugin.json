@@ -3,6 +3,7 @@
   "type": "app",
   "name": "Grafana Advisor",
   "id": "grafana-advisor-app",
+  "autoEnabled": true,
   "info": {
     "keywords": ["app"],
     "description": "",
