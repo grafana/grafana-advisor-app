@@ -11,8 +11,13 @@ import { MoreInfo } from 'components/MoreInfo';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
+  const [issueCount, setIssueCount] = useState(0);
   const [checkSummariesState, checkSummaries] = useAsyncFn(async () => {
-    return await api.getCheckSummaries();
+    const summaries = await api.getCheckSummaries();
+    const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
+    const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
+    setIssueCount(highIssueCount + lowIssueCount);
+    return summaries;
   }, []);
   const [deleteChecksState, deleteChecks] = useAsyncFn(async () => {
     try {
@@ -46,11 +51,6 @@ export default function Home() {
     checkSummariesState.loading;
   const emptyState = checkSummariesState.value?.high.updated.getTime() === 0;
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
-  const checks = {
-    ...checkSummariesState.value?.high.checks,
-    ...checkSummariesState.value?.low.checks,
-  };
-  const issueCount = Object.values(checks).reduce((acc, check) => acc + check.issueCount, 0);
   const isHealthy = !isLoading && !emptyState && issueCount === 0;
 
   return (
