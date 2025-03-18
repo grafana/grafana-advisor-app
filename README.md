@@ -70,7 +70,3 @@ ln -s <PATH_TO_YOUR_PLUGIN>/dist/ <PATH_TO_LOCAL_GRAFANA>/data/plugins/grafana-a
 ```bash
 make run
 ```
-
-#### 4. Enable the plugin
-
-Only for the first time: the plugin needs to be enabled on the UI: http://localhost:3000/plugins/grafana-advisor-app
