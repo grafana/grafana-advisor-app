@@ -15,7 +15,7 @@ const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 // Transforms the data into a structure that is easier to work with on the frontend
 export async function getCheckSummaries(): Promise<CheckSummaries> {
   const checks = await getLastChecks();
-  const checkSummary = await getEmptyCheckSummary();
+  const checkSummary = getEmptyCheckSummary(getEmptyCheckTypes());
 
   // Loop through checks by type
   for (const check of checks) {
@@ -23,6 +23,11 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
 
     if (checkType === undefined) {
       // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
+      continue;
+    }
+
+    if (!checkSummary[Severity.High].checks[checkType]) {
+      console.error('checkType not found in checkSummary', checkType);
       continue;
     }
 
@@ -54,8 +59,7 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
   return checkSummary;
 }
 
-export async function getEmptyCheckSummary(): Promise<CheckSummaries> {
-  const checkTypes = await getCheckTypes();
+export function getEmptyCheckSummary(checkTypes: Record<string, SpecRaw>): CheckSummaries {
   const generateChecks = () =>
     Object.values(checkTypes).reduce(
       (acc, checkType) => ({
@@ -98,6 +102,33 @@ export async function getEmptyCheckSummary(): Promise<CheckSummaries> {
       severity: Severity.Low,
       checks: generateChecks(),
       updated: new Date(0),
+    },
+  };
+}
+
+export function getEmptyCheckTypes(): Record<string, SpecRaw> {
+  return {
+    datasource: {
+      name: 'datasource',
+      steps: [
+        {
+          stepID: 'step1',
+          title: 'Step 1',
+          description: 'Step description ...',
+          resolution: 'Resolution ...',
+        },
+      ],
+    },
+    plugin: {
+      name: 'plugin',
+      steps: [
+        {
+          stepID: 'step1',
+          title: 'Step 1',
+          description: 'Step description ...',
+          resolution: 'Resolution ...',
+        },
+      ],
     },
   };
 }
