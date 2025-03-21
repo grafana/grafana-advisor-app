@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CheckSummary } from './CheckSummary';
-import { Severity, CheckSummary as CheckSummaryType } from 'types';
 import userEvent from '@testing-library/user-event';
+import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 
-describe('CheckSummary', () => {
-  const mockCheckSummary: CheckSummaryType = {
+export function getMockCheckSummary(): CheckSummaryType {
+  return {
     name: 'Test Check',
     description: 'Test description',
     updated: new Date('2023-01-01'),
@@ -14,8 +14,8 @@ describe('CheckSummary', () => {
       testCheck: {
         name: 'Test Check Item',
         description: 'Test check description',
-        issueCount: 2,
         totalCheckCount: 5,
+        issueCount: 2,
         steps: {
           step1: {
             name: 'Step 1',
@@ -26,7 +26,7 @@ describe('CheckSummary', () => {
             issues: [
               {
                 item: 'Issue 1',
-                links: [{ url: 'http://test.com', message: 'View Details' }],
+                links: [],
                 severity: Severity.High,
                 stepID: 'step1',
               },
@@ -42,6 +42,10 @@ describe('CheckSummary', () => {
       },
     },
   };
+}
+
+describe('CheckSummary', () => {
+  const mockCheckSummary = getMockCheckSummary();
 
   it('renders check summary title with correct count', () => {
     render(<CheckSummary checkSummary={mockCheckSummary} />);

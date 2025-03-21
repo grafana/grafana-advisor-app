@@ -2,45 +2,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CheckSummaryTitle } from './CheckSummaryTitle';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
-
+import { getMockCheckSummary } from './CheckSummary.test';
 describe('CheckSummaryTitle', () => {
-  const mockCheckSummary: CheckSummaryType = {
-    name: 'Test Check',
-    description: 'Test description',
-    updated: new Date('2023-01-01'),
-    severity: Severity.High,
-    checks: {
-      testCheck: {
-        name: 'Test Check Item',
-        description: 'Test check description',
-        totalCheckCount: 5,
-        issueCount: 2,
-        steps: {
-          step1: {
-            name: 'Step 1',
-            description: 'Test step description',
-            resolution: 'Test resolution',
-            stepID: 'step1',
-            issueCount: 2,
-            issues: [
-              {
-                item: 'Issue 1',
-                links: [],
-                severity: Severity.High,
-                stepID: 'step1',
-              },
-              {
-                item: 'Issue 2',
-                links: [],
-                severity: Severity.High,
-                stepID: 'step1',
-              },
-            ],
-          },
-        },
-      },
-    },
-  };
+  const mockCheckSummary: CheckSummaryType = getMockCheckSummary();
 
   it('renders check name', () => {
     render(<CheckSummaryTitle checkSummary={mockCheckSummary} />);
