@@ -8,8 +8,6 @@ describe('Components/CheckDrillDown', () => {
   let checkSummaries: CheckSummaries;
 
   beforeEach(() => {
-    jest.resetAllMocks();
-
     checkSummaries = getEmptyCheckSummary(getEmptyCheckTypes());
 
     // Datasources

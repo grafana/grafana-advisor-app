@@ -11,8 +11,6 @@ describe('Components/MoreInfo', () => {
   let checkSummaries: CheckSummaries;
 
   beforeEach(() => {
-    jest.resetAllMocks();
-
     checkSummaries = getEmptyCheckSummary(getEmptyCheckTypes());
     checkSummaries.high.checks.datasource.totalCheckCount = totalDatasourceCheckCount;
     checkSummaries.high.checks.plugin.totalCheckCount = totalPluginCheckCount;
