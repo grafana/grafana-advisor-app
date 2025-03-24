@@ -49,7 +49,7 @@ export default function Home() {
     createChecksState.loading ||
     deleteChecksState.loading ||
     checkSummariesState.loading;
-  const emptyState = checkSummariesState.value?.high.updated.getTime() === 0;
+  const emptyState = checkSummariesState.value?.high.created.getTime() === 0;
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
   const isHealthy = !isLoading && !emptyState && issueCount === 0;
 
@@ -103,7 +103,7 @@ export default function Home() {
           {!emptyState && (
             <div className={styles.headerRightColumn}>
               Last checked:{' '}
-              <strong>{checkSummariesState.value ? formatDate(checkSummariesState.value?.high.updated) : '...'}</strong>
+              <strong>{checkSummariesState.value ? formatDate(checkSummariesState.value?.high.created) : '...'}</strong>
             </div>
           )}
         </Stack>
