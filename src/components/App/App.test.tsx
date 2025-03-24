@@ -24,14 +24,14 @@ describe('Components/App', () => {
     } as unknown as AppRootProps;
   });
 
-  xtest('renders without an error"', async () => {
+  test('renders without an error"', async () => {
     render(
-      <BrowserRouter>
+      <BrowserRouter basename="/" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App {...props} />
       </BrowserRouter>
     );
 
-    // Checks if the temporary "Refresh" button is rendered
-    expect(await screen.findByText(/Refresh/i)).toBeInTheDocument();
+    // Checks if the instructions to enable the feature toggle are rendered
+    expect(await screen.findByText('Missing feature flag.')).toBeInTheDocument();
   });
 });
