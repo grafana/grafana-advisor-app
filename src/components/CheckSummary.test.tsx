@@ -8,7 +8,7 @@ export function getMockCheckSummary(): CheckSummaryType {
   return {
     name: 'Test Check',
     description: 'Test description',
-    updated: new Date('2023-01-01'),
+    created: new Date('2023-01-01'),
     severity: Severity.High,
     checks: {
       testCheck: {

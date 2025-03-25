@@ -8,14 +8,14 @@ import { Spec as SpecRaw } from 'generated/checktype/v0alpha1/types.spec.gen';
 const checkClient = new CheckClient();
 const checkTypeClient = new CheckTypeClient();
 
-const UPDATE_TIMESTAMP_ANNOTATION = 'grafana.app/updatedTimestamp';
 const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 
 // Transforms the data into a structure that is easier to work with on the frontend
 export async function getCheckSummaries(): Promise<CheckSummaries> {
   const checks = await getLastChecks();
-  const checkSummary = getEmptyCheckSummary(getEmptyCheckTypes());
+  const checkTypes = await getCheckTypes();
+  const checkSummary = getEmptyCheckSummary(checkTypes);
 
   // Loop through checks by type
   for (const check of checks) {
@@ -35,11 +35,11 @@ export async function getCheckSummaries(): Promise<CheckSummaries> {
 
     // Last checked time (we take the latest timestamp)
     // This assumes that the checks are created in batches so a batch will have a similar creation time
-    const updatedTimestamp = new Date(check.metadata.annotations![UPDATE_TIMESTAMP_ANNOTATION]);
-    const prevUpdatedTimestamp = checkSummary[Severity.High].updated;
-    if (updatedTimestamp > prevUpdatedTimestamp) {
-      checkSummary[Severity.High].updated = updatedTimestamp;
-      checkSummary[Severity.Low].updated = updatedTimestamp;
+    const createdTimestamp = new Date(check.metadata.creationTimestamp ?? 0);
+    const prevCreatedTimestamp = checkSummary[Severity.High].created;
+    if (createdTimestamp > prevCreatedTimestamp) {
+      checkSummary[Severity.High].created = createdTimestamp;
+      checkSummary[Severity.Low].created = createdTimestamp;
     }
 
     // Handle failures
@@ -94,14 +94,14 @@ export function getEmptyCheckSummary(checkTypes: Record<string, SpecRaw>): Check
       description: 'These checks require immediate action.',
       severity: Severity.High,
       checks: generateChecks(),
-      updated: new Date(0),
+      created: new Date(0),
     },
     low: {
       name: 'Investigation needed',
       description: 'These checks require further investigation.',
       severity: Severity.Low,
       checks: generateChecks(),
-      updated: new Date(0),
+      created: new Date(0),
     },
   };
 }
@@ -186,15 +186,19 @@ export async function getLastChecks(): Promise<CheckRaw[]> {
 
   for (const check of checks) {
     const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
-    const getUpdatedTimestamp = (check: CheckRaw) => check.metadata.annotations?.[UPDATE_TIMESTAMP_ANNOTATION];
 
     if (!type) {
       // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
       continue;
     }
 
-    if (!getUpdatedTimestamp(check)) {
-      // Empty updateTimestamp for check at "check.metadata.annotations?.['advisor.grafana.app/updatedTimestamp']", skipping.
+    if (!check.metadata.creationTimestamp) {
+      // Empty creationTimestamp for check at "check.metadata.creationTimestamp", skipping.
+      continue;
+    }
+
+    if (!check.metadata.annotations?.[STATUS_ANNOTATION]) {
+      // Empty status annotation for check at "check.metadata.annotations?.['advisor.grafana.app/status']", skipping.
       continue;
     }
 
@@ -204,8 +208,8 @@ export async function getLastChecks(): Promise<CheckRaw[]> {
       continue;
     }
 
-    const prevTimestamp = getUpdatedTimestamp(checkByType[type])!;
-    const currentTimestamp = getUpdatedTimestamp(check)!;
+    const prevTimestamp = new Date(checkByType[type].metadata.creationTimestamp ?? 0);
+    const currentTimestamp = new Date(check.metadata.creationTimestamp);
 
     if (currentTimestamp > prevTimestamp) {
       checkByType[type] = check;
