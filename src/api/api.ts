@@ -197,8 +197,8 @@ export async function getLastChecks(): Promise<CheckRaw[]> {
       continue;
     }
 
-    if (!check.metadata.annotations?.[STATUS_ANNOTATION]) {
-      // Empty status annotation for check at "check.metadata.annotations?.['advisor.grafana.app/status']", skipping.
+    if (check.metadata.annotations?.[STATUS_ANNOTATION] !== 'processed') {
+      // Check is not processed yet, skipping.
       continue;
     }
 
@@ -252,18 +252,31 @@ async function getIncompleteChecks(names?: string[]): Promise<string[]> {
 }
 
 export async function waitForChecks(names?: string[]) {
-  return new Promise(async (resolve) => {
-    let namesToWaitFor = await getIncompleteChecks(names);
-    if (namesToWaitFor.length === 0) {
-      resolve(undefined);
-      return;
-    }
-    const interval = setInterval(async () => {
-      namesToWaitFor = await getIncompleteChecks(names);
-      if (namesToWaitFor.length === 0) {
+  let interval: NodeJS.Timeout;
+  let namesToWaitFor = await getIncompleteChecks(names);
+  if (namesToWaitFor.length === 0) {
+    return {
+      promise: Promise.resolve(undefined),
+      cancel: () => {},
+    };
+  }
+
+  const promise = new Promise(async (resolve, reject) => {
+    interval = setInterval(async () => {
+      try {
+        namesToWaitFor = await getIncompleteChecks(names);
+        if (namesToWaitFor.length === 0) {
+          clearInterval(interval);
+          resolve(undefined);
+        }
+      } catch (error) {
         clearInterval(interval);
-        resolve(undefined);
+        reject(error);
       }
     }, 2000);
   });
+  return {
+    promise,
+    cancel: () => clearInterval(interval),
+  };
 }
