@@ -27,8 +27,16 @@ export default function Home() {
       throw error;
     }
   }, []);
+  const [cancelWaitForChecks, setCancelWaitForChecks] = useState<() => void>(() => {
+    return () => {};
+  });
+  useEffect(() => {
+    return cancelWaitForChecks;
+  }, [cancelWaitForChecks]);
   const [completedChecksState, getCompletedChecks] = useAsyncFn(async (names?: string[]) => {
-    await api.waitForChecks(names);
+    const { promise, cancel } = await api.waitForChecks(names);
+    setCancelWaitForChecks(() => cancel);
+    await promise;
     await checkSummaries();
   }, []);
   const [createChecksState, createChecks] = useAsyncFn(async () => {
@@ -51,7 +59,7 @@ export default function Home() {
     checkSummariesState.loading;
   const emptyState = checkSummariesState.value?.high.created.getTime() === 0;
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
-  const isHealthy = !isLoading && !emptyState && issueCount === 0;
+  const isHealthy = !isLoading && !emptyState && !checkSummariesState.error && issueCount === 0;
 
   return (
     <PluginPage
@@ -66,7 +74,7 @@ export default function Home() {
           </Button>
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}
-            disabled={isLoading}
+            disabled={deleteChecksState.loading}
             variant="secondary"
             icon="trash-alt"
           ></Button>
