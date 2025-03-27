@@ -31,9 +31,7 @@ export default function Home() {
     return () => {};
   });
   useEffect(() => {
-    return () => {
-      cancelWaitForChecks();
-    };
+    return cancelWaitForChecks;
   }, [cancelWaitForChecks]);
   const [completedChecksState, getCompletedChecks] = useAsyncFn(async (names?: string[]) => {
     const { promise, cancel } = await api.waitForChecks(names);
