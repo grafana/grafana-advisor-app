@@ -89,6 +89,7 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
     }),
     issueLink: css({
       float: 'right',
+      marginLeft: theme.spacing(1),
     }),
     bold: css({
       fontWeight: theme.typography.fontWeightBold,
