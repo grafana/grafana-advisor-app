@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import Home from './Home';
 import * as api from 'api/api';
 import { CheckSummaries, Check } from 'types';
@@ -9,8 +8,6 @@ jest.mock('api/api');
 const mockApi = api as jest.Mocked<typeof api>;
 
 describe('Home', () => {
-  const user = userEvent.setup();
-
   const mockCheck = (name: string, description: string, issueCount: number): Check => ({
     name,
     description,
