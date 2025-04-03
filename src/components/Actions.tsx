@@ -60,9 +60,9 @@ export default function Actions({
   const styles = useStyles2(getStyles);
 
   return (
-    <>
-      <Stack direction="column" alignItems="flex-end">
-        <Stack direction="row">
+    <div className={styles.actionsContainer}>
+      <Stack direction="column" alignItems="flex-end" gap={0}>
+        <Stack direction="row" gap={1}>
           <ConfirmModal
             isOpen={confirmDeleteModalOpen}
             title="Delete reports?"
@@ -105,7 +105,7 @@ export default function Actions({
           )}
         </div>
       </Stack>
-    </>
+    </div>
   );
 }
 
@@ -120,8 +120,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexDirection: 'column',
     alignItems: 'flex-end',
     minWidth: '200px',
+    marginTop: theme.spacing(1),
   }),
   lastChecked: css({
     fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  actionsContainer: css({
+    position: 'absolute',
+    right: theme.spacing(4),
+    top: theme.spacing(3),
   }),
 });
