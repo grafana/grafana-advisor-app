@@ -1,62 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useAsyncFn } from 'react-use';
-import * as api from 'api/api';
+import React, { useState } from 'react';
 import { Button, ConfirmModal, Stack, useStyles2 } from '@grafana/ui';
-import { CheckSummaries } from 'types';
-import { AsyncState } from 'react-use/lib/useAsync';
 import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
-import { formatDate } from 'utils';
+import { useCompletedChecks, useCreateCheck, useDeleteChecks } from 'api/api';
 
-export default function Actions({
-  checkSummaries,
-  checkSummariesState,
-  emptyState,
-}: {
-  checkSummaries: () => Promise<CheckSummaries>;
-  checkSummariesState: AsyncState<CheckSummaries>;
-  emptyState: boolean;
-}) {
-  const [cancelWaitForChecks, setCancelWaitForChecks] = useState<() => void>(() => {
-    return () => {};
-  });
-  useEffect(() => {
-    return cancelWaitForChecks;
-  }, [cancelWaitForChecks]);
+export default function Actions() {
+  const { isCompleted, isLoading } = useCompletedChecks();
 
-  const [completedChecksState, getCompletedChecks] = useAsyncFn(async (names?: string[]) => {
-    const { promise, cancel } = await api.waitForChecks(names);
-    setCancelWaitForChecks(() => cancel);
-    await promise;
-    await checkSummaries();
-  }, []);
+  const [createCheckDatasource, createCheckDatasourceState] = useCreateCheck('datasource');
+  const [createCheckPlugin, createCheckPluginState] = useCreateCheck('plugin');
+  const createCheckIsError = createCheckDatasourceState.isError || createCheckPluginState.isError;
+  const createCheckError = createCheckDatasourceState.error || createCheckPluginState.error;
 
-  const [createChecksState, createChecks] = useAsyncFn(async () => {
-    const checks = await Promise.all([api.createChecks('datasource'), api.createChecks('plugin')]);
-    const names = checks.map((check) => check.data.metadata.name);
-    await getCompletedChecks(names);
-  }, []);
-  const [deleteChecksState, deleteChecks] = useAsyncFn(async () => {
-    try {
-      await api.deleteChecks();
-      await checkSummaries();
-    } catch (error) {
-      throw error;
-    }
-  }, []);
+  const [deleteChecks, deleteChecksState] = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
-  useEffect(() => {
-    // Wait for new checks
-    getCompletedChecks();
-  }, [getCompletedChecks]);
-
-  const isLoading =
-    completedChecksState.loading ||
-    createChecksState.loading ||
-    deleteChecksState.loading ||
-    checkSummariesState.loading;
   const styles = useStyles2(getStyles);
 
   return (
@@ -75,32 +34,35 @@ export default function Actions({
             onDismiss={() => setConfirmDeleteModalOpen(false)}
           />
 
-          <Button onClick={createChecks} disabled={isLoading} variant="secondary" icon={isLoading ? 'spinner' : 'sync'}>
-            {isLoading ? 'Running checks...' : 'Refresh'}
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              createCheckDatasource();
+              createCheckPlugin();
+            }}
+            disabled={isLoading || !isCompleted}
+            variant="secondary"
+            icon={isLoading || !isCompleted ? 'spinner' : 'sync'}
+          >
+            {isLoading || !isCompleted ? 'Running checks...' : 'Refresh'}
           </Button>
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}
-            disabled={deleteChecksState.loading}
+            disabled={deleteChecksState.isLoading}
             variant="secondary"
             icon="trash-alt"
           ></Button>
         </Stack>
 
         <div className={styles.rightColumn}>
-          {createChecksState.error && isFetchError(createChecksState.error) && (
+          {createCheckIsError && isFetchError(createCheckError) && (
             <div className={styles.apiErrorMessage}>
-              Error while running checks: {createChecksState.error.status} {createChecksState.error.statusText}
+              Error while running checks: {createCheckError.status} {createCheckError.statusText}
             </div>
           )}
-          {deleteChecksState.error && isFetchError(deleteChecksState.error) && (
+          {deleteChecksState.isError && isFetchError(deleteChecksState.error) && (
             <div className={styles.apiErrorMessage}>
               Error deleting checks: {deleteChecksState.error.status} {deleteChecksState.error.statusText}
-            </div>
-          )}
-          {!emptyState && (
-            <div className={styles.lastChecked}>
-              Last checked:{' '}
-              <strong>{checkSummariesState.value ? formatDate(checkSummariesState.value?.high.created) : '...'}</strong>
             </div>
           )}
         </div>
@@ -121,9 +83,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'flex-end',
     minWidth: '200px',
     marginTop: theme.spacing(1),
-  }),
-  lastChecked: css({
-    fontSize: theme.typography.bodySmall.fontSize,
   }),
   actionsContainer: css({
     position: 'absolute',

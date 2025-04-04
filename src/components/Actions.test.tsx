@@ -2,73 +2,35 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Actions from './Actions';
-import * as api from 'api/api';
-import { CheckSummaries } from 'types';
 
-jest.mock('api/api');
+const mockUseCompletedChecks = jest.fn();
+const mockUseCreateCheck = jest.fn();
+const mockUseDeleteChecks = jest.fn();
 
-const mockApi = api as jest.Mocked<typeof api>;
+jest.mock('api/api', () => ({
+  useCompletedChecks: () => mockUseCompletedChecks(),
+  useCreateCheck: () => mockUseCreateCheck(),
+  useDeleteChecks: () => mockUseDeleteChecks(),
+}));
 
 describe('Actions', () => {
   const user = userEvent.setup();
-  const mockCheckSummaries = jest.fn().mockResolvedValue({});
-  const defaultProps = {
-    checkSummaries: mockCheckSummaries,
-    checkSummariesState: {
-      loading: false,
-      value: {
-        high: {
-          created: new Date('2023-01-01'),
-          checks: {},
-        },
-        low: {
-          created: new Date('2023-01-01'),
-          checks: {},
-        },
-      } as CheckSummaries,
-    },
-    emptyState: false,
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockApi.createChecks.mockResolvedValue({
-      status: 200,
-      statusText: 'OK',
-      ok: true,
-      headers: {} as any,
-      redirected: false,
-      type: 'basic',
-      url: '',
-      config: { url: '' },
-      data: {
-        kind: 'Check',
-        apiVersion: 'v0alpha1',
-        metadata: { name: 'test-check', namespace: 'default' },
-        spec: {},
-        status: { report: { count: 0, failures: [] } },
-      },
-    });
-    mockApi.deleteChecks.mockResolvedValue({
-      status: 200,
-      statusText: 'OK',
-      ok: true,
-      headers: {} as any,
-      redirected: false,
-      type: 'basic',
-      url: '',
-      config: { url: '' },
-      data: undefined,
+
+    mockUseCompletedChecks.mockReturnValue({
+      isCompleted: true,
+      isLoading: false,
     });
 
-    mockApi.waitForChecks.mockResolvedValue({
-      promise: Promise.resolve(),
-      cancel: jest.fn(),
-    });
+    mockUseCreateCheck.mockReturnValue([jest.fn(), { isError: false, error: undefined }]);
+
+    mockUseDeleteChecks.mockReturnValue([jest.fn(), { isLoading: false, isError: false, error: undefined }]);
   });
 
   it('renders refresh and delete buttons', async () => {
-    render(<Actions {...defaultProps} />);
+    render(<Actions />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '' })).toBeInTheDocument(); // Delete button has no text
@@ -76,32 +38,14 @@ describe('Actions', () => {
   });
 
   it('shows loading state when running checks', async () => {
-    render(
-      <Actions
-        {...defaultProps}
-        checkSummariesState={{
-          ...defaultProps.checkSummariesState,
-          loading: true,
-        }}
-      />
-    );
+    mockUseCompletedChecks.mockReturnValue({
+      isCompleted: false,
+      isLoading: true,
+    });
+
+    render(<Actions />);
     await waitFor(() => {
       expect(screen.getByText('Running checks...')).toBeInTheDocument();
-    });
-  });
-
-  it('shows last checked time when not in empty state', async () => {
-    render(<Actions {...defaultProps} />);
-    await waitFor(() => {
-      expect(screen.getByText(/last checked:/i)).toBeInTheDocument();
-      expect(screen.getByText('2023. 01. 01. 00:00')).toBeInTheDocument();
-    });
-  });
-
-  it('hides last checked time in empty state', async () => {
-    render(<Actions {...defaultProps} emptyState={true} />);
-    await waitFor(() => {
-      expect(screen.queryByText(/last checked:/i)).not.toBeInTheDocument();
     });
   });
 
@@ -111,26 +55,17 @@ describe('Actions', () => {
       status: 500,
       statusText: 'Internal Server Error',
     };
-    mockApi.createChecks.mockRejectedValue(error);
 
-    render(<Actions {...defaultProps} />);
+    mockUseCreateCheck.mockReturnValue([jest.fn(), { isError: true, error }]);
 
-    // Wait for the refresh button to be rendered
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
-    });
-
-    const refreshButton = screen.getByRole('button', { name: /refresh/i });
-    await user.click(refreshButton);
-
-    // Wait for the error state to be updated and rendered
+    render(<Actions />);
     await waitFor(() => {
       expect(screen.getByText(/error while running checks: 500 internal server error/i)).toBeInTheDocument();
     });
   });
 
   it('shows confirmation modal when delete button clicked', async () => {
-    render(<Actions {...defaultProps} />);
+    render(<Actions />);
     const deleteButton = screen.getByRole('button', { name: '' });
     await user.click(deleteButton);
 
@@ -140,8 +75,11 @@ describe('Actions', () => {
     });
   });
 
-  it('calls delete API when deletion confirmed', async () => {
-    render(<Actions {...defaultProps} />);
+  it('calls delete function when deletion confirmed', async () => {
+    const mockDelete = jest.fn();
+    mockUseDeleteChecks.mockReturnValue([mockDelete, { isLoading: false, isError: false, error: undefined }]);
+
+    render(<Actions />);
     const deleteButton = screen.getByRole('button', { name: '' });
     await user.click(deleteButton);
 
@@ -149,49 +87,22 @@ describe('Actions', () => {
     await user.click(confirmButton);
 
     await waitFor(() => {
-      expect(mockApi.deleteChecks).toHaveBeenCalled();
+      expect(mockDelete).toHaveBeenCalled();
     });
   });
 
-  it('shows error message when delete API fails', async () => {
-    mockApi.deleteChecks.mockRejectedValue({
+  it('shows error message when delete fails', async () => {
+    const error = {
       data: {},
       status: 500,
       statusText: 'Internal Server Error',
-    });
+    };
 
-    render(<Actions {...defaultProps} />);
-    const deleteButton = screen.getByRole('button', { name: '' });
-    await user.click(deleteButton);
+    mockUseDeleteChecks.mockReturnValue([jest.fn(), { isLoading: false, isError: true, error }]);
 
-    const confirmButton = screen.getByRole('button', { name: /confirm/i });
-    await user.click(confirmButton);
-
+    render(<Actions />);
     await waitFor(() => {
       expect(screen.getByText(/error deleting checks: 500 internal server error/i)).toBeInTheDocument();
     });
-  });
-
-  it('cancels waiting for checks when unmounting', async () => {
-    // make waitForChecks not resolve
-    const cancel = jest.fn();
-    mockApi.waitForChecks.mockImplementation(() =>
-      Promise.resolve({
-        promise: new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({});
-          }, 1000);
-        }),
-        cancel,
-      })
-    );
-    const { unmount } = render(<Actions {...defaultProps} />);
-
-    await waitFor(() => {
-      expect(cancel).not.toHaveBeenCalled();
-    });
-
-    unmount();
-    expect(cancel).toHaveBeenCalled();
   });
 });
