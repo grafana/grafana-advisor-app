@@ -33,7 +33,7 @@ describe('Actions', () => {
     render(<Actions />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '' })).toBeInTheDocument(); // Delete button has no text
+      expect(screen.getByRole('button', { name: /delete reports/i })).toBeInTheDocument();
     });
   });
 
@@ -66,7 +66,7 @@ describe('Actions', () => {
 
   it('shows confirmation modal when delete button clicked', async () => {
     render(<Actions />);
-    const deleteButton = screen.getByRole('button', { name: '' });
+    const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
     await waitFor(() => {
@@ -80,7 +80,7 @@ describe('Actions', () => {
     mockUseDeleteChecks.mockReturnValue([mockDelete, { isLoading: false, isError: false, error: undefined }]);
 
     render(<Actions />);
-    const deleteButton = screen.getByRole('button', { name: '' });
+    const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
     const confirmButton = screen.getByRole('button', { name: /confirm/i });
