@@ -83,6 +83,7 @@ export default function Actions({
             disabled={deleteChecksState.loading}
             variant="secondary"
             icon="trash-alt"
+            aria-label="Delete reports"
           ></Button>
         </Stack>
 

@@ -71,7 +71,7 @@ describe('Actions', () => {
     render(<Actions {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '' })).toBeInTheDocument(); // Delete button has no text
+      expect(screen.getByRole('button', { name: /delete reports/i })).toBeInTheDocument();
     });
   });
 
@@ -131,7 +131,7 @@ describe('Actions', () => {
 
   it('shows confirmation modal when delete button clicked', async () => {
     render(<Actions {...defaultProps} />);
-    const deleteButton = screen.getByRole('button', { name: '' });
+    const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
     await waitFor(() => {
@@ -142,7 +142,7 @@ describe('Actions', () => {
 
   it('calls delete API when deletion confirmed', async () => {
     render(<Actions {...defaultProps} />);
-    const deleteButton = screen.getByRole('button', { name: '' });
+    const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
     const confirmButton = screen.getByRole('button', { name: /confirm/i });
@@ -161,7 +161,7 @@ describe('Actions', () => {
     });
 
     render(<Actions {...defaultProps} />);
-    const deleteButton = screen.getByRole('button', { name: '' });
+    const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
     const confirmButton = screen.getByRole('button', { name: /confirm/i });
