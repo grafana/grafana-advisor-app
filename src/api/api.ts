@@ -5,10 +5,10 @@ import {
   useListCheckTypeQuery,
   useCreateCheckMutation,
   useDeleteCheckMutation,
-} from './generated';
+} from 'generated';
 import React, { useEffect, useState } from 'react';
 import { config } from '@grafana/runtime';
-import { CheckTypeSpec } from './generated/endpoints.gen';
+import { CheckTypeSpec } from 'generated/endpoints.gen';
 
 const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';

@@ -1,7 +1,7 @@
 // Types used by the frontend part of the Grafana Advisor.
 // (These are on purpose structured a bit differently than the backend generated ones.)
 
-import { CheckReportFailure } from 'api/generated/endpoints.gen';
+import { CheckReportFailure } from 'generated/endpoints.gen';
 
 export enum Severity {
   High = 'high',

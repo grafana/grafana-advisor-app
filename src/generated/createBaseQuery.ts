@@ -1,3 +1,7 @@
+/**
+ * This file is copied from grafana/grafana.
+ * https://github.com/grafana/grafana/blob/main/public/app/api/createBaseQuery.ts
+ */
 import { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { lastValueFrom } from 'rxjs';
 

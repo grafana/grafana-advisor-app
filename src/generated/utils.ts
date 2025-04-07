@@ -1,3 +1,7 @@
+/**
+ * This file is copied from grafana/grafana and has been auto-generated.
+ * https://github.com/grafana/grafana/blob/main/public/app/api/utils.ts
+ */
 import { config } from '@grafana/runtime';
 
 export const getAPINamespace = () => config.namespace;

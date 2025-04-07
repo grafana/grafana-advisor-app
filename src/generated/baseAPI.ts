@@ -1,3 +1,7 @@
+/**
+ * This file is copied from grafana/grafana.
+ * https://github.com/grafana/grafana/blob/main/public/app/api/clients/advisor/baseAPI.ts
+ */
 import { createApi } from '@reduxjs/toolkit/query/react';
 
 import { createBaseQuery } from './createBaseQuery';

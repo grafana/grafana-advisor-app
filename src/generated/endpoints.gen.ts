@@ -1,3 +1,7 @@
+/**
+ * This file is copied from grafana/grafana and has been auto-generated.
+ * https://github.com/grafana/grafana/blob/main/public/app/api/clients/advisor/endpoints.gen.ts
+ */
 import { api } from './baseAPI';
 export const addTagTypes = ['Check', 'CheckType'] as const;
 const injectedRtkApi = api
