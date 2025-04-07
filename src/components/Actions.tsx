@@ -3,17 +3,12 @@ import { Button, ConfirmModal, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
-import { useCompletedChecks, useCreateCheck, useDeleteChecks } from 'api/api';
+import { useCompletedChecks, useDeleteChecks, useCreateChecks } from 'api/api';
 
 export default function Actions() {
   const { isCompleted, isLoading } = useCompletedChecks();
-
-  const [createCheckDatasource, createCheckDatasourceState] = useCreateCheck('datasource');
-  const [createCheckPlugin, createCheckPluginState] = useCreateCheck('plugin');
-  const createCheckIsError = createCheckDatasourceState.isError || createCheckPluginState.isError;
-  const createCheckError = createCheckDatasourceState.error || createCheckPluginState.error;
-
-  const [deleteChecks, deleteChecksState] = useDeleteChecks();
+  const { createChecks, createCheckState } = useCreateChecks();
+  const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
   const styles = useStyles2(getStyles);
@@ -37,8 +32,7 @@ export default function Actions() {
           <Button
             onClick={(e) => {
               e.preventDefault();
-              createCheckDatasource();
-              createCheckPlugin();
+              createChecks();
             }}
             disabled={isLoading || !isCompleted}
             variant="secondary"
@@ -56,9 +50,9 @@ export default function Actions() {
         </Stack>
 
         <div className={styles.rightColumn}>
-          {createCheckIsError && isFetchError(createCheckError) && (
+          {createCheckState.isError && isFetchError(createCheckState.error) && (
             <div className={styles.apiErrorMessage}>
-              Error while running checks: {createCheckError.status} {createCheckError.statusText}
+              Error while running checks: {createCheckState.error.status} {createCheckState.error.statusText}
             </div>
           )}
           {deleteChecksState.isError && isFetchError(deleteChecksState.error) && (

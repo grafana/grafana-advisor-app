@@ -192,40 +192,39 @@ export function useLastChecks() {
   return { checks, ...listChecksState };
 }
 
-export function useCreateCheck(type: 'datasource' | 'plugin') {
+export function useCreateChecks() {
+  const { checkTypes } = useCheckTypes();
   const [createCheck, createCheckState] = useCreateCheckMutation();
 
-  const createCheckPopulated = React.useCallback(() => {
-    const check = {
-      kind: 'Check',
-      apiVersion: 'advisor.grafana.app/v0alpha1',
-      spec: { data: {} },
-      metadata: {
-        generateName: 'check-',
-        labels: {
-          'advisor.grafana.app/type': type,
+  const createChecks = React.useCallback(() => {
+    if (!checkTypes) {
+      return;
+    }
+    for (const type of checkTypes) {
+      createCheck({
+        check: {
+          kind: 'Check',
+          apiVersion: 'advisor.grafana.app/v0alpha1',
+          spec: { data: {} },
+          metadata: {
+            generateName: 'check-',
+            labels: { 'advisor.grafana.app/type': type.metadata.name ?? '' },
+            namespace: config.namespace,
+          },
+          status: { report: { count: 0, failures: [] } },
         },
-        namespace: config.namespace,
-      },
-      status: {
-        report: {
-          count: 0,
-          failures: [],
-        },
-      },
-    };
-    return createCheck({ check });
-  }, [createCheck, type]);
+      });
+    }
+  }, [createCheck, checkTypes]);
 
-  return [createCheckPopulated, createCheckState] as const;
+  return { createChecks, createCheckState };
 }
 
 export function useDeleteChecks() {
   const [deleteCheckMutation, deleteChecksState] = useDeleteCheckMutation();
-
   const deleteChecks = () => deleteCheckMutation({ name: '' });
 
-  return [deleteChecks, deleteChecksState] as const;
+  return { deleteChecks, deleteChecksState };
 }
 
 function useIncompleteChecks(names?: string[]) {

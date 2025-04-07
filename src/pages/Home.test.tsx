@@ -46,14 +46,14 @@ const defaultSummaries = {
 
 const mockUseCheckSummaries = jest.fn();
 const mockUseCompletedChecks = jest.fn();
-const mockUseCreateCheck = jest.fn();
+const mockUseCreateChecks = jest.fn();
 const mockUseDeleteChecks = jest.fn();
 
 // Mock the entire api module
 jest.mock('api/api', () => ({
   useCheckSummaries: () => mockUseCheckSummaries(),
   useCompletedChecks: () => mockUseCompletedChecks(),
-  useCreateCheck: () => mockUseCreateCheck(),
+  useCreateChecks: () => mockUseCreateChecks(),
   useDeleteChecks: () => mockUseDeleteChecks(),
 }));
 
@@ -74,9 +74,15 @@ describe('Home', () => {
       isLoading: false,
     });
 
-    mockUseCreateCheck.mockReturnValue([jest.fn(), { isError: false, error: undefined }]);
+    mockUseCreateChecks.mockReturnValue({
+      createChecks: jest.fn(),
+      createCheckState: { isError: false, error: undefined },
+    });
 
-    mockUseDeleteChecks.mockReturnValue([jest.fn(), { isLoading: false, isError: false, error: undefined }]);
+    mockUseDeleteChecks.mockReturnValue({
+      deleteChecks: jest.fn(),
+      deleteChecksState: { isLoading: false, isError: false, error: undefined },
+    });
   });
 
   it('shows error state when API call fails', async () => {

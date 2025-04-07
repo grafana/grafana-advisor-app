@@ -4,12 +4,12 @@ import userEvent from '@testing-library/user-event';
 import Actions from './Actions';
 
 const mockUseCompletedChecks = jest.fn();
-const mockUseCreateCheck = jest.fn();
+const mockUseCreateChecks = jest.fn();
 const mockUseDeleteChecks = jest.fn();
 
 jest.mock('api/api', () => ({
   useCompletedChecks: () => mockUseCompletedChecks(),
-  useCreateCheck: () => mockUseCreateCheck(),
+  useCreateChecks: () => mockUseCreateChecks(),
   useDeleteChecks: () => mockUseDeleteChecks(),
 }));
 
@@ -24,9 +24,15 @@ describe('Actions', () => {
       isLoading: false,
     });
 
-    mockUseCreateCheck.mockReturnValue([jest.fn(), { isError: false, error: undefined }]);
+    mockUseCreateChecks.mockReturnValue({
+      createChecks: jest.fn(),
+      createCheckState: { isError: false, error: undefined },
+    });
 
-    mockUseDeleteChecks.mockReturnValue([jest.fn(), { isLoading: false, isError: false, error: undefined }]);
+    mockUseDeleteChecks.mockReturnValue({
+      deleteChecks: jest.fn(),
+      deleteChecksState: { isLoading: false, isError: false, error: undefined },
+    });
   });
 
   it('renders refresh and delete buttons', async () => {
@@ -56,7 +62,10 @@ describe('Actions', () => {
       statusText: 'Internal Server Error',
     };
 
-    mockUseCreateCheck.mockReturnValue([jest.fn(), { isError: true, error }]);
+    mockUseCreateChecks.mockReturnValue({
+      createChecks: jest.fn(),
+      createCheckState: { isError: true, error },
+    });
 
     render(<Actions />);
     await waitFor(() => {
@@ -76,8 +85,11 @@ describe('Actions', () => {
   });
 
   it('calls delete function when deletion confirmed', async () => {
-    const mockDelete = jest.fn();
-    mockUseDeleteChecks.mockReturnValue([mockDelete, { isLoading: false, isError: false, error: undefined }]);
+    const mockDeleteFn = jest.fn();
+    mockUseDeleteChecks.mockReturnValue({
+      deleteChecks: mockDeleteFn,
+      deleteChecksState: { isLoading: false, isError: false, error: undefined },
+    });
 
     render(<Actions />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
@@ -87,7 +99,7 @@ describe('Actions', () => {
     await user.click(confirmButton);
 
     await waitFor(() => {
-      expect(mockDelete).toHaveBeenCalled();
+      expect(mockDeleteFn).toHaveBeenCalled();
     });
   });
 
@@ -98,11 +110,30 @@ describe('Actions', () => {
       statusText: 'Internal Server Error',
     };
 
-    mockUseDeleteChecks.mockReturnValue([jest.fn(), { isLoading: false, isError: true, error }]);
+    mockUseDeleteChecks.mockReturnValue({
+      deleteChecks: jest.fn(),
+      deleteChecksState: { isLoading: false, isError: true, error },
+    });
 
     render(<Actions />);
     await waitFor(() => {
       expect(screen.getByText(/error deleting checks: 500 internal server error/i)).toBeInTheDocument();
+    });
+  });
+
+  it('calls createChecks when refresh button clicked', async () => {
+    const mockCreateFn = jest.fn();
+    mockUseCreateChecks.mockReturnValue({
+      createChecks: mockCreateFn,
+      createCheckState: { isError: false, error: undefined },
+    });
+
+    render(<Actions />);
+    const refreshButton = screen.getByRole('button', { name: /refresh/i });
+    await user.click(refreshButton);
+
+    await waitFor(() => {
+      expect(mockCreateFn).toHaveBeenCalled();
     });
   });
 });
