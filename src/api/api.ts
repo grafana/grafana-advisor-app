@@ -34,7 +34,6 @@ export function useCheckSummaries() {
         {}
       )
     );
-    let totalIssueCount = 0;
 
     for (const check of checks) {
       const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
@@ -59,7 +58,6 @@ export function useCheckSummaries() {
           const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
           persistedCheck.issueCount++;
           persistedStep.issueCount++;
-          totalIssueCount++;
           persistedStep.issues.push(failure);
         }
       }
