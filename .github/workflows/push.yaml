@@ -12,5 +12,4 @@ jobs:
     uses: grafana/plugin-ci-workflows/.github/workflows/ci.yml@main
     with:
       plugin-version-suffix: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || '' }}
-      # Disable playwright tests for now
-      run-playwright: false
+      run-playwright: true
