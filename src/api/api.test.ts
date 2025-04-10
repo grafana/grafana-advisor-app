@@ -16,7 +16,7 @@ const mockCreateCheckMutation = jest.fn();
 const mockDeleteCheckMutation = jest.fn();
 
 jest.mock('generated', () => ({
-  useListCheckQuery: () => mockListCheckQuery(),
+  useListCheckQuery: (arg0: any, arg1: any) => mockListCheckQuery(arg0, arg1),
   useListCheckTypeQuery: () => mockListCheckTypeQuery(),
   useCreateCheckMutation: () => mockCreateCheckMutation(),
   useDeleteCheckMutation: () => mockDeleteCheckMutation(),
@@ -299,7 +299,6 @@ describe('API Hooks', () => {
     });
 
     it('polls when there are incomplete checks', () => {
-      const mockRefetch = jest.fn();
       mockListCheckQuery.mockReturnValue({
         data: {
           items: [
@@ -313,14 +312,12 @@ describe('API Hooks', () => {
         },
         isLoading: false,
         isError: false,
-        refetch: mockRefetch,
       });
 
-      renderHook(() => useCompletedChecks());
       act(() => {
-        jest.runOnlyPendingTimers();
+        renderHook(() => useCompletedChecks());
       });
-      expect(mockRefetch).toHaveBeenCalled();
+      expect(mockListCheckQuery).toHaveBeenCalledWith({}, { pollingInterval: 2000, refetchOnMountOrArgChange: true });
     });
 
     it('filters by provided names', () => {
@@ -349,35 +346,6 @@ describe('API Hooks', () => {
       const { result } = renderHook(() => useCompletedChecks(['check1']));
       expect(result.current.isCompleted).toBe(false);
       expect(result.current.isLoading).toBe(false);
-    });
-
-    it('clears timeout when component unmounts', async () => {
-      const mockRefetch = jest.fn();
-      mockListCheckQuery.mockReturnValue({
-        data: {
-          items: [
-            {
-              metadata: {
-                name: 'check1',
-                annotations: {},
-              },
-            },
-          ],
-        },
-        isLoading: false,
-        isError: false,
-        refetch: mockRefetch,
-      });
-
-      const { unmount } = renderHook(() => useCompletedChecks());
-      act(() => {
-        jest.runOnlyPendingTimers();
-      });
-      expect(mockRefetch).toHaveBeenCalled();
-
-      unmount();
-      jest.runOnlyPendingTimers();
-      expect(mockRefetch).toHaveBeenCalledTimes(1);
     });
   });
 });

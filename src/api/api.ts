@@ -6,7 +6,7 @@ import {
   useCreateCheckMutation,
   useDeleteCheckMutation,
 } from 'generated';
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config } from '@grafana/runtime';
 import { CheckTypeSpec } from 'generated/endpoints.gen';
 
@@ -17,7 +17,7 @@ export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
   const { checkTypes, ...listCheckTypesState } = useCheckTypes();
 
-  const summaries = React.useMemo(() => {
+  const summaries = useMemo(() => {
     if (!checks || !checkTypes) {
       return getEmptyCheckSummary(getEmptyCheckTypes());
     }
@@ -159,7 +159,7 @@ export function useLastChecks() {
   const listChecksState = useListCheckQuery({});
   const { data } = listChecksState;
 
-  const checks = React.useMemo(() => {
+  const checks = useMemo(() => {
     if (!data?.items) {
       return [];
     }
@@ -194,7 +194,7 @@ export function useCreateChecks() {
   const { checkTypes } = useCheckTypes();
   const [createCheck, createCheckState] = useCreateCheckMutation();
 
-  const createChecks = React.useCallback(() => {
+  const createChecks = useCallback(() => {
     if (!checkTypes) {
       return;
     }
@@ -226,14 +226,15 @@ export function useDeleteChecks() {
 }
 
 function useIncompleteChecks(names?: string[]) {
+  const [pollingInterval, setPollingInterval] = useState(2000);
   const listChecksState = useListCheckQuery(
     {},
     {
       refetchOnMountOrArgChange: true,
-      pollingInterval: 0, // We'll handle polling in useCompletedChecks
+      pollingInterval,
     }
   );
-  const incompleteChecks = React.useMemo(() => {
+  const incompleteChecks = useMemo(() => {
     if (!listChecksState.data?.items) {
       return [];
     }
@@ -243,6 +244,11 @@ function useIncompleteChecks(names?: string[]) {
       .map((check) => check.metadata.name ?? '');
   }, [listChecksState.data, names]);
 
+  // Update polling interval based on incomplete checks
+  useEffect(() => {
+    setPollingInterval(incompleteChecks.length > 0 ? 2000 : 0);
+  }, [incompleteChecks.length]);
+
   return {
     incompleteChecks,
     ...listChecksState,
@@ -250,26 +256,7 @@ function useIncompleteChecks(names?: string[]) {
 }
 
 export function useCompletedChecks(names?: string[]) {
-  const { incompleteChecks, isLoading, refetch, ...incompleteChecksState } = useIncompleteChecks(names);
-  const [retryCount, setRetryCount] = useState(0);
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    // If not completed and not loading, start polling
-    if (incompleteChecks.length > 0 && !isLoading) {
-      timeoutId = setTimeout(() => {
-        refetch();
-        setRetryCount((count) => count + 1);
-      }, 2000);
-    }
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [incompleteChecks.length, isLoading, retryCount, refetch]);
+  const { incompleteChecks, isLoading, ...incompleteChecksState } = useIncompleteChecks(names);
 
   return {
     isCompleted: incompleteChecks.length === 0,
