@@ -42,7 +42,7 @@ export default function Home() {
         <a
           href="https://forms.gle/oFkqRoXS8g8mnTu6A"
           className={styles.feedback}
-          title="Share your thoughts about tracing in Grafana."
+          title="Share your thoughts about Grafana Advisor."
           target="_blank"
           rel="noreferrer noopener"
         >
