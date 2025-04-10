@@ -1,114 +1,161 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import Home from './Home';
-import * as api from 'api/api';
-import { CheckSummaries, Check } from 'types';
+import { CheckSummaries, Severity } from 'types';
 
-jest.mock('api/api');
-const mockApi = api as jest.Mocked<typeof api>;
+// Mock PluginPage to render its actions prop
+jest.mock('@grafana/runtime', () => ({
+  ...jest.requireActual('@grafana/runtime'),
+  PluginPage: ({ actions, children }: { actions: React.ReactNode; children: React.ReactNode }) => (
+    <div>
+      <div data-testid="plugin-actions">{actions}</div>
+      {children}
+    </div>
+  ),
+}));
+
+const mockCheck = (name: string, description: string, issueCount: number) => ({
+  name,
+  description,
+  totalCheckCount: issueCount,
+  issueCount,
+  steps: {},
+});
+
+const defaultSummaries = {
+  high: {
+    created: new Date('2023-01-01'),
+    name: 'High Priority',
+    description: 'High priority issues',
+    severity: Severity.High,
+    checks: {
+      'check-1': mockCheck('Check 1', 'First check', 1),
+      'check-2': mockCheck('Check 2', 'Second check', 2),
+    },
+  },
+  low: {
+    created: new Date('2023-01-01'),
+    name: 'Low Priority',
+    description: 'Low priority issues',
+    severity: Severity.Low,
+    checks: {
+      'check-3': mockCheck('Check 3', 'Third check', 1),
+    },
+  },
+} as CheckSummaries;
+
+const mockUseCheckSummaries = jest.fn();
+const mockUseCompletedChecks = jest.fn();
+const mockUseCreateChecks = jest.fn();
+const mockUseDeleteChecks = jest.fn();
+
+// Mock the entire api module
+jest.mock('api/api', () => ({
+  useCheckSummaries: () => mockUseCheckSummaries(),
+  useCompletedChecks: () => mockUseCompletedChecks(),
+  useCreateChecks: () => mockUseCreateChecks(),
+  useDeleteChecks: () => mockUseDeleteChecks(),
+}));
 
 describe('Home', () => {
-  const mockCheck = (name: string, description: string, issueCount: number): Check => ({
-    name,
-    description,
-    issueCount,
-    totalCheckCount: issueCount,
-    steps: {},
-  });
-
   beforeEach(() => {
     jest.clearAllMocks();
-    // Default mock for successful response
-    mockApi.getCheckSummaries.mockResolvedValue({
-      high: {
-        created: new Date('2023-01-01'),
-        name: 'High Priority',
-        description: 'High priority issues',
-        severity: 'high',
-        checks: {
-          'check-1': mockCheck('Check 1', 'First check', 1),
-          'check-2': mockCheck('Check 2', 'Second check', 2),
-        },
-      },
-      low: {
-        created: new Date('2023-01-01'),
-        name: 'Low Priority',
-        description: 'Low priority issues',
-        severity: 'low',
-        checks: {
-          'check-3': mockCheck('Check 3', 'Third check', 1),
-        },
-      },
-    } as CheckSummaries);
-  });
+    // Default mock implementation
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: defaultSummaries,
+      isLoading: false,
+      isError: false,
+      error: undefined,
+    });
 
-  it('shows loading state initially', async () => {
-    render(<Home />);
-    await waitFor(() => {
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+    // Mock implementations for Actions component
+    mockUseCompletedChecks.mockReturnValue({
+      isCompleted: true,
+      isLoading: false,
+    });
+
+    mockUseCreateChecks.mockReturnValue({
+      createChecks: jest.fn(),
+      createCheckState: { isError: false, error: undefined },
+    });
+
+    mockUseDeleteChecks.mockReturnValue({
+      deleteChecks: jest.fn(),
+      deleteChecksState: { isLoading: false, isError: false, error: undefined },
     });
   });
 
-  it('shows error state when API fails', async () => {
+  it('shows error state when API call fails', async () => {
     const error = {
       data: {},
       status: 500,
       statusText: 'Internal Server Error',
     };
-    mockApi.getCheckSummaries.mockRejectedValue(error);
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: defaultSummaries,
+      isLoading: false,
+      isError: true,
+      error,
+    });
 
     render(<Home />);
-    await waitFor(() => {
-      expect(screen.getByText(/error: 500 internal server error/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Error: 500 Internal Server Error/)).toBeInTheDocument();
   });
 
   it('shows empty state when no reports exist', async () => {
-    mockApi.getCheckSummaries.mockResolvedValue({
-      high: {
-        created: new Date(0),
-        name: 'High Priority',
-        description: 'High priority issues',
-        severity: 'high',
-        checks: {},
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: {
+        high: {
+          created: new Date(0),
+          name: 'High Priority',
+          description: 'High priority issues',
+          severity: Severity.High,
+          checks: {},
+        },
+        low: {
+          created: new Date(0),
+          name: 'Low Priority',
+          description: 'Low priority issues',
+          severity: Severity.Low,
+          checks: {},
+        },
       },
-      low: {
-        created: new Date(0),
-        name: 'Low Priority',
-        description: 'Low priority issues',
-        severity: 'low',
-        checks: {},
-      },
-    } as CheckSummaries);
+      isLoading: false,
+      isError: false,
+      error: undefined,
+    });
 
     render(<Home />);
-    await waitFor(() => {
-      expect(screen.getByText(/no report found/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/No report found/)).toBeInTheDocument();
   });
 
   it('shows completed state when no issues found', async () => {
-    mockApi.getCheckSummaries.mockResolvedValue({
-      high: {
-        created: new Date('2023-01-01'),
-        name: 'High Priority',
-        description: 'High priority issues',
-        severity: 'high',
-        checks: {},
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: {
+        high: {
+          created: new Date('2023-01-01'),
+          name: 'High Priority',
+          description: 'High priority issues',
+          severity: Severity.High,
+          checks: {
+            'check-1': mockCheck('Check 1', 'First check', 0),
+          },
+        },
+        low: {
+          created: new Date('2023-01-01'),
+          name: 'Low Priority',
+          description: 'Low priority issues',
+          severity: Severity.Low,
+          checks: {},
+        },
       },
-      low: {
-        created: new Date('2023-01-01'),
-        name: 'Low Priority',
-        description: 'Low priority issues',
-        severity: 'low',
-        checks: {},
-      },
-    } as CheckSummaries);
+      isLoading: false,
+      isError: false,
+      error: undefined,
+    });
 
     render(<Home />);
-    await waitFor(() => {
-      expect(screen.getByText(/no issues found/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/No issues found/)).toBeInTheDocument();
   });
 
   it('shows check summaries when issues exist', async () => {
@@ -116,6 +163,43 @@ describe('Home', () => {
     await waitFor(() => {
       expect(screen.getByText(/3 items needs to be fixed/i)).toBeInTheDocument();
       expect(screen.getByText(/1 items may need your attention/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows last checked time when not in empty state', async () => {
+    render(<Home />);
+    await waitFor(() => {
+      expect(screen.getByText(/last checked:/i)).toBeInTheDocument();
+      expect(screen.getByText('2023. 01. 01. 00:00')).toBeInTheDocument();
+    });
+  });
+
+  it('hides last checked time in empty state', async () => {
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: {
+        high: {
+          created: new Date(0),
+          name: 'High Priority',
+          description: 'High priority issues',
+          severity: Severity.High,
+          checks: {},
+        },
+        low: {
+          created: new Date(0),
+          name: 'Low Priority',
+          description: 'Low priority issues',
+          severity: Severity.Low,
+          checks: {},
+        },
+      },
+      isLoading: false,
+      isError: false,
+      error: undefined,
+    });
+
+    render(<Home />);
+    await waitFor(() => {
+      expect(screen.queryByText(/last checked:/i)).not.toBeInTheDocument();
     });
   });
 });

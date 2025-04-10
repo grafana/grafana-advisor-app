@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
 import { EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
-import * as api from 'api/api';
 import { CheckSummary } from 'components/CheckSummary';
 import { MoreInfo } from 'components/MoreInfo';
 import Actions from 'components/Actions';
+import { useCheckSummaries } from 'api/api';
+import { formatDate } from 'utils';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
-  const [issueCount, setIssueCount] = useState(0);
-  const [checkSummariesState, checkSummaries] = useAsyncFn(async () => {
-    const summaries = await api.getCheckSummaries();
-    const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
-    const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
-    setIssueCount(highIssueCount + lowIssueCount);
-    return summaries;
-  }, []);
-  useEffect(() => {
-    checkSummaries();
-  }, [checkSummaries]);
+  const { summaries, isLoading, isError, error } = useCheckSummaries();
+  const [isEmpty, setIsEmpty] = useState(false);
+  const [isHealthy, setIsHealthy] = useState(false);
 
-  const isLoading = checkSummariesState.loading;
-  const emptyState = checkSummariesState.value?.high.created.getTime() === 0;
-  const isHealthy = !isLoading && !emptyState && !checkSummariesState.error && issueCount === 0;
+  useEffect(() => {
+    if (!isLoading && !isError) {
+      const isEmptyTemp = summaries.high.created.getTime() === 0;
+      setIsEmpty(isEmptyTemp);
+      if (!isEmptyTemp) {
+        const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
+        const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
+        setIsHealthy(highIssueCount + lowIssueCount === 0);
+      }
+    }
+  }, [isLoading, isError, summaries]);
 
   return (
     <PluginPage
@@ -34,7 +34,14 @@ export default function Home() {
         subTitle: 'Keep Grafana running smoothly and securely',
       }}
       actions={
-        <Actions checkSummaries={checkSummaries} checkSummariesState={checkSummariesState} emptyState={emptyState} />
+        <>
+          <Actions />
+          {!isEmpty && (
+            <div className={styles.lastChecked}>
+              Last checked: <strong>{summaries ? formatDate(summaries.high.created) : '...'}</strong>
+            </div>
+          )}
+        </>
       }
     >
       <div className={styles.feedbackContainer}>
@@ -51,21 +58,21 @@ export default function Home() {
       </div>
       <div className={styles.page}>
         {/* Loading */}
-        {checkSummariesState.loading && (
+        {isLoading && (
           <div className={styles.loading}>
             <LoadingPlaceholder text="Loading..." />
           </div>
         )}
 
         {/* Error */}
-        {checkSummariesState.error && isFetchError(checkSummariesState.error) && (
+        {isError && isFetchError(error) && (
           <div>
-            Error: {checkSummariesState.error.status} {checkSummariesState.error.statusText}
+            Error: {error.status} {error.statusText}
           </div>
         )}
 
         {/* Empty state */}
-        {!checkSummariesState.loading && !checkSummariesState.error && emptyState && (
+        {isEmpty && (
           <EmptyState variant="not-found" message="No report found. Click the Refresh button to run analysis." />
         )}
 
@@ -73,14 +80,14 @@ export default function Home() {
         {isHealthy && <EmptyState variant="completed" message="No issues found." />}
 
         {/* Checks */}
-        {!checkSummariesState.loading && !checkSummariesState.error && checkSummariesState.value && !emptyState && (
+        {!isLoading && !isError && summaries && !isEmpty && (
           <>
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
               <Stack direction="column">
-                <CheckSummary checkSummary={checkSummariesState.value.high} />
-                <CheckSummary checkSummary={checkSummariesState.value.low} />
-                <MoreInfo checkSummaries={checkSummariesState.value} />
+                <CheckSummary checkSummary={summaries.high} />
+                <CheckSummary checkSummary={summaries.low} />
+                <MoreInfo checkSummaries={summaries} />
               </Stack>
             </div>
           </>
@@ -102,6 +109,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  }),
+  lastChecked: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    position: 'absolute',
+    right: theme.spacing(4),
+    top: theme.spacing(8),
   }),
   feedbackContainer: css({
     color: theme.colors.text.link,

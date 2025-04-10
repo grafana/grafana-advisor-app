@@ -1,65 +1,80 @@
-import { Check as CheckRaw } from 'generated/check/v0alpha1/check_object_gen';
-import { ReportFailure } from 'generated/check/v0alpha1/types.status.gen';
-import { CheckClient } from 'api/check_client';
-import { CheckTypeClient } from 'api/checktype_client';
 import { CheckSummaries, Severity } from 'types';
-import { Spec as SpecRaw } from 'generated/checktype/v0alpha1/types.spec.gen';
-
-const checkClient = new CheckClient();
-const checkTypeClient = new CheckTypeClient();
+import {
+  Check,
+  useListCheckQuery,
+  useListCheckTypeQuery,
+  useCreateCheckMutation,
+  useDeleteCheckMutation,
+} from 'generated';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { config } from '@grafana/runtime';
+import { CheckTypeSpec } from 'generated/endpoints.gen';
 
 const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 
-// Transforms the data into a structure that is easier to work with on the frontend
-export async function getCheckSummaries(): Promise<CheckSummaries> {
-  const checks = await getLastChecks();
-  const checkTypes = await getCheckTypes();
-  const checkSummary = getEmptyCheckSummary(checkTypes);
+export function useCheckSummaries() {
+  const { checks, ...listChecksState } = useLastChecks();
+  const { checkTypes, ...listCheckTypesState } = useCheckTypes();
 
-  // Loop through checks by type
-  for (const check of checks) {
-    const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
-
-    if (checkType === undefined) {
-      // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
-      continue;
+  const summaries = useMemo(() => {
+    if (!checks || !checkTypes) {
+      return getEmptyCheckSummary(getEmptyCheckTypes());
     }
 
-    if (!checkSummary[Severity.High].checks[checkType]) {
-      console.error('checkType not found in checkSummary', checkType);
-      continue;
-    }
+    const checkSummary = getEmptyCheckSummary(
+      checkTypes.reduce(
+        (acc, checkType) => ({
+          ...acc,
+          [checkType.metadata.name as string]: {
+            name: checkType.spec.name,
+            steps: checkType.spec.steps,
+          },
+        }),
+        {}
+      )
+    );
 
-    checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
+    for (const check of checks) {
+      const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
-    // Last checked time (we take the latest timestamp)
-    // This assumes that the checks are created in batches so a batch will have a similar creation time
-    const createdTimestamp = new Date(check.metadata.creationTimestamp ?? 0);
-    const prevCreatedTimestamp = checkSummary[Severity.High].created;
-    if (createdTimestamp > prevCreatedTimestamp) {
-      checkSummary[Severity.High].created = createdTimestamp;
-      checkSummary[Severity.Low].created = createdTimestamp;
-    }
+      if (checkType === undefined || !checkSummary[Severity.High].checks[checkType]) {
+        continue;
+      }
 
-    // Handle failures
-    if (check.status.report.failures) {
-      // Loop through each failure
-      for (const failure of check.status.report.failures) {
-        const severity = failure.severity as Severity;
-        const persistedCheck = checkSummary[severity].checks[checkType];
-        const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
-        persistedCheck.issueCount++;
-        persistedStep.issueCount++;
-        persistedStep.issues.push(failure);
+      checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
+
+      const createdTimestamp = new Date(check.metadata.creationTimestamp ?? 0);
+      const prevCreatedTimestamp = checkSummary[Severity.High].created;
+      if (createdTimestamp > prevCreatedTimestamp) {
+        checkSummary[Severity.High].created = createdTimestamp;
+        checkSummary[Severity.Low].created = createdTimestamp;
+      }
+
+      if (check.status.report.failures) {
+        for (const failure of check.status.report.failures) {
+          const severity = failure.severity.toLowerCase() as Severity;
+          const persistedCheck = checkSummary[severity].checks[checkType];
+          const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
+          persistedCheck.issueCount++;
+          persistedStep.issueCount++;
+          persistedStep.issues.push(failure);
+        }
       }
     }
-  }
 
-  return checkSummary;
+    return checkSummary;
+  }, [checks, checkTypes]);
+
+  return {
+    summaries,
+    isLoading: listChecksState.isLoading || listCheckTypesState.isLoading,
+    isError: listChecksState.isError || listCheckTypesState.isError,
+    error: listChecksState.error || listCheckTypesState.error,
+  };
 }
 
-export function getEmptyCheckSummary(checkTypes: Record<string, SpecRaw>): CheckSummaries {
+export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>): CheckSummaries {
   const generateChecks = () =>
     Object.values(checkTypes).reduce(
       (acc, checkType) => ({
@@ -106,7 +121,7 @@ export function getEmptyCheckSummary(checkTypes: Record<string, SpecRaw>): Check
   };
 }
 
-export function getEmptyCheckTypes(): Record<string, SpecRaw> {
+export function getEmptyCheckTypes(): Record<string, CheckTypeSpec> {
   return {
     datasource: {
       name: 'datasource',
@@ -133,150 +148,119 @@ export function getEmptyCheckTypes(): Record<string, SpecRaw> {
   };
 }
 
-export async function getCheckTypes(): Promise<Record<string, SpecRaw>> {
-  const checkTypesRaw = await checkTypeClient.list();
+export function useCheckTypes() {
+  const listCheckTypesState = useListCheckTypeQuery({});
+  const { data } = listCheckTypesState;
 
-  return checkTypesRaw.data.items.reduce(
-    (acc, checkType) => ({
-      ...acc,
-      [checkType.metadata.name]: {
-        name: checkType.spec.name,
-        steps: checkType.spec.steps,
-      },
-    }),
-    {}
+  return { checkTypes: data?.items, ...listCheckTypesState };
+}
+
+export function useLastChecks() {
+  const listChecksState = useListCheckQuery({});
+  const { data } = listChecksState;
+
+  const checks = useMemo(() => {
+    if (!data?.items) {
+      return [];
+    }
+
+    const checkByType: Record<string, Check> = {};
+    for (const check of data.items) {
+      const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
+
+      if (
+        !type ||
+        !check.metadata.creationTimestamp ||
+        check.metadata.annotations?.[STATUS_ANNOTATION] !== 'processed'
+      ) {
+        continue;
+      }
+
+      if (
+        !checkByType[type] ||
+        new Date(check.metadata.creationTimestamp) > new Date(checkByType[type].metadata.creationTimestamp ?? 0)
+      ) {
+        checkByType[type] = check;
+      }
+    }
+
+    return Object.values(checkByType);
+  }, [data]);
+
+  return { checks, ...listChecksState };
+}
+
+export function useCreateChecks() {
+  const { checkTypes } = useCheckTypes();
+  const [createCheck, createCheckState] = useCreateCheckMutation();
+
+  const createChecks = useCallback(() => {
+    if (!checkTypes) {
+      return;
+    }
+    for (const type of checkTypes) {
+      createCheck({
+        check: {
+          kind: 'Check',
+          apiVersion: 'advisor.grafana.app/v0alpha1',
+          spec: { data: {} },
+          metadata: {
+            generateName: 'check-',
+            labels: { 'advisor.grafana.app/type': type.metadata.name ?? '' },
+            namespace: config.namespace,
+          },
+          status: { report: { count: 0, failures: [] } },
+        },
+      });
+    }
+  }, [createCheck, checkTypes]);
+
+  return { createChecks, createCheckState };
+}
+
+export function useDeleteChecks() {
+  const [deleteCheckMutation, deleteChecksState] = useDeleteCheckMutation();
+  const deleteChecks = () => deleteCheckMutation({ name: '' });
+
+  return { deleteChecks, deleteChecksState };
+}
+
+function useIncompleteChecks(names?: string[]) {
+  const [pollingInterval, setPollingInterval] = useState(2000);
+  const listChecksState = useListCheckQuery(
+    {},
+    {
+      refetchOnMountOrArgChange: true,
+      pollingInterval,
+    }
   );
-}
-
-// Returns the latest checks grouped by severity ("high", "low")
-export async function getChecksBySeverity() {
-  const checksBySeverity: Record<Severity, Record<string, { count: number; errors: ReportFailure[] }>> = {
-    high: {},
-    low: {},
-  };
-  const checks = await getLastChecks();
-
-  for (const check of checks) {
-    const checkType = check.metadata.labels?.[CHECK_TYPE_LABEL];
-
-    if (checkType === undefined) {
-      // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
-      continue;
+  const incompleteChecks = useMemo(() => {
+    if (!listChecksState.data?.items) {
+      return [];
     }
+    return listChecksState.data.items
+      .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
+      .filter((check) => !check.metadata.annotations?.[STATUS_ANNOTATION])
+      .map((check) => check.metadata.name ?? '');
+  }, [listChecksState.data, names]);
 
-    for (const error of check.status.report.failures) {
-      const severity = error.severity as Severity;
-      if (checksBySeverity[severity][checkType] === undefined) {
-        checksBySeverity[error.severity][checkType] = {
-          count: check.status.report.count,
-          errors: [],
-        };
-      }
+  // Update polling interval based on incomplete checks
+  useEffect(() => {
+    setPollingInterval(incompleteChecks.length > 0 ? 2000 : 0);
+  }, [incompleteChecks.length]);
 
-      checksBySeverity[error.severity][checkType].errors.push(error);
-    }
-  }
-
-  return checksBySeverity;
-}
-
-export async function getLastChecks(): Promise<CheckRaw[]> {
-  const checkByType: Record<string, CheckRaw> = {};
-  const checks = await getChecks();
-
-  for (const check of checks) {
-    const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
-
-    if (!type) {
-      // No type found for check under "check.metadata.labels[advisor.grafana.app/type]", skipping.
-      continue;
-    }
-
-    if (!check.metadata.creationTimestamp) {
-      // Empty creationTimestamp for check at "check.metadata.creationTimestamp", skipping.
-      continue;
-    }
-
-    if (check.metadata.annotations?.[STATUS_ANNOTATION] !== 'processed') {
-      // Check is not processed yet, skipping.
-      continue;
-    }
-
-    // If the check is the first one of its type, store it
-    if (!checkByType[type]) {
-      checkByType[type] = check;
-      continue;
-    }
-
-    const prevTimestamp = new Date(checkByType[type].metadata.creationTimestamp ?? 0);
-    const currentTimestamp = new Date(check.metadata.creationTimestamp);
-
-    if (currentTimestamp > prevTimestamp) {
-      checkByType[type] = check;
-    }
-  }
-
-  return Object.values(checkByType);
-}
-
-export async function getChecks(): Promise<CheckRaw[]> {
-  const response = await checkClient.list();
-
-  return response.data.items;
-}
-
-export async function getCheck(name: string): Promise<CheckRaw> {
-  const response = await checkClient.get(name);
-
-  return response.data;
-}
-
-// Temporary (should be called only from the backend in the future)
-export function createChecks(type: 'datasource' | 'plugin') {
-  return checkClient.create(type);
-}
-
-export function deleteChecks(name?: string) {
-  return checkClient.delete(name);
-}
-
-async function getIncompleteChecks(names?: string[]): Promise<string[]> {
-  let checks: CheckRaw[] = [];
-  if (!names) {
-    checks = await getChecks();
-  } else {
-    checks = await Promise.all(names.map((name) => getCheck(name)));
-  }
-  const incompleteChecks = checks.filter((c) => !c.metadata.annotations?.[STATUS_ANNOTATION]);
-  return incompleteChecks.map((c) => c.metadata.name);
-}
-
-export async function waitForChecks(names?: string[]) {
-  let interval: NodeJS.Timeout;
-  let namesToWaitFor = await getIncompleteChecks(names);
-  if (namesToWaitFor.length === 0) {
-    return {
-      promise: Promise.resolve(undefined),
-      cancel: () => {},
-    };
-  }
-
-  const promise = new Promise(async (resolve, reject) => {
-    interval = setInterval(async () => {
-      try {
-        namesToWaitFor = await getIncompleteChecks(names);
-        if (namesToWaitFor.length === 0) {
-          clearInterval(interval);
-          resolve(undefined);
-        }
-      } catch (error) {
-        clearInterval(interval);
-        reject(error);
-      }
-    }, 2000);
-  });
   return {
-    promise,
-    cancel: () => clearInterval(interval),
+    incompleteChecks,
+    ...listChecksState,
+  };
+}
+
+export function useCompletedChecks(names?: string[]) {
+  const { incompleteChecks, isLoading, ...incompleteChecksState } = useIncompleteChecks(names);
+
+  return {
+    isCompleted: incompleteChecks.length === 0,
+    isLoading,
+    ...incompleteChecksState,
   };
 }
