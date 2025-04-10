@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAsyncFn } from 'react-use';
 import { css } from '@emotion/css';
-import { EmptyState, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import { EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import * as api from 'api/api';
@@ -37,6 +37,18 @@ export default function Home() {
         <Actions checkSummaries={checkSummaries} checkSummariesState={checkSummariesState} emptyState={emptyState} />
       }
     >
+      <div className={styles.feedbackContainer}>
+        <Icon name="comment-alt-message" />
+        <a
+          href="https://forms.gle/oFkqRoXS8g8mnTu6A"
+          className={styles.feedback}
+          title="Share your thoughts about Grafana Advisor."
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Give feedback
+        </a>
+      </div>
       <div className={styles.page}>
         {/* Loading */}
         {checkSummariesState.loading && (
@@ -90,5 +102,24 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  }),
+  feedbackContainer: css({
+    color: theme.colors.text.link,
+    marginTop: theme.spacing(-1),
+  }),
+  feedback: css({
+    margin: '6px',
+    color: theme.colors.text.link,
+    fontSize: theme.typography.bodySmall.fontSize,
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  }),
+  link: css({
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    ':hover': {
+      color: theme.colors.text.link,
+    },
   }),
 });
