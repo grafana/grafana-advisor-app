@@ -10,8 +10,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config } from '@grafana/runtime';
 import { CheckTypeSpec } from 'generated/endpoints.gen';
 
-const STATUS_ANNOTATION = 'advisor.grafana.app/status';
-const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
+export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
+export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -238,7 +238,28 @@ function useIncompleteChecks(names?: string[]) {
     if (!listChecksState.data?.items) {
       return [];
     }
-    return listChecksState.data.items
+
+    // Group checks by type and keep only the most recent one
+    const checksByType = new Map<string, Check>();
+    for (const check of listChecksState.data.items) {
+      const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
+      if (!type) {
+        continue;
+      }
+
+      const existingCheck = checksByType.get(type);
+      if (
+        !existingCheck ||
+        (check.metadata.creationTimestamp &&
+          existingCheck.metadata.creationTimestamp &&
+          new Date(check.metadata.creationTimestamp) > new Date(existingCheck.metadata.creationTimestamp))
+      ) {
+        checksByType.set(type, check);
+      }
+    }
+
+    // Filter incomplete checks from the most recent ones
+    return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
       .filter((check) => !check.metadata.annotations?.[STATUS_ANNOTATION])
       .map((check) => check.metadata.name ?? '');

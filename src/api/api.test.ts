@@ -6,6 +6,8 @@ import {
   useCreateChecks,
   useDeleteChecks,
   useCompletedChecks,
+  STATUS_ANNOTATION,
+  CHECK_TYPE_LABEL,
 } from './api';
 import { config } from '@grafana/runtime';
 
@@ -83,18 +85,18 @@ describe('API Hooks', () => {
           {
             metadata: {
               name: 'check1',
-              labels: { 'advisor.grafana.app/type': 'type1' },
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-01T00:00:00Z',
-              annotations: { 'advisor.grafana.app/status': 'processed' },
+              annotations: { [STATUS_ANNOTATION]: 'processed' },
             },
             status: { report: { count: 1, failures: [] } },
           },
           {
             metadata: {
               name: 'check2',
-              labels: { 'advisor.grafana.app/type': 'type1' },
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-02T00:00:00Z',
-              annotations: { 'advisor.grafana.app/status': 'unprocessed' },
+              annotations: { [STATUS_ANNOTATION]: 'unprocessed' },
             },
             status: { report: { count: 1, failures: [] } },
           },
@@ -118,18 +120,18 @@ describe('API Hooks', () => {
           {
             metadata: {
               name: 'check1',
-              labels: { 'advisor.grafana.app/type': 'type1' },
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-01T00:00:00Z',
-              annotations: { 'advisor.grafana.app/status': 'processed' },
+              annotations: { [STATUS_ANNOTATION]: 'processed' },
             },
             status: { report: { count: 1, failures: [] } },
           },
           {
             metadata: {
               name: 'check2',
-              labels: { 'advisor.grafana.app/type': 'type1' },
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-02T00:00:00Z',
-              annotations: { 'advisor.grafana.app/status': 'processed' },
+              annotations: { [STATUS_ANNOTATION]: 'processed' },
             },
             status: { report: { count: 1, failures: [] } },
           },
@@ -185,9 +187,9 @@ describe('API Hooks', () => {
           {
             metadata: {
               name: 'check1',
-              labels: { 'advisor.grafana.app/type': 'type1' },
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-01T00:00:00Z',
-              annotations: { 'advisor.grafana.app/status': 'processed' },
+              annotations: { [STATUS_ANNOTATION]: 'processed' },
             },
             status: {
               report: {
@@ -247,7 +249,7 @@ describe('API Hooks', () => {
           spec: { data: {} },
           metadata: {
             generateName: 'check-',
-            labels: { 'advisor.grafana.app/type': 'type1' },
+            labels: { [CHECK_TYPE_LABEL]: 'type1' },
             namespace: config.namespace,
           },
           status: { report: { count: 0, failures: [] } },
@@ -284,14 +286,14 @@ describe('API Hooks', () => {
             {
               metadata: {
                 name: 'check1',
-                annotations: { 'advisor.grafana.app/status': 'processed' },
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
               },
             },
           ],
         },
         isLoading: false,
         isError: false,
-        refetch: jest.fn(),
       });
 
       const { result } = renderHook(() => useCompletedChecks());
@@ -305,6 +307,7 @@ describe('API Hooks', () => {
             {
               metadata: {
                 name: 'check1',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
                 annotations: {},
               },
             },
@@ -327,12 +330,14 @@ describe('API Hooks', () => {
             {
               metadata: {
                 name: 'check1',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
                 annotations: {},
               },
             },
             {
               metadata: {
                 name: 'check2',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
                 annotations: {},
               },
             },
@@ -340,12 +345,40 @@ describe('API Hooks', () => {
         },
         isLoading: false,
         isError: false,
-        refetch: jest.fn(),
       });
 
       const { result } = renderHook(() => useCompletedChecks(['check1']));
       expect(result.current.isCompleted).toBe(false);
       expect(result.current.isLoading).toBe(false);
+    });
+
+    it('ignores incomplete checks if they are older than the latest check', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                creationTimestamp: '2024-01-01T00:00:00Z',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+              },
+            },
+            {
+              metadata: {
+                name: 'check2',
+                creationTimestamp: '2024-01-02T00:00:00Z',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks());
+      expect(result.current.isCompleted).toBe(true);
     });
   });
 });
