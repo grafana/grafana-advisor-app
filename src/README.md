@@ -8,8 +8,6 @@ An app for visualising checks that require immediate action or investigation.
 
 ## Requirements
 
-Grafana >=11.6.0
-
 It is also necessary to enable the `grafanaAdvisor` [feature toggle](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/feature-toggles/) in the Grafana server.
 
 ## Features
