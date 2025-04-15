@@ -1,12 +1,45 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { css } from '@emotion/css';
 import { Button, Collapse, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSummaryType }) {
   const styles = useStyles2(getStyles(checkSummary.severity));
   const [isOpen, setIsOpen] = React.useState<Record<string, boolean>>({});
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Restore state from URL
+    const params = new URLSearchParams(location.search);
+    const openSteps = params.get('openSteps')?.split(',') || [];
+    const initialState = openSteps.reduce((acc, stepId) => ({ ...acc, [stepId]: true }), {});
+    setIsOpen(initialState);
+  }, [location.search]);
+
+  const handleToggle = (stepId: string) => {
+    const newState = {
+      ...isOpen,
+      [stepId]: !isOpen[stepId],
+    };
+    setIsOpen(newState);
+
+    // Update URL with open steps
+    const openSteps = Object.entries(newState)
+      .filter(([_, isOpen]) => isOpen)
+      .map(([stepId]) => stepId)
+      .join(',');
+
+    const params = new URLSearchParams(location.search);
+    if (openSteps) {
+      params.set('openSteps', openSteps);
+    } else {
+      params.delete('openSteps');
+    }
+    navigate({ search: params.toString() }, { replace: true });
+  };
 
   return (
     <div className={styles.container}>
@@ -19,7 +52,7 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
         return Object.values(check.steps).map((step) => {
           const stepIsOpen = isOpen[step.stepID] ?? false;
           return (
-            <div key={step.stepID} className={styles.spacingTopMd}>
+            <div key={step.stepID} className={styles.spacingTopMd} data-step-id={step.stepID}>
               {step.issues.length > 0 && (
                 <Collapse
                   label={
@@ -33,7 +66,7 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                   }
                   isOpen={stepIsOpen}
                   collapsible={true}
-                  onToggle={() => setIsOpen({ ...isOpen, [step.stepID]: !stepIsOpen })}
+                  onToggle={() => handleToggle(step.stepID)}
                 >
                   {step.issues.map((issue) => (
                     <div key={issue.item} className={styles.issue}>
