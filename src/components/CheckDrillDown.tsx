@@ -1,11 +1,12 @@
 import React from 'react';
 import { css } from '@emotion/css';
-import { Button, useStyles2 } from '@grafana/ui';
+import { Button, Collapse, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 
 export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSummaryType }) {
   const styles = useStyles2(getStyles(checkSummary.severity));
+  const [isOpen, setIsOpen] = React.useState<Record<string, boolean>>({});
 
   return (
     <div className={styles.container}>
@@ -15,39 +16,55 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
           return null;
         }
 
-        return Object.values(check.steps).map((step) => (
-          <div key={step.name} className={styles.spacingTopMd}>
-            {step.issues.length > 0 && (
-              <div className={styles.description}>
-                <div>
-                  {step.name} failed for {step.issues.length} {check.name}
-                  {step.issues.length > 1 ? 's' : ''}.
-                </div>
-                <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
-              </div>
-            )}
-            {step.issues.map((issue) => (
-              <div key={issue.item} className={styles.issue}>
-                <div className={styles.issueReason}>
-                  {issue.item}
-                  {issue.links.map((link) => {
-                    const extraProps = link.url.startsWith('http')
-                      ? { target: '_self', rel: 'noopener noreferrer' }
-                      : {};
+        return Object.values(check.steps).map((step) => {
+          const stepIsOpen = isOpen[step.stepID] ?? false;
+          return (
+            <div key={step.stepID} className={styles.spacingTopMd}>
+              {step.issues.length > 0 && (
+                <Collapse
+                  label={
+                    <div className={styles.description}>
+                      <div>
+                        {step.name} failed for {step.issues.length} {check.name}
+                        {step.issues.length > 1 ? 's' : ''}.
+                      </div>
+                      <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
+                    </div>
+                  }
+                  isOpen={stepIsOpen}
+                  collapsible={true}
+                  onToggle={() => setIsOpen({ ...isOpen, [step.stepID]: !stepIsOpen })}
+                >
+                  {step.issues.map((issue) => (
+                    <div key={issue.item} className={styles.issue}>
+                      <div className={styles.issueReason}>
+                        {issue.item}
+                        {issue.links.map((link) => {
+                          const extraProps = link.url.startsWith('http')
+                            ? { target: '_self', rel: 'noopener noreferrer' }
+                            : {};
 
-                    return (
-                      <a key={link.url} href={link.url} {...extraProps}>
-                        <Button size="sm" className={styles.issueLink} icon={getIcon(link.message)} variant="secondary">
-                          {link.message}
-                        </Button>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        ));
+                          return (
+                            <a key={link.url} href={link.url} {...extraProps}>
+                              <Button
+                                size="sm"
+                                className={styles.issueLink}
+                                icon={getIcon(link.message)}
+                                variant="secondary"
+                              >
+                                {link.message}
+                              </Button>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </Collapse>
+              )}
+            </div>
+          );
+        });
       })}
     </div>
   );
@@ -73,6 +90,7 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
         },
       },
       marginBottom: theme.spacing(1),
+      textAlign: 'left',
     }),
     resolution: css({
       color: theme.colors.text.secondary,
