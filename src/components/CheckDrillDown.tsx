@@ -10,6 +10,8 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
   const [isOpen, setIsOpen] = React.useState<Record<string, boolean>>({});
   const location = useLocation();
   const navigate = useNavigate();
+  const scrollToRef = useRef<HTMLDivElement>(null);
+  const [scrollToStep, setScrollToStep] = React.useState<string | null>(null);
 
   useEffect(() => {
     // Restore state from URL
@@ -17,7 +19,17 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
     const openSteps = params.get('openSteps')?.split(',') || [];
     const initialState = openSteps.reduce((acc, stepId) => ({ ...acc, [stepId]: true }), {});
     setIsOpen(initialState);
+    const scrollToStep = params.get('scrollToStep');
+    if (scrollToStep) {
+      setScrollToStep(scrollToStep);
+    }
   }, [location.search]);
+
+  useEffect(() => {
+    if (scrollToStep && scrollToRef.current) {
+      scrollToRef.current.scrollIntoView({ block: 'center' });
+    }
+  }, [scrollToStep]);
 
   const handleToggle = (stepId: string) => {
     const newState = {
@@ -68,31 +80,45 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                   collapsible={true}
                   onToggle={() => handleToggle(step.stepID)}
                 >
-                  {step.issues.map((issue) => (
-                    <div key={issue.item} className={styles.issue}>
-                      <div className={styles.issueReason}>
-                        {issue.item}
-                        {issue.links.map((link) => {
-                          const extraProps = link.url.startsWith('http')
-                            ? { target: '_self', rel: 'noopener noreferrer' }
-                            : {};
-
-                          return (
-                            <a key={link.url} href={link.url} {...extraProps}>
-                              <Button
-                                size="sm"
-                                className={styles.issueLink}
-                                icon={getIcon(link.message)}
-                                variant="secondary"
+                  {step.issues.map((issue) => {
+                    let ref = null;
+                    if (issue.item === scrollToStep) {
+                      ref = scrollToRef;
+                    }
+                    return (
+                      <div key={issue.item} className={styles.issue} ref={ref}>
+                        <div className={styles.issueReason}>
+                          {issue.item}
+                          {issue.links.map((link) => {
+                            const extraProps = link.url.startsWith('http')
+                              ? { target: '_self', rel: 'noopener noreferrer' }
+                              : {};
+                            return (
+                              <a
+                                key={link.url}
+                                href={link.url}
+                                onClick={() => {
+                                  const params = new URLSearchParams(location.search);
+                                  params.set('scrollToStep', issue.item);
+                                  navigate({ search: params.toString() }, { replace: true });
+                                }}
+                                {...extraProps}
                               >
-                                {link.message}
-                              </Button>
-                            </a>
-                          );
-                        })}
+                                <Button
+                                  size="sm"
+                                  className={styles.issueLink}
+                                  icon={getIcon(link.message)}
+                                  variant="secondary"
+                                >
+                                  {link.message}
+                                </Button>
+                              </a>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </Collapse>
               )}
             </div>
