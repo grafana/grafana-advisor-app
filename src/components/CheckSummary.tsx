@@ -18,13 +18,14 @@ export function CheckSummary({ checkSummary }: Props) {
   const issueCount = Object.values(checkSummary.checks).reduce((acc, check) => acc + check.issueCount, 0);
   const location = useLocation();
   const navigate = useNavigate();
+  const isSummaryOpenParam = 'summaryOpen' + checkSummary.severity;
 
   useEffect(() => {
     // Restore state from URL
     const params = new URLSearchParams(location.search);
-    const isSummaryOpen = params.get('summaryOpen') === 'true';
+    const isSummaryOpen = params.get(isSummaryOpenParam) === 'true';
     setIsOpen(isSummaryOpen);
-  }, [location.search]);
+  }, [location.search, isSummaryOpenParam]);
 
   const handleToggle = (isOpen: boolean) => {
     setIsOpen(isOpen);
@@ -32,9 +33,9 @@ export function CheckSummary({ checkSummary }: Props) {
     // Update URL with summary state
     const params = new URLSearchParams(location.search);
     if (isOpen) {
-      params.set('summaryOpen', 'true');
+      params.set(isSummaryOpenParam, 'true');
     } else {
-      params.delete('summaryOpen');
+      params.delete(isSummaryOpenParam);
     }
     navigate({ search: params.toString() }, { replace: true });
   };
