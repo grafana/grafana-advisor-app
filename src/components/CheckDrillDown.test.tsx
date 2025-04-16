@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CheckDrillDown from './CheckDrillDown';
 import { CheckSummaries, Severity } from 'types';
@@ -75,12 +75,12 @@ describe('Components/CheckDrillDown', () => {
       route: '/?openSteps=step1&scrollToStep=Item%201',
     });
 
-    // Verify scrollIntoView has been called
     expect(
       await screen.findByRole('button', {
         name: checkSummaries.high.checks.datasource.steps.step1.issues[0].links[0].message,
       })
     ).toBeInTheDocument();
+    // Verify scrollIntoView has been called
     await waitFor(() => {
       expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
     });

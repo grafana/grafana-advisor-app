@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { CheckSummary } from './CheckSummary';
 import userEvent from '@testing-library/user-event';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';

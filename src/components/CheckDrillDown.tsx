@@ -61,69 +61,60 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
           return null;
         }
 
-        return Object.values(check.steps).map((step) => {
-          const stepIsOpen = isOpen[step.stepID] ?? false;
-          return (
-            <div key={step.stepID} className={styles.spacingTopMd} data-step-id={step.stepID}>
-              {step.issues.length > 0 && (
-                <Collapse
-                  label={
-                    <div className={styles.description}>
-                      <div>
-                        {step.name} failed for {step.issues.length} {check.name}
-                        {step.issues.length > 1 ? 's' : ''}.
-                      </div>
-                      <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
+        return Object.values(check.steps).map((step) => (
+          <div key={step.stepID} className={styles.spacingTopMd} data-step-id={step.stepID}>
+            {step.issues.length > 0 && (
+              <Collapse
+                label={
+                  <div className={styles.description}>
+                    <div>
+                      {step.name} failed for {step.issues.length} {check.name}
+                      {step.issues.length > 1 ? 's' : ''}.
                     </div>
-                  }
-                  isOpen={stepIsOpen}
-                  collapsible={true}
-                  onToggle={() => handleToggle(step.stepID)}
-                >
-                  {step.issues.map((issue) => {
-                    let ref = null;
-                    if (issue.item === scrollToStep) {
-                      ref = scrollToRef;
-                    }
-                    return (
-                      <div key={issue.item} className={styles.issue} ref={ref}>
-                        <div className={styles.issueReason}>
-                          {issue.item}
-                          {issue.links.map((link) => {
-                            const extraProps = link.url.startsWith('http')
-                              ? { target: '_self', rel: 'noopener noreferrer' }
-                              : {};
-                            return (
-                              <a
-                                key={link.url}
-                                href={link.url}
-                                onClick={() => {
-                                  const params = new URLSearchParams(location.search);
-                                  params.set('scrollToStep', issue.item);
-                                  navigate({ search: params.toString() }, { replace: true });
-                                }}
-                                {...extraProps}
-                              >
-                                <Button
-                                  size="sm"
-                                  className={styles.issueLink}
-                                  icon={getIcon(link.message)}
-                                  variant="secondary"
-                                >
-                                  {link.message}
-                                </Button>
-                              </a>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </Collapse>
-              )}
-            </div>
-          );
-        });
+                    <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
+                  </div>
+                }
+                isOpen={isOpen[step.stepID] ?? false}
+                collapsible={true}
+                onToggle={() => handleToggle(step.stepID)}
+              >
+                {step.issues.map((issue) => (
+                  <div key={issue.item} className={styles.issue} ref={issue.item === scrollToStep ? scrollToRef : null}>
+                    <div className={styles.issueReason}>
+                      {issue.item}
+                      {issue.links.map((link) => {
+                        const extraProps = link.url.startsWith('http')
+                          ? { target: '_self', rel: 'noopener noreferrer' }
+                          : {};
+                        return (
+                          <a
+                            key={link.url}
+                            href={link.url}
+                            onClick={() => {
+                              const params = new URLSearchParams(location.search);
+                              params.set('scrollToStep', issue.item);
+                              navigate({ search: params.toString() }, { replace: true });
+                            }}
+                            {...extraProps}
+                          >
+                            <Button
+                              size="sm"
+                              className={styles.issueLink}
+                              icon={getIcon(link.message)}
+                              variant="secondary"
+                            >
+                              {link.message}
+                            </Button>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </Collapse>
+            )}
+          </div>
+        ));
       })}
     </div>
   );
