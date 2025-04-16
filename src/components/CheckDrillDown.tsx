@@ -159,6 +159,12 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
       backgroundColor: theme.colors.background.secondary,
       padding: theme.spacing(2),
       marginBottom: theme.spacing(1),
+      borderColor: 'transparent',
+      borderStyle: 'solid',
+      ':hover': {
+        borderColor: theme.colors.border.strong,
+        borderStyle: 'solid',
+      },
     }),
     issueReason: css({
       color: theme.colors.text.primary,
