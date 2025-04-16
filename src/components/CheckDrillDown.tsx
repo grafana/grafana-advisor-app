@@ -53,6 +53,12 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
     navigate({ search: params.toString() }, { replace: true });
   };
 
+  const handleStepClick = (item: string) => {
+    const params = new URLSearchParams(location.search);
+    params.set('scrollToStep', item);
+    navigate({ search: params.toString() }, { replace: true });
+  };
+
   return (
     <div className={styles.container}>
       {Object.values(checkSummary.checks).map((check) => {
@@ -62,7 +68,7 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
         }
 
         return Object.values(check.steps).map((step) => (
-          <div key={step.stepID} className={styles.spacingTopMd} data-step-id={step.stepID}>
+          <div key={step.stepID} className={styles.spacingTopMd}>
             {step.issues.length > 0 && (
               <Collapse
                 label={
@@ -87,16 +93,7 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                           ? { target: '_self', rel: 'noopener noreferrer' }
                           : {};
                         return (
-                          <a
-                            key={link.url}
-                            href={link.url}
-                            onClick={() => {
-                              const params = new URLSearchParams(location.search);
-                              params.set('scrollToStep', issue.item);
-                              navigate({ search: params.toString() }, { replace: true });
-                            }}
-                            {...extraProps}
-                          >
+                          <a key={link.url} href={link.url} onClick={() => handleStepClick(issue.item)} {...extraProps}>
                             <Button
                               size="sm"
                               className={styles.issueLink}
