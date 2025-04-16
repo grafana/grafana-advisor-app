@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import { Button, Collapse, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
@@ -7,11 +7,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSummaryType }) {
   const styles = useStyles2(getStyles(checkSummary.severity));
-  const [isOpen, setIsOpen] = React.useState<Record<string, boolean>>({});
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const navigate = useNavigate();
   const scrollToRef = useRef<HTMLDivElement>(null);
-  const [scrollToStep, setScrollToStep] = React.useState<string | null>(null);
+  const [scrollToStep, setScrollToStep] = useState<string | null>(null);
 
   useEffect(() => {
     // Restore state from URL
