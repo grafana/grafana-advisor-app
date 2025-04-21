@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import Home from './Home';
 import { CheckSummaries, Severity } from 'types';
+import { renderWithRouter } from 'components/test/utils';
 
 // Mock PluginPage to render its actions prop
 jest.mock('@grafana/runtime', () => ({
@@ -98,7 +99,7 @@ describe('Home', () => {
       error,
     });
 
-    render(<Home />);
+    renderWithRouter(<Home />);
     expect(await screen.findByText(/Error: 500 Internal Server Error/)).toBeInTheDocument();
   });
 
@@ -125,7 +126,7 @@ describe('Home', () => {
       error: undefined,
     });
 
-    render(<Home />);
+    renderWithRouter(<Home />);
     expect(await screen.findByText(/No report found/)).toBeInTheDocument();
   });
 
@@ -154,12 +155,12 @@ describe('Home', () => {
       error: undefined,
     });
 
-    render(<Home />);
+    renderWithRouter(<Home />);
     expect(await screen.findByText(/No issues found/)).toBeInTheDocument();
   });
 
   it('shows check summaries when issues exist', async () => {
-    render(<Home />);
+    renderWithRouter(<Home />);
     await waitFor(() => {
       expect(screen.getByText(/3 items needs to be fixed/i)).toBeInTheDocument();
       expect(screen.getByText(/1 items may need your attention/i)).toBeInTheDocument();
@@ -167,7 +168,7 @@ describe('Home', () => {
   });
 
   it('shows last checked time when not in empty state', async () => {
-    render(<Home />);
+    renderWithRouter(<Home />);
     await waitFor(() => {
       expect(screen.getByText(/last checked:/i)).toBeInTheDocument();
       expect(screen.getByText('2023. 01. 01. 00:00')).toBeInTheDocument();
@@ -197,7 +198,7 @@ describe('Home', () => {
       error: undefined,
     });
 
-    render(<Home />);
+    renderWithRouter(<Home />);
     await waitFor(() => {
       expect(screen.queryByText(/last checked:/i)).not.toBeInTheDocument();
     });

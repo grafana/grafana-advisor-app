@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { CheckSummary } from './CheckSummary';
 import userEvent from '@testing-library/user-event';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
+import { renderWithRouter } from './test/utils';
 
 export function getMockCheckSummary(): CheckSummaryType {
   return {
@@ -47,21 +48,29 @@ export function getMockCheckSummary(): CheckSummaryType {
 describe('CheckSummary', () => {
   const mockCheckSummary = getMockCheckSummary();
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders check summary title with correct count', () => {
-    render(<CheckSummary checkSummary={mockCheckSummary} />);
+    renderWithRouter(<CheckSummary checkSummary={mockCheckSummary} />);
     expect(screen.getByText(/2 items needs to be fixed/i)).toBeInTheDocument();
   });
 
   it('shows drilldown content when expanded', async () => {
     const user = userEvent.setup();
-
-    render(<CheckSummary checkSummary={mockCheckSummary} />);
+    renderWithRouter(<CheckSummary checkSummary={mockCheckSummary} />);
 
     // Click to expand
     await user.click(screen.getByText(/Test Check/i));
 
     // Check if drilldown content is visible
     expect(screen.getByText('Step 1 failed for 2 Test Check Items.')).toBeInTheDocument();
+
+    // Click to expand step 1
+    await user.click(screen.getByText(/Step 1/i));
+
+    // Check if drilldown content is visible
     expect(screen.getByText('Issue 1')).toBeInTheDocument();
     expect(screen.getByText('Issue 2')).toBeInTheDocument();
   });
@@ -83,7 +92,7 @@ describe('CheckSummary', () => {
       },
     };
 
-    const { container } = render(<CheckSummary checkSummary={noIssuesCheckSummary} />);
+    const { container } = renderWithRouter(<CheckSummary checkSummary={noIssuesCheckSummary} />);
     expect(container.firstChild).toBeNull();
   });
 });
