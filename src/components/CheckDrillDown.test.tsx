@@ -4,8 +4,7 @@ import userEvent from '@testing-library/user-event';
 import CheckDrillDown from './CheckDrillDown';
 import { CheckSummaries, Severity } from 'types';
 import { getEmptyCheckSummary, getEmptyCheckTypes } from 'api/api';
-import { renderWithRouter } from '../pages/Home.test';
-
+import { renderWithRouter } from './test/utils';
 describe('Components/CheckDrillDown', () => {
   let checkSummaries: CheckSummaries;
 
