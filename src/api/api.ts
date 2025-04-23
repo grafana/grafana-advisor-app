@@ -5,6 +5,7 @@ import {
   useListCheckTypeQuery,
   useCreateCheckMutation,
   useDeleteCheckMutation,
+  useUpdateCheckMutation,
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config } from '@grafana/runtime';
@@ -12,6 +13,7 @@ import { CheckTypeSpec } from 'generated/endpoints.gen';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
+export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -43,6 +45,13 @@ export function useCheckSummaries() {
       }
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
+      checkSummary[Severity.High].checks[checkType].name = check.metadata.name ?? '';
+      checkSummary[Severity.Low].checks[checkType].name = check.metadata.name ?? '';
+      const checkTypeDefinition = checkTypes.find((ct) => ct.metadata.name === checkType);
+      const canRetry = !!checkTypeDefinition?.metadata.annotations?.[RETRY_ANNOTATION];
+      // Enable retry if the check type has a retry annotation
+      checkSummary[Severity.High].checks[checkType].canRetry = canRetry;
+      checkSummary[Severity.Low].checks[checkType].canRetry = canRetry;
 
       const createdTimestamp = new Date(check.metadata.creationTimestamp ?? 0);
       const prevCreatedTimestamp = checkSummary[Severity.High].created;
@@ -51,6 +60,7 @@ export function useCheckSummaries() {
         checkSummary[Severity.Low].created = createdTimestamp;
       }
 
+      const retryAnnotation = check.metadata.annotations?.[RETRY_ANNOTATION];
       if (check.status.report.failures) {
         for (const failure of check.status.report.failures) {
           const severity = failure.severity.toLowerCase() as Severity;
@@ -58,7 +68,10 @@ export function useCheckSummaries() {
           const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
           persistedCheck.issueCount++;
           persistedStep.issueCount++;
-          persistedStep.issues.push(failure);
+          persistedStep.issues.push({
+            ...failure,
+            isRetrying: retryAnnotation ? failure.itemID === retryAnnotation : false,
+          });
         }
       }
     }
@@ -80,7 +93,8 @@ export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>):
       (acc, checkType) => ({
         ...acc,
         [checkType.name]: {
-          name: checkType.name,
+          type: checkType.name,
+          name: '',
           description: '',
           totalCheckCount: 0,
           issueCount: 0,
@@ -261,7 +275,11 @@ function useIncompleteChecks(names?: string[]) {
     // Filter incomplete checks from the most recent ones
     return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
-      .filter((check) => !check.metadata.annotations?.[STATUS_ANNOTATION])
+      .filter(
+        (check) =>
+          !check.metadata.annotations?.[STATUS_ANNOTATION] ||
+          check.metadata.annotations?.[RETRY_ANNOTATION] !== undefined
+      )
       .map((check) => check.metadata.name ?? '');
   }, [listChecksState.data, names]);
 
@@ -283,5 +301,30 @@ export function useCompletedChecks(names?: string[]) {
     isCompleted: incompleteChecks.length === 0,
     isLoading,
     ...incompleteChecksState,
+  };
+}
+
+export function useRetryCheck() {
+  const [updateCheck, updateCheckState] = useUpdateCheckMutation();
+
+  const retryCheck = useCallback(
+    (checkName: string, itemID: string) => {
+      updateCheck({
+        name: checkName,
+        patch: [
+          {
+            op: 'add',
+            path: '/metadata/annotations/advisor.grafana.app~1retry',
+            value: itemID,
+          },
+        ],
+      });
+    },
+    [updateCheck]
+  );
+
+  return {
+    retryCheck,
+    retryCheckState: updateCheckState,
   };
 }

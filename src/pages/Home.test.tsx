@@ -15,11 +15,13 @@ jest.mock('@grafana/runtime', () => ({
   ),
 }));
 
-const mockCheck = (name: string, description: string, issueCount: number) => ({
+const mockCheck = (name: string, type: string, description: string, issueCount: number) => ({
   name,
+  type,
   description,
   totalCheckCount: issueCount,
   issueCount,
+  canRetry: true,
   steps: {},
 });
 
@@ -30,8 +32,8 @@ const defaultSummaries = {
     description: 'High priority issues',
     severity: Severity.High,
     checks: {
-      'check-1': mockCheck('Check 1', 'First check', 1),
-      'check-2': mockCheck('Check 2', 'Second check', 2),
+      'check-1': mockCheck('check-1', 'datasource', 'Check 1', 1),
+      'check-2': mockCheck('check-2', 'datasource', 'Check 2', 2),
     },
   },
   low: {
@@ -40,7 +42,7 @@ const defaultSummaries = {
     description: 'Low priority issues',
     severity: Severity.Low,
     checks: {
-      'check-3': mockCheck('Check 3', 'Third check', 1),
+      'check-3': mockCheck('check-3', 'datasource', 'Check 3', 1),
     },
   },
 } as CheckSummaries;
@@ -49,6 +51,10 @@ const mockUseCheckSummaries = jest.fn();
 const mockUseCompletedChecks = jest.fn();
 const mockUseCreateChecks = jest.fn();
 const mockUseDeleteChecks = jest.fn();
+const mockUseRetryCheck = jest.fn().mockReturnValue({
+  retryCheck: jest.fn(),
+  retryCheckState: { isError: false, error: undefined },
+});
 
 // Mock the entire api module
 jest.mock('api/api', () => ({
@@ -56,6 +62,7 @@ jest.mock('api/api', () => ({
   useCompletedChecks: () => mockUseCompletedChecks(),
   useCreateChecks: () => mockUseCreateChecks(),
   useDeleteChecks: () => mockUseDeleteChecks(),
+  useRetryCheck: () => mockUseRetryCheck(),
 }));
 
 describe('Home', () => {
@@ -139,7 +146,7 @@ describe('Home', () => {
           description: 'High priority issues',
           severity: Severity.High,
           checks: {
-            'check-1': mockCheck('Check 1', 'First check', 0),
+            'check-1': mockCheck('check-1', 'datasource', 'Check 1', 0),
           },
         },
         low: {
