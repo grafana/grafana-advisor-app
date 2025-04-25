@@ -21,9 +21,11 @@ export type CheckSummary = {
 // A check is a group of related validation steps (e.g. for datasources or plugins)
 export type Check = {
   name: string;
+  type: string;
   description: string;
   totalCheckCount: number;
   issueCount: number;
+  canRetry: boolean;
   steps: Record<string, CheckStep>;
 };
 
@@ -34,5 +36,9 @@ export type CheckStep = {
   resolution: string;
   stepID: string;
   issueCount: number;
-  issues: CheckReportFailure[];
+  issues: CheckReportFailureExtended[];
+};
+
+export type CheckReportFailureExtended = CheckReportFailure & {
+  isRetrying: boolean;
 };

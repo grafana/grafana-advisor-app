@@ -3,12 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Actions from './Actions';
 
-const mockUseCompletedChecks = jest.fn();
 const mockUseCreateChecks = jest.fn();
 const mockUseDeleteChecks = jest.fn();
 
 jest.mock('api/api', () => ({
-  useCompletedChecks: () => mockUseCompletedChecks(),
   useCreateChecks: () => mockUseCreateChecks(),
   useDeleteChecks: () => mockUseDeleteChecks(),
 }));
@@ -18,11 +16,6 @@ describe('Actions', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockUseCompletedChecks.mockReturnValue({
-      isCompleted: true,
-      isLoading: false,
-    });
 
     mockUseCreateChecks.mockReturnValue({
       createChecks: jest.fn(),
@@ -36,7 +29,7 @@ describe('Actions', () => {
   });
 
   it('renders refresh and delete buttons', async () => {
-    render(<Actions />);
+    render(<Actions isCompleted={true} />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /delete reports/i })).toBeInTheDocument();
@@ -44,12 +37,7 @@ describe('Actions', () => {
   });
 
   it('shows loading state when running checks', async () => {
-    mockUseCompletedChecks.mockReturnValue({
-      isCompleted: false,
-      isLoading: true,
-    });
-
-    render(<Actions />);
+    render(<Actions isCompleted={false} />);
     await waitFor(() => {
       expect(screen.getByText('Running checks...')).toBeInTheDocument();
     });
@@ -67,14 +55,14 @@ describe('Actions', () => {
       createCheckState: { isError: true, error },
     });
 
-    render(<Actions />);
+    render(<Actions isCompleted={true} />);
     await waitFor(() => {
       expect(screen.getByText(/error while running checks: 500 internal server error/i)).toBeInTheDocument();
     });
   });
 
   it('shows confirmation modal when delete button clicked', async () => {
-    render(<Actions />);
+    render(<Actions isCompleted={true} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
@@ -91,7 +79,7 @@ describe('Actions', () => {
       deleteChecksState: { isLoading: false, isError: false, error: undefined },
     });
 
-    render(<Actions />);
+    render(<Actions isCompleted={true} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
@@ -115,7 +103,7 @@ describe('Actions', () => {
       deleteChecksState: { isLoading: false, isError: true, error },
     });
 
-    render(<Actions />);
+    render(<Actions isCompleted={true} />);
     await waitFor(() => {
       expect(screen.getByText(/error deleting checks: 500 internal server error/i)).toBeInTheDocument();
     });
@@ -128,7 +116,7 @@ describe('Actions', () => {
       createCheckState: { isError: false, error: undefined },
     });
 
-    render(<Actions />);
+    render(<Actions isCompleted={true} />);
     const refreshButton = screen.getByRole('button', { name: /refresh/i });
     await user.click(refreshButton);
 

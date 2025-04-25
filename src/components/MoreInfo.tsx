@@ -16,9 +16,9 @@ export function MoreInfo({ checkSummaries }: Props) {
     <Collapse label={'More info'} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible={true}>
       <div className={styles.container}>
         {Object.values(checkSummaries.high.checks).map((check) => (
-          <div key={check.name} className={styles.check}>
+          <div key={check.type} className={styles.check}>
             <div className={styles.checkTitle}>
-              {check.totalCheckCount} {check.name}(s) analyzed
+              {check.totalCheckCount} {check.type}(s) analyzed
             </div>
             <div>
               {Object.values(check.steps).map((step) => (

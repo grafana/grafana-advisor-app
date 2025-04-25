@@ -6,7 +6,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { CheckSummary } from 'components/CheckSummary';
 import { MoreInfo } from 'components/MoreInfo';
 import Actions from 'components/Actions';
-import { useCheckSummaries } from 'api/api';
+import { useCheckSummaries, useCompletedChecks, useRetryCheck } from 'api/api';
 import { formatDate } from 'utils';
 
 export default function Home() {
@@ -14,6 +14,8 @@ export default function Home() {
   const { summaries, isLoading, isError, error } = useCheckSummaries();
   const [isEmpty, setIsEmpty] = useState(false);
   const [isHealthy, setIsHealthy] = useState(false);
+  const { isCompleted } = useCompletedChecks();
+  const { retryCheck } = useRetryCheck();
 
   useEffect(() => {
     if (!isLoading && !isError) {
@@ -23,6 +25,8 @@ export default function Home() {
         const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
         const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
         setIsHealthy(highIssueCount + lowIssueCount === 0);
+      } else {
+        setIsHealthy(false);
       }
     }
   }, [isLoading, isError, summaries]);
@@ -35,7 +39,7 @@ export default function Home() {
       }}
       actions={
         <>
-          <Actions />
+          <Actions isCompleted={isCompleted} />
           {!isEmpty && (
             <div className={styles.lastChecked}>
               Last checked: <strong>{summaries ? formatDate(summaries.high.created) : '...'}</strong>
@@ -85,8 +89,8 @@ export default function Home() {
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
               <Stack direction="column">
-                <CheckSummary checkSummary={summaries.high} />
-                <CheckSummary checkSummary={summaries.low} />
+                <CheckSummary checkSummary={summaries.high} retryCheck={retryCheck} isCompleted={isCompleted} />
+                <CheckSummary checkSummary={summaries.low} retryCheck={retryCheck} isCompleted={isCompleted} />
                 <MoreInfo checkSummaries={summaries} />
               </Stack>
             </div>

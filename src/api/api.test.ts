@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import {
   useCheckSummaries,
   useCheckTypes,
@@ -8,6 +8,8 @@ import {
   useCompletedChecks,
   STATUS_ANNOTATION,
   CHECK_TYPE_LABEL,
+  RETRY_ANNOTATION,
+  useRetryCheck,
 } from './api';
 import { config } from '@grafana/runtime';
 
@@ -16,12 +18,14 @@ const mockListCheckQuery = jest.fn();
 const mockListCheckTypeQuery = jest.fn();
 const mockCreateCheckMutation = jest.fn();
 const mockDeleteCheckMutation = jest.fn();
+const mockUpdateCheckMutation = jest.fn();
 
 jest.mock('generated', () => ({
   useListCheckQuery: (arg0: any, arg1: any) => mockListCheckQuery(arg0, arg1),
   useListCheckTypeQuery: () => mockListCheckTypeQuery(),
   useCreateCheckMutation: () => mockCreateCheckMutation(),
   useDeleteCheckMutation: () => mockDeleteCheckMutation(),
+  useUpdateCheckMutation: () => mockUpdateCheckMutation(),
 }));
 
 // Mock config
@@ -220,6 +224,80 @@ describe('API Hooks', () => {
       expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
       expect(result.current.summaries.low.checks.type1.issueCount).toBe(1);
     });
+
+    it('enables retry if the check type has a retry annotation', () => {
+      const mockCheckTypes = {
+        items: [
+          {
+            metadata: {
+              name: 'type1',
+              annotations: { [RETRY_ANNOTATION]: 'item1' },
+            },
+            spec: {
+              name: 'type1',
+              steps: [{ stepID: 'step1', title: 'Step 1', description: 'desc', resolution: 'res' }],
+            },
+          },
+        ],
+      };
+      mockListCheckTypeQuery.mockReturnValue({
+        data: mockCheckTypes,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCheckSummaries());
+      expect(result.current.summaries.high.checks.type1.canRetry).toBe(true);
+    });
+
+    it('marks a failure as retrying if the itemID matches the retry annotation', () => {
+      const mockCheckTypes = {
+        items: [
+          {
+            metadata: { name: 'type1' },
+            spec: {
+              name: 'type1',
+              steps: [{ stepID: 'step1', title: 'Step 1', description: 'desc', resolution: 'res' }],
+            },
+          },
+        ],
+      };
+
+      const mockChecks = {
+        items: [
+          {
+            metadata: {
+              name: 'check1',
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
+              creationTimestamp: '2024-01-01T00:00:00Z',
+              annotations: { [STATUS_ANNOTATION]: 'processed', [RETRY_ANNOTATION]: 'item1' },
+            },
+            status: {
+              report: {
+                count: 1,
+                failures: [{ stepID: 'step1', severity: 'High', itemID: 'item1' }],
+              },
+            },
+          },
+        ],
+      };
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: mockCheckTypes,
+        isLoading: false,
+        isError: false,
+      });
+
+      mockListCheckQuery.mockReturnValue({
+        data: mockChecks,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCheckSummaries());
+      expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
+      expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isRetrying).toBe(true);
+    });
   });
 
   describe('useCreateChecks', () => {
@@ -300,7 +378,7 @@ describe('API Hooks', () => {
       expect(result.current.isCompleted).toBe(true);
     });
 
-    it('polls when there are incomplete checks', () => {
+    it('polls when there are incomplete checks', async () => {
       mockListCheckQuery.mockReturnValue({
         data: {
           items: [
@@ -317,10 +395,10 @@ describe('API Hooks', () => {
         isError: false,
       });
 
-      act(() => {
+      await waitFor(() => {
         renderHook(() => useCompletedChecks());
+        expect(mockListCheckQuery).toHaveBeenCalledWith({}, { pollingInterval: 2000, refetchOnMountOrArgChange: true });
       });
-      expect(mockListCheckQuery).toHaveBeenCalledWith({}, { pollingInterval: 2000, refetchOnMountOrArgChange: true });
     });
 
     it('filters by provided names', () => {
@@ -379,6 +457,43 @@ describe('API Hooks', () => {
 
       const { result } = renderHook(() => useCompletedChecks());
       expect(result.current.isCompleted).toBe(true);
+    });
+
+    it('marks a check as incomplete if it has a retry annotation', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                creationTimestamp: '2024-01-02T00:00:00Z',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed', [RETRY_ANNOTATION]: 'item1' },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks());
+      expect(result.current.isCompleted).toBe(false);
+    });
+  });
+
+  describe('useRetryCheck', () => {
+    it('calls update mutation with the correct parameters', () => {
+      const mockUpdateCheck = jest.fn();
+      mockUpdateCheckMutation.mockReturnValue([mockUpdateCheck, { isError: false }]);
+
+      const { result } = renderHook(() => useRetryCheck());
+      result.current.retryCheck('check1', 'item1');
+
+      expect(mockUpdateCheck).toHaveBeenCalledWith({
+        name: 'check1',
+        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1retry', value: 'item1' }],
+      });
     });
   });
 });

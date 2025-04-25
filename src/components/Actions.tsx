@@ -3,10 +3,9 @@ import { Button, ConfirmModal, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
-import { useCompletedChecks, useDeleteChecks, useCreateChecks } from 'api/api';
+import { useDeleteChecks, useCreateChecks } from 'api/api';
 
-export default function Actions() {
-  const { isCompleted, isLoading } = useCompletedChecks();
+export default function Actions({ isCompleted }: { isCompleted: boolean }) {
   const { createChecks, createCheckState } = useCreateChecks();
   const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
@@ -34,11 +33,11 @@ export default function Actions() {
               e.preventDefault();
               createChecks();
             }}
-            disabled={isLoading || !isCompleted}
+            disabled={!isCompleted}
             variant="secondary"
-            icon={isLoading || !isCompleted ? 'spinner' : 'sync'}
+            icon={!isCompleted ? 'spinner' : 'sync'}
           >
-            {isLoading || !isCompleted ? 'Running checks...' : 'Refresh'}
+            {isCompleted ? 'Refresh' : 'Running checks...'}
           </Button>
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}

@@ -5,7 +5,13 @@ import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSummaryType }) {
+export interface CheckDrillDownProps {
+  checkSummary: CheckSummaryType;
+  retryCheck: (checkName: string, item: string) => void;
+  isCompleted: boolean;
+}
+
+export default function CheckDrillDown({ checkSummary, retryCheck, isCompleted }: CheckDrillDownProps) {
   const styles = useStyles2(getStyles(checkSummary.severity));
   const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
   const location = useLocation();
@@ -59,6 +65,10 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
     navigate({ search: params.toString() }, { replace: true });
   };
 
+  const handleRetryCheck = (checkName: string, item: string) => {
+    retryCheck(checkName, item);
+  };
+
   return (
     <div className={styles.container}>
       {Object.values(checkSummary.checks).map((check) => {
@@ -74,7 +84,7 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                 label={
                   <div className={styles.description}>
                     <div>
-                      {step.name} failed for {step.issues.length} {check.name}
+                      {step.name} failed for {step.issues.length} {check.type}
                       {step.issues.length > 1 ? 's' : ''}.
                     </div>
                     <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
@@ -88,6 +98,17 @@ export default function CheckDrillDown({ checkSummary }: { checkSummary: CheckSu
                   <div key={issue.item} className={styles.issue} ref={issue.item === scrollToStep ? scrollToRef : null}>
                     <div className={styles.issueReason}>
                       {issue.item}
+                      {check.canRetry && (
+                        <Button
+                          size="sm"
+                          className={styles.issueLink}
+                          icon={issue.isRetrying ? 'spinner' : 'sync'}
+                          variant="secondary"
+                          title="Retry check"
+                          disabled={!isCompleted}
+                          onClick={() => handleRetryCheck(check.name, issue.itemID)}
+                        />
+                      )}
                       {issue.links.map((link) => {
                         const extraProps = link.url.startsWith('http')
                           ? { target: '_self', rel: 'noopener noreferrer' }

@@ -13,10 +13,12 @@ export function getMockCheckSummary(): CheckSummaryType {
     severity: Severity.High,
     checks: {
       testCheck: {
-        name: 'Test Check Item',
+        name: 'test1',
+        type: 'test',
         description: 'Test check description',
         totalCheckCount: 5,
         issueCount: 2,
+        canRetry: true,
         steps: {
           step1: {
             name: 'Step 1',
@@ -30,12 +32,16 @@ export function getMockCheckSummary(): CheckSummaryType {
                 links: [],
                 severity: Severity.High,
                 stepID: 'step1',
+                itemID: 'item1',
+                isRetrying: false,
               },
               {
                 item: 'Issue 2',
                 links: [],
                 severity: Severity.High,
                 stepID: 'step1',
+                itemID: 'item2',
+                isRetrying: false,
               },
             ],
           },
@@ -47,25 +53,30 @@ export function getMockCheckSummary(): CheckSummaryType {
 
 describe('CheckSummary', () => {
   const mockCheckSummary = getMockCheckSummary();
+  const defaultProps = {
+    checkSummary: mockCheckSummary,
+    retryCheck: jest.fn(),
+    isCompleted: true,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders check summary title with correct count', () => {
-    renderWithRouter(<CheckSummary checkSummary={mockCheckSummary} />);
+    renderWithRouter(<CheckSummary {...defaultProps} />);
     expect(screen.getByText(/2 items needs to be fixed/i)).toBeInTheDocument();
   });
 
   it('shows drilldown content when expanded', async () => {
     const user = userEvent.setup();
-    renderWithRouter(<CheckSummary checkSummary={mockCheckSummary} />);
+    renderWithRouter(<CheckSummary {...defaultProps} />);
 
     // Click to expand
     await user.click(screen.getByText(/Test Check/i));
 
     // Check if drilldown content is visible
-    expect(screen.getByText('Step 1 failed for 2 Test Check Items.')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 failed for 2 tests.')).toBeInTheDocument();
 
     // Click to expand step 1
     await user.click(screen.getByText(/Step 1/i));
@@ -92,7 +103,7 @@ describe('CheckSummary', () => {
       },
     };
 
-    const { container } = renderWithRouter(<CheckSummary checkSummary={noIssuesCheckSummary} />);
+    const { container } = renderWithRouter(<CheckSummary {...defaultProps} checkSummary={noIssuesCheckSummary} />);
     expect(container.firstChild).toBeNull();
   });
 });
