@@ -15,6 +15,7 @@ export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 
+// Test
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
   const { checkTypes, ...listCheckTypesState } = useCheckTypes();
