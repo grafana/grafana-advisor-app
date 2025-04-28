@@ -10,7 +10,7 @@ import {
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config } from '@grafana/runtime';
-import { CheckType, CheckTypeSpec } from 'generated/endpoints.gen';
+import { CheckTypeSpec } from 'generated/endpoints.gen';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
