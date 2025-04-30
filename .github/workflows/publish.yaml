@@ -20,10 +20,13 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   cd:
     name: CD
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@main
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@bdb7870609eebc6d4795493affc2aa35bcbec829
     with:
       branch: ${{ github.event.inputs.branch }}
       environment: ${{ github.event.inputs.environment }}
