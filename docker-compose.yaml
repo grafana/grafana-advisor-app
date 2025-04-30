@@ -9,6 +9,7 @@ services:
         grafana_version: ${GRAFANA_VERSION:-main}
     environment:
       - GF_FEATURE_TOGGLES_GRAFANAADVISOR=true
+      - GF_PLUGINS_PREINSTALL_DISABLED=true # Avoid installing the plugin from catalog
     volumes:
       - ./custom.ini:/etc/grafana/grafana.ini
     
