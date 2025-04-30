@@ -6,10 +6,6 @@ on:
       - main
   pull_request:
 
-permissions:
-  contents: none
-  id-token: none
-
 jobs:
   ci:
     name: CI
