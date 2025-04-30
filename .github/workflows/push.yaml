@@ -6,14 +6,13 @@ on:
       - main
   pull_request:
 
-permissions:
-  contents: none
-  id-token: none
-
 jobs:
   ci:
     name: CI
     uses: grafana/plugin-ci-workflows/.github/workflows/ci.yml@bdb7870609eebc6d4795493affc2aa35bcbec829
+    permissions:
+      contents: none
+      id-token: none
     with:
       plugin-version-suffix: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || '' }}
       run-playwright: true
