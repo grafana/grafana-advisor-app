@@ -33,3 +33,4 @@ jobs:
       docs-only: ${{ fromJSON(github.event.inputs.docs-only) }}
       # Disable playwright tests for now
       run-playwright: false
+      grafana-cloud-deployment-type: provisioned
