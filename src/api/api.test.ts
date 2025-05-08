@@ -10,6 +10,8 @@ import {
   CHECK_TYPE_LABEL,
   RETRY_ANNOTATION,
   useRetryCheck,
+  useSkipCheckTypeStep,
+  IGNORE_STEPS_ANNOTATION,
 } from './api';
 import { config } from '@grafana/runtime';
 
@@ -19,6 +21,7 @@ const mockListCheckTypeQuery = jest.fn();
 const mockCreateCheckMutation = jest.fn();
 const mockDeleteCheckMutation = jest.fn();
 const mockUpdateCheckMutation = jest.fn();
+const mockUpdateCheckTypeMutation = jest.fn();
 
 jest.mock('generated', () => ({
   useListCheckQuery: (arg0: any, arg1: any) => mockListCheckQuery(arg0, arg1),
@@ -26,6 +29,7 @@ jest.mock('generated', () => ({
   useCreateCheckMutation: () => mockCreateCheckMutation(),
   useDeleteCheckMutation: () => mockDeleteCheckMutation(),
   useUpdateCheckMutation: () => mockUpdateCheckMutation(),
+  useUpdateCheckTypeMutation: () => mockUpdateCheckTypeMutation(),
 }));
 
 // Mock config
@@ -68,6 +72,30 @@ describe('API Hooks', () => {
 
       const { result } = renderHook(() => useCheckTypes());
       expect(result.current.checkTypes).toEqual(mockCheckTypes);
+    });
+  });
+
+  describe('useSkipCheckTypeStep', () => {
+    it('calls updateCheckTypeMutation with the correct parameters', () => {
+      const mockUpdateCheckType = jest.fn();
+      mockUpdateCheckTypeMutation.mockReturnValue([mockUpdateCheckType, { isError: false }]);
+      const { result } = renderHook(() => useSkipCheckTypeStep());
+      result.current.updateIgnoreStepsAnnotation('type1', ['step1']);
+      expect(mockUpdateCheckType).toHaveBeenCalledWith({
+        name: 'type1',
+        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1ignore-steps', value: 'step1' }],
+      });
+    });
+
+    it('sets the default value if all the steps are removed', () => {
+      const mockUpdateCheckType = jest.fn();
+      mockUpdateCheckTypeMutation.mockReturnValue([mockUpdateCheckType, { isError: false }]);
+      const { result } = renderHook(() => useSkipCheckTypeStep());
+      result.current.updateIgnoreStepsAnnotation('type1', []);
+      expect(mockUpdateCheckType).toHaveBeenCalledWith({
+        name: 'type1',
+        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1ignore-steps', value: '1' }],
+      });
     });
   });
 
@@ -297,6 +325,102 @@ describe('API Hooks', () => {
       const { result } = renderHook(() => useCheckSummaries());
       expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
       expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isRetrying).toBe(true);
+    });
+
+    it('removes a check type step if it is ignored', () => {
+      const mockCheckTypes = {
+        items: [
+          {
+            metadata: { name: 'type1' },
+            spec: {
+              name: 'type1',
+              steps: [
+                { stepID: 'step1', title: 'Step 1', description: 'desc', resolution: 'res' },
+                { stepID: 'step2', title: 'Step 2', description: 'desc', resolution: 'res' },
+              ],
+            },
+          },
+        ],
+      };
+
+      const mockChecks = {
+        items: [
+          {
+            metadata: {
+              name: 'check1',
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
+              creationTimestamp: '2024-01-01T00:00:00Z',
+              annotations: { [STATUS_ANNOTATION]: 'processed', [IGNORE_STEPS_ANNOTATION]: 'step1' },
+            },
+            status: { report: { count: 1, failures: [] } },
+          },
+        ],
+      };
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: mockCheckTypes,
+        isLoading: false,
+        isError: false,
+      });
+
+      mockListCheckQuery.mockReturnValue({
+        data: mockChecks,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCheckSummaries());
+      expect(result.current.summaries.high.checks.type1.steps.step1).toBeUndefined();
+      expect(result.current.summaries.low.checks.type1.steps.step1).toBeUndefined();
+      expect(result.current.summaries.high.checks.type1.steps.step2).toBeDefined();
+      expect(result.current.summaries.low.checks.type1.steps.step2).toBeDefined();
+    });
+
+    it('removes a check type if all steps are ignored', () => {
+      const mockCheckTypes = {
+        items: [
+          {
+            metadata: { name: 'type1' },
+            spec: {
+              name: 'type1',
+              steps: [
+                { stepID: 'step1', title: 'Step 1', description: 'desc', resolution: 'res' },
+                { stepID: 'step2', title: 'Step 2', description: 'desc', resolution: 'res' },
+              ],
+            },
+          },
+        ],
+      };
+
+      const mockChecks = {
+        items: [
+          {
+            metadata: {
+              name: 'check1',
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
+              creationTimestamp: '2024-01-01T00:00:00Z',
+              annotations: { [STATUS_ANNOTATION]: 'processed', [IGNORE_STEPS_ANNOTATION]: 'step1,step2' },
+            },
+            status: { report: { count: 1, failures: [] } },
+          },
+        ],
+      };
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: mockCheckTypes,
+        isLoading: false,
+        isError: false,
+      });
+
+      mockListCheckQuery.mockReturnValue({
+        data: mockChecks,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCheckSummaries());
+      expect(result.current.summaries.high.checks.type1).toBeUndefined();
+      expect(result.current.summaries.low.checks.type1).toBeUndefined();
     });
   });
 
