@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, FieldSet, Card, LoadingPlaceholder, Switch, Stack } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { IGNORE_STEPS_ANNOTATION, IGNORE_STEPS_ANNOTATION_LIST, useCheckTypes, useSkipCheckTypeStep } from 'api/api';
-import { CheckType } from 'generated/endpoints.gen';
 
 export type JsonData = {
   apiUrl?: string;
@@ -11,36 +10,8 @@ export type JsonData = {
 
 export const AppConfig = () => {
   const s = useStyles2(getStyles);
-  const { checkTypes, isLoading, isError, refetch } = useCheckTypes();
+  const { checkTypes, isLoading, isError } = useCheckTypes();
   const { updateIgnoreStepsAnnotation, updateCheckTypeState } = useSkipCheckTypeStep();
-  const [ignoreSteps, setIgnoreSteps] = useState<Record<string, string[]>>({});
-  useEffect(() => {
-    refetch(); // refetch the check types to get the latest ignore steps
-  }, [refetch]);
-  const setIgnoreStep = (checkType: CheckType, stepId: string, ignore: boolean) => {
-    const newIgnoreSteps = ignoreSteps[checkType.metadata.name!];
-    if (ignore) {
-      newIgnoreSteps.push(stepId);
-    } else {
-      newIgnoreSteps.splice(newIgnoreSteps.indexOf(stepId), 1);
-    }
-    setIgnoreSteps({ ...ignoreSteps, [checkType.metadata.name!]: newIgnoreSteps });
-    updateIgnoreStepsAnnotation(checkType.metadata.name!, newIgnoreSteps);
-  };
-  useEffect(() => {
-    if (checkTypes) {
-      const newIgnoredSteps: Record<string, string[]> = {};
-      checkTypes.forEach((checkType) => {
-        newIgnoredSteps[`${checkType.metadata.name}`] = [];
-        // A step is ignored if it's listed as part of the IGNORE_STEPS_ANNOTATION_LIST
-        const ignoreAnnotation = checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION_LIST];
-        if (ignoreAnnotation && ignoreAnnotation.length > 1) {
-          newIgnoredSteps[`${checkType.metadata.name}`] = ignoreAnnotation.split(',');
-        }
-      });
-      setIgnoreSteps(newIgnoredSteps);
-    }
-  }, [checkTypes]);
 
   return (
     <FieldSet label="Available Check Types">
@@ -51,12 +22,10 @@ export const AppConfig = () => {
       {!isLoading && !isError && checkTypes && checkTypes.length > 0 && (
         <div className={s.checkTypesList}>
           {checkTypes.map((checkType) => {
-            const typeName = checkType.metadata.name || '';
-            if (!typeName) {
-              return null;
-            }
+            const typeName = checkType.metadata.name!;
             const canIgnoreSteps = checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION] !== '';
-
+            const ignoreSteps =
+              checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION_LIST]?.split(',').filter(Boolean) || [];
             return (
               <Card key={typeName} className={s.checkTypeCard}>
                 <Card.Heading>Check type: {checkType.spec.name}</Card.Heading>
@@ -68,8 +37,16 @@ export const AppConfig = () => {
                         <Stack direction="row">
                           <div className={s.switchWrapper}>
                             <Switch
-                              value={!ignoreSteps[checkType.metadata.name!]?.includes(step.stepID)}
-                              onChange={(e) => setIgnoreStep(checkType, step.stepID, !e.currentTarget.checked)}
+                              value={!ignoreSteps.includes(step.stepID)}
+                              onChange={(e) => {
+                                const ignore = !e.currentTarget.checked;
+                                if (ignore) {
+                                  ignoreSteps.push(step.stepID);
+                                } else {
+                                  ignoreSteps.splice(ignoreSteps.indexOf(step.stepID), 1);
+                                }
+                                updateIgnoreStepsAnnotation(typeName, ignoreSteps);
+                              }}
                               disabled={!canIgnoreSteps || updateCheckTypeState.isLoading}
                             />
                           </div>

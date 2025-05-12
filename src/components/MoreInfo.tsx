@@ -29,7 +29,6 @@ export function MoreInfo({ checkSummaries }: Props) {
             tooltip="Configure advisor steps"
             className={styles.configButton}
             href="/plugins/grafana-advisor-app?page=configuration"
-            hidden={!isOpen}
           />
         </div>
       }
@@ -71,6 +70,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     }),
     configButton: css({
       marginRight: theme.spacing(1),
+      opacity: 0.7,
     }),
     check: css({
       marginBottom: theme.spacing(2),

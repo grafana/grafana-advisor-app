@@ -9,12 +9,12 @@ const mockUseCheckTypes = jest.fn().mockReturnValue({
   checkTypes: [],
   isLoading: false,
   isError: false,
-  refetch: jest.fn(),
 });
 const mockUseSkipCheckTypeStep = jest.fn();
 
 // Mock the hooks used in the component
 jest.mock('api/api', () => ({
+  ...jest.requireActual('api/api'),
   useCheckTypes: () => mockUseCheckTypes(),
   useSkipCheckTypeStep: () => mockUseSkipCheckTypeStep(),
 }));
@@ -84,7 +84,6 @@ describe('AppConfig', () => {
       checkTypes: [],
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
     mockUseSkipCheckTypeStep.mockReturnValue({
       updateIgnoreStepsAnnotation: mockUpdateIgnoreStepsAnnotation,
@@ -97,7 +96,6 @@ describe('AppConfig', () => {
       checkTypes: [],
       isLoading: true,
       isError: false,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -110,7 +108,6 @@ describe('AppConfig', () => {
       checkTypes: [],
       isLoading: false,
       isError: true,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -123,7 +120,6 @@ describe('AppConfig', () => {
       checkTypes: [],
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -136,7 +132,6 @@ describe('AppConfig', () => {
       checkTypes: mockCheckTypes,
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -157,7 +152,6 @@ describe('AppConfig', () => {
       checkTypes: mockCheckTypes,
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -180,7 +174,6 @@ describe('AppConfig', () => {
       checkTypes: mockCheckTypes,
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -218,7 +211,6 @@ describe('AppConfig', () => {
       checkTypes: checkTypesWithoutAnnotation,
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
 
     render(<AppConfig />);
@@ -237,7 +229,6 @@ describe('AppConfig', () => {
       checkTypes: mockCheckTypes,
       isLoading: false,
       isError: false,
-      refetch: jest.fn(),
     });
 
     mockUseSkipCheckTypeStep.mockReturnValue({
