@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { AppConfig } from './AppConfig';
-import { IGNORE_STEPS_ANNOTATION } from 'api/api';
+import { IGNORE_STEPS_ANNOTATION, IGNORE_STEPS_ANNOTATION_LIST } from 'api/api';
 import { CheckType } from 'generated/endpoints.gen';
 import userEvent from '@testing-library/user-event';
 
@@ -51,7 +51,8 @@ describe('AppConfig', () => {
       metadata: {
         name: 'check-type-2',
         annotations: {
-          [IGNORE_STEPS_ANNOTATION]: 'step1',
+          [IGNORE_STEPS_ANNOTATION]: '1',
+          [IGNORE_STEPS_ANNOTATION_LIST]: 'step1',
         },
       },
       spec: {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, FieldSet, Card, LoadingPlaceholder, Switch, Stack } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { IGNORE_STEPS_ANNOTATION, useCheckTypes, useSkipCheckTypeStep } from 'api/api';
+import { IGNORE_STEPS_ANNOTATION, IGNORE_STEPS_ANNOTATION_LIST, useCheckTypes, useSkipCheckTypeStep } from 'api/api';
 import { CheckType } from 'generated/endpoints.gen';
 
 export type JsonData = {
@@ -32,8 +32,8 @@ export const AppConfig = () => {
       const newIgnoredSteps: Record<string, string[]> = {};
       checkTypes.forEach((checkType) => {
         newIgnoredSteps[`${checkType.metadata.name}`] = [];
-        // A step is ignored if it's listed as part of the IGNORE_STEPS_ANNOTATION
-        const ignoreAnnotation = checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION];
+        // A step is ignored if it's listed as part of the IGNORE_STEPS_ANNOTATION_LIST
+        const ignoreAnnotation = checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION_LIST];
         if (ignoreAnnotation && ignoreAnnotation.length > 1) {
           newIgnoredSteps[`${checkType.metadata.name}`] = ignoreAnnotation.split(',');
         }

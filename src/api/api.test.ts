@@ -11,7 +11,7 @@ import {
   RETRY_ANNOTATION,
   useRetryCheck,
   useSkipCheckTypeStep,
-  IGNORE_STEPS_ANNOTATION,
+  IGNORE_STEPS_ANNOTATION_LIST,
 } from './api';
 import { config } from '@grafana/runtime';
 
@@ -350,7 +350,7 @@ describe('API Hooks', () => {
               name: 'check1',
               labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-01T00:00:00Z',
-              annotations: { [STATUS_ANNOTATION]: 'processed', [IGNORE_STEPS_ANNOTATION]: 'step1' },
+              annotations: { [STATUS_ANNOTATION]: 'processed', [IGNORE_STEPS_ANNOTATION_LIST]: 'step1' },
             },
             status: { report: { count: 1, failures: [] } },
           },
@@ -399,7 +399,7 @@ describe('API Hooks', () => {
               name: 'check1',
               labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-01T00:00:00Z',
-              annotations: { [STATUS_ANNOTATION]: 'processed', [IGNORE_STEPS_ANNOTATION]: 'step1,step2' },
+              annotations: { [STATUS_ANNOTATION]: 'processed', [IGNORE_STEPS_ANNOTATION_LIST]: 'step1,step2' },
             },
             status: { report: { count: 1, failures: [] } },
           },

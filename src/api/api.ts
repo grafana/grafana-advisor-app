@@ -16,6 +16,7 @@ export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
+export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -55,7 +56,7 @@ export function useCheckSummaries() {
       checkSummary[Severity.High].checks[checkType].canRetry = canRetry;
       checkSummary[Severity.Low].checks[checkType].canRetry = canRetry;
       // Get the steps that are ignored for the check type
-      const ignoreSteps = check.metadata.annotations?.[IGNORE_STEPS_ANNOTATION];
+      const ignoreSteps = check.metadata.annotations?.[IGNORE_STEPS_ANNOTATION_LIST];
       if (ignoreSteps) {
         const steps = ignoreSteps.split(',');
         for (const step of steps) {
@@ -195,15 +196,12 @@ export function useSkipCheckTypeStep() {
   const updateIgnoreStepsAnnotation = useCallback(
     (checkType: string, stepsToIgnore: string[]) => {
       let annotation = stepsToIgnore.join(',');
-      if (stepsToIgnore.length === 0) {
-        annotation = '1'; // default value for the annotation
-      }
       updateCheckType({
         name: checkType,
         patch: [
           {
             op: 'add',
-            path: '/metadata/annotations/advisor.grafana.app~1ignore-steps',
+            path: '/metadata/annotations/advisor.grafana.app~1ignore-steps-list',
             value: annotation,
           },
         ],
