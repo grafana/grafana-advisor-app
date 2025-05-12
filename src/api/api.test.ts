@@ -83,7 +83,7 @@ describe('API Hooks', () => {
       result.current.updateIgnoreStepsAnnotation('type1', ['step1']);
       expect(mockUpdateCheckType).toHaveBeenCalledWith({
         name: 'type1',
-        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1ignore-steps', value: 'step1' }],
+        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1ignore-steps-list', value: 'step1' }],
       });
     });
 
@@ -94,7 +94,7 @@ describe('API Hooks', () => {
       result.current.updateIgnoreStepsAnnotation('type1', []);
       expect(mockUpdateCheckType).toHaveBeenCalledWith({
         name: 'type1',
-        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1ignore-steps', value: '1' }],
+        patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1ignore-steps-list', value: '' }],
       });
     });
   });
