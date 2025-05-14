@@ -62,10 +62,12 @@ export function useCheckSummaries() {
         for (const step of steps) {
           delete checkSummary[Severity.High].checks[checkType].steps[step];
           delete checkSummary[Severity.Low].checks[checkType].steps[step];
+          // Remove the check type if all steps are ignored
           if (Object.keys(checkSummary[Severity.Low].checks[checkType].steps).length === 0) {
-            // Remove the check type if all steps are ignored
-            delete checkSummary[Severity.High].checks[checkType];
             delete checkSummary[Severity.Low].checks[checkType];
+          }
+          if (Object.keys(checkSummary[Severity.High].checks[checkType].steps).length === 0) {
+            delete checkSummary[Severity.High].checks[checkType];
           }
         }
       }
@@ -195,7 +197,7 @@ export function useSkipCheckTypeStep() {
 
   const updateIgnoreStepsAnnotation = useCallback(
     (checkType: string, stepsToIgnore: string[]) => {
-      let annotation = stepsToIgnore.join(',');
+      const annotation = stepsToIgnore.join(',');
       updateCheckType({
         name: checkType,
         patch: [
