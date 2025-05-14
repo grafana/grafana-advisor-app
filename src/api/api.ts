@@ -6,6 +6,7 @@ import {
   useCreateCheckMutation,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
+  useUpdateCheckTypeMutation,
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config } from '@grafana/runtime';
@@ -14,6 +15,8 @@ import { CheckTypeSpec } from 'generated/endpoints.gen';
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
+export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
+export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -52,6 +55,22 @@ export function useCheckSummaries() {
       // Enable retry if the check type has a retry annotation
       checkSummary[Severity.High].checks[checkType].canRetry = canRetry;
       checkSummary[Severity.Low].checks[checkType].canRetry = canRetry;
+      // Get the steps that are ignored for the check type
+      const ignoreSteps = check.metadata.annotations?.[IGNORE_STEPS_ANNOTATION_LIST];
+      if (ignoreSteps) {
+        const steps = ignoreSteps.split(',');
+        for (const step of steps) {
+          delete checkSummary[Severity.High].checks[checkType].steps[step];
+          delete checkSummary[Severity.Low].checks[checkType].steps[step];
+          // Remove the check type if all steps are ignored
+          if (Object.keys(checkSummary[Severity.Low].checks[checkType].steps).length === 0) {
+            delete checkSummary[Severity.Low].checks[checkType];
+          }
+          if (Object.keys(checkSummary[Severity.High].checks[checkType].steps).length === 0) {
+            delete checkSummary[Severity.High].checks[checkType];
+          }
+        }
+      }
 
       const createdTimestamp = new Date(check.metadata.creationTimestamp ?? 0);
       const prevCreatedTimestamp = checkSummary[Severity.High].created;
@@ -66,6 +85,10 @@ export function useCheckSummaries() {
           const severity = failure.severity.toLowerCase() as Severity;
           const persistedCheck = checkSummary[severity].checks[checkType];
           const persistedStep = checkSummary[severity].checks[checkType].steps[failure.stepID];
+          if (!persistedStep) {
+            console.error(`Step ${failure.stepID} not found for check ${check.metadata.name}`);
+            continue;
+          }
           persistedCheck.issueCount++;
           persistedStep.issueCount++;
           persistedStep.issues.push({
@@ -167,6 +190,29 @@ export function useCheckTypes() {
   const { data } = listCheckTypesState;
 
   return { checkTypes: data?.items, ...listCheckTypesState };
+}
+
+export function useSkipCheckTypeStep() {
+  const [updateCheckType, updateCheckTypeState] = useUpdateCheckTypeMutation();
+
+  const updateIgnoreStepsAnnotation = useCallback(
+    (checkType: string, stepsToIgnore: string[]) => {
+      const annotation = stepsToIgnore.join(',');
+      updateCheckType({
+        name: checkType,
+        patch: [
+          {
+            op: 'add',
+            path: '/metadata/annotations/advisor.grafana.app~1ignore-steps-list',
+            value: annotation,
+          },
+        ],
+      });
+    },
+    [updateCheckType]
+  );
+
+  return { updateIgnoreStepsAnnotation, updateCheckTypeState };
 }
 
 export function useLastChecks() {

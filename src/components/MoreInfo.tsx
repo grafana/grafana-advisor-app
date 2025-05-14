@@ -1,7 +1,7 @@
 import React from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, Collapse } from '@grafana/ui';
+import { useStyles2, Collapse, LinkButton } from '@grafana/ui';
 import { type CheckSummaries } from 'types';
 
 interface Props {
@@ -13,7 +13,26 @@ export function MoreInfo({ checkSummaries }: Props) {
   const styles = useStyles2(getStyles);
 
   return (
-    <Collapse label={'More info'} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible={true}>
+    <Collapse
+      isOpen={isOpen}
+      onToggle={() => setIsOpen(!isOpen)}
+      collapsible={true}
+      label={
+        <div className={styles.labelContainer}>
+          <span>More info</span>
+          <LinkButton
+            icon="cog"
+            variant="secondary"
+            size="sm"
+            fill="text"
+            aria-label="Configuration"
+            tooltip="Configure advisor steps"
+            className={styles.configButton}
+            href="/plugins/grafana-advisor-app?page=configuration"
+          />
+        </div>
+      }
+    >
       <div className={styles.container}>
         {Object.values(checkSummaries.high.checks).map((check) => (
           <div key={check.type} className={styles.check}>
@@ -37,10 +56,21 @@ export function MoreInfo({ checkSummaries }: Props) {
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    labelContainer: css({
+      display: 'flex',
+      width: '100%',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }),
     container: css({
       padding: theme.spacing(1),
       paddingTop: 0,
       color: theme.colors.text.secondary,
+      position: 'relative',
+    }),
+    configButton: css({
+      marginRight: theme.spacing(1),
+      opacity: 0.7,
     }),
     check: css({
       marginBottom: theme.spacing(2),
