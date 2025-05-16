@@ -26,6 +26,7 @@ describe('Components/CheckDrillDown', () => {
         links: [{ url: 'http://example.com', message: 'More info' }],
         itemID: 'item1',
         isRetrying: false,
+        isHidden: false,
       },
     ];
 
@@ -36,6 +37,8 @@ describe('Components/CheckDrillDown', () => {
       checkSummary: checkSummaries.high,
       retryCheck: jest.fn(),
       isCompleted: true,
+      handleHideIssue: jest.fn(),
+      showHiddenIssues: false,
     };
   });
 
@@ -115,5 +118,28 @@ describe('Components/CheckDrillDown', () => {
     await user.click(screen.getByText(/Step 1 failed/i));
 
     expect(screen.getByRole('button', { name: 'Retry check' })).toBeDisabled();
+  });
+
+  test('should call the handleHideIssue function when the hide button is clicked', async () => {
+    const handleHideIssue = jest.fn();
+    renderWithRouter(<CheckDrillDown {...defaultProps} handleHideIssue={handleHideIssue} />);
+    // Click on the step
+    const user = userEvent.setup();
+    await user.click(screen.getByText(/Step 1 failed/i));
+    // Click on the hide button
+    await user.click(screen.getByRole('button', { name: 'Hide issue' }));
+    expect(handleHideIssue).toHaveBeenCalledWith('step1', 'item1', true);
+  });
+
+  test('should hide a hidden issue', async () => {
+    checkSummaries.high.checks.datasource.steps.step1.issues[0].isHidden = true;
+    renderWithRouter(<CheckDrillDown {...defaultProps} checkSummary={checkSummaries.high} />);
+    expect(screen.queryByText(/Step 1 failed for 1 datasource/im)).not.toBeInTheDocument();
+  });
+
+  test('should show a hidden issue if the showHiddenIssues prop is true', async () => {
+    checkSummaries.high.checks.datasource.steps.step1.issues[0].isHidden = true;
+    renderWithRouter(<CheckDrillDown {...defaultProps} checkSummary={checkSummaries.high} showHiddenIssues={true} />);
+    expect(screen.getByText(/Step 1 failed for 1 datasource/im)).toBeInTheDocument();
   });
 });

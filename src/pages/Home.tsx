@@ -11,7 +11,8 @@ import { formatDate } from 'utils';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
-  const { summaries, isLoading, isError, error } = useCheckSummaries();
+  const { summaries, isLoading, isError, error, showHiddenIssues, setShowHiddenIssues, handleHideIssue } =
+    useCheckSummaries();
   const [isEmpty, setIsEmpty] = useState(false);
   const [isHealthy, setIsHealthy] = useState(false);
   const { isCompleted } = useCompletedChecks();
@@ -60,6 +61,7 @@ export default function Home() {
           Give feedback
         </a>
       </div>
+
       <div className={styles.page}>
         {/* Loading */}
         {isLoading && (
@@ -89,9 +91,25 @@ export default function Home() {
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
               <Stack direction="column">
-                <CheckSummary checkSummary={summaries.high} retryCheck={retryCheck} isCompleted={isCompleted} />
-                <CheckSummary checkSummary={summaries.low} retryCheck={retryCheck} isCompleted={isCompleted} />
-                <MoreInfo checkSummaries={summaries} />
+                <CheckSummary
+                  checkSummary={summaries.high}
+                  retryCheck={retryCheck}
+                  isCompleted={isCompleted}
+                  showHiddenIssues={showHiddenIssues}
+                  handleHideIssue={handleHideIssue}
+                />
+                <CheckSummary
+                  checkSummary={summaries.low}
+                  retryCheck={retryCheck}
+                  isCompleted={isCompleted}
+                  showHiddenIssues={showHiddenIssues}
+                  handleHideIssue={handleHideIssue}
+                />
+                <MoreInfo
+                  checkSummaries={summaries}
+                  showHiddenIssues={showHiddenIssues}
+                  setShowHiddenIssues={setShowHiddenIssues}
+                />
               </Stack>
             </div>
           </>

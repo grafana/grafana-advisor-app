@@ -41,4 +41,5 @@ export type CheckStep = {
 
 export type CheckReportFailureExtended = CheckReportFailure & {
   isRetrying: boolean;
+  isHidden: boolean;
 };
