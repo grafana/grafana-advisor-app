@@ -1,14 +1,16 @@
 import React from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, Collapse, LinkButton } from '@grafana/ui';
+import { useStyles2, Collapse, LinkButton, Switch, Field } from '@grafana/ui';
 import { type CheckSummaries } from 'types';
 
 interface Props {
   checkSummaries: CheckSummaries;
+  showHiddenIssues: boolean;
+  setShowHiddenIssues: (showHiddenIssues: boolean) => void;
 }
 
-export function MoreInfo({ checkSummaries }: Props) {
+export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues }: Props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles);
 
@@ -19,7 +21,7 @@ export function MoreInfo({ checkSummaries }: Props) {
       collapsible={true}
       label={
         <div className={styles.labelContainer}>
-          <span>More info</span>
+          <span>More</span>
           <LinkButton
             icon="cog"
             variant="secondary"
@@ -34,6 +36,7 @@ export function MoreInfo({ checkSummaries }: Props) {
       }
     >
       <div className={styles.container}>
+        <div>Summary: </div>
         {Object.values(checkSummaries.high.checks).map((check) => (
           <div key={check.type} className={styles.check}>
             <div className={styles.checkTitle}>
@@ -49,6 +52,15 @@ export function MoreInfo({ checkSummaries }: Props) {
             </div>
           </div>
         ))}
+        <div>
+          <div>Options: </div>
+          <Field
+            label="Show silenced issues"
+            description="Silenced issues are still evaluated but can be hidden from this report"
+          >
+            <Switch value={showHiddenIssues} onChange={() => setShowHiddenIssues(!showHiddenIssues)} />
+          </Field>
+        </div>
       </div>
     </Collapse>
   );

@@ -9,7 +9,7 @@ import {
   useUpdateCheckTypeMutation,
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { config } from '@grafana/runtime';
+import { config, usePluginUserStorage } from '@grafana/runtime';
 import { CheckTypeSpec } from 'generated/endpoints.gen';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
@@ -21,6 +21,8 @@ export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-li
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
   const { checkTypes, ...listCheckTypesState } = useCheckTypes();
+  const [showHiddenIssues, setShowHiddenIssues] = useState(false);
+  const { isIssueHidden, handleHideIssue } = useHiddenIssues();
 
   const summaries = useMemo(() => {
     if (!checks || !checkTypes) {
@@ -89,24 +91,30 @@ export function useCheckSummaries() {
             console.error(`Step ${failure.stepID} not found for check ${check.metadata.name}`);
             continue;
           }
-          persistedCheck.issueCount++;
-          persistedStep.issueCount++;
+          if (showHiddenIssues || !isIssueHidden(failure.stepID, failure.itemID)) {
+            persistedCheck.issueCount++;
+            persistedStep.issueCount++;
+          }
           persistedStep.issues.push({
             ...failure,
             isRetrying: retryAnnotation ? failure.itemID === retryAnnotation : false,
+            isHidden: isIssueHidden(failure.stepID, failure.itemID),
           });
         }
       }
     }
 
     return checkSummary;
-  }, [checks, checkTypes]);
+  }, [checks, checkTypes, isIssueHidden, showHiddenIssues]);
 
   return {
     summaries,
     isLoading: listChecksState.isLoading || listCheckTypesState.isLoading,
     isError: listChecksState.isError || listCheckTypesState.isError,
     error: listChecksState.error || listCheckTypesState.error,
+    showHiddenIssues,
+    setShowHiddenIssues,
+    handleHideIssue,
   };
 }
 
@@ -374,3 +382,42 @@ export function useRetryCheck() {
     retryCheckState: updateCheckState,
   };
 }
+
+const useHiddenIssues = () => {
+  const [hiddenIssues, setHiddenIssues] = useState<string[]>([]);
+  const userStorage = usePluginUserStorage();
+
+  useEffect(() => {
+    userStorage.getItem('hiddenIssues').then((hiddenIssues) => {
+      if (hiddenIssues) {
+        setHiddenIssues(hiddenIssues.split(','));
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleHideIssue = useCallback(
+    (stepID: string, itemID: string, isHidden: boolean) => {
+      const ID = `${stepID}-${itemID}`;
+      setHiddenIssues((prevHiddenIssues) => {
+        let newHiddenIssues;
+        if (isHidden) {
+          newHiddenIssues = [...prevHiddenIssues, ID];
+        } else {
+          newHiddenIssues = prevHiddenIssues.filter((hiddenIssue) => hiddenIssue !== ID);
+        }
+        userStorage.setItem('hiddenIssues', newHiddenIssues.join(','));
+        return newHiddenIssues;
+      });
+    },
+    [] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  const isIssueHidden = useCallback(
+    (stepID: string, itemID: string) => {
+      return hiddenIssues.includes(`${stepID}-${itemID}`);
+    },
+    [hiddenIssues]
+  );
+
+  return { handleHideIssue, isIssueHidden };
+};

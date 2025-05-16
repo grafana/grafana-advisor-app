@@ -2,17 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import { Button, Collapse, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
-import { Severity, type CheckSummary as CheckSummaryType } from 'types';
+import { type CheckSummary as CheckSummaryType } from 'types';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export interface CheckDrillDownProps {
   checkSummary: CheckSummaryType;
   retryCheck: (checkName: string, item: string) => void;
   isCompleted: boolean;
+  showHiddenIssues: boolean;
+  handleHideIssue: (stepID: string, itemID: string, isHidden: boolean) => void;
 }
 
-export default function CheckDrillDown({ checkSummary, retryCheck, isCompleted }: CheckDrillDownProps) {
-  const styles = useStyles2(getStyles(checkSummary.severity));
+export default function CheckDrillDown({
+  checkSummary,
+  retryCheck,
+  isCompleted,
+  showHiddenIssues,
+  handleHideIssue,
+}: CheckDrillDownProps) {
+  const styles = useStyles2(getStyles());
   const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const navigate = useNavigate();
@@ -77,68 +85,90 @@ export default function CheckDrillDown({ checkSummary, retryCheck, isCompleted }
           return null;
         }
 
-        return Object.values(check.steps).map((step) => (
-          <div key={step.stepID} className={styles.spacingTopMd}>
-            {step.issues.length > 0 && (
-              <Collapse
-                label={
-                  <div className={styles.description}>
-                    <div>
-                      {step.name} failed for {step.issues.length} {check.type}
-                      {step.issues.length > 1 ? 's' : ''}.
+        return Object.values(check.steps).map((step) => {
+          const issues = step.issues.filter((issue) => showHiddenIssues || !issue.isHidden);
+          return (
+            <div key={step.stepID} className={styles.spacingTopMd}>
+              {issues.length > 0 && (
+                <Collapse
+                  label={
+                    <div className={styles.description}>
+                      <div>
+                        {step.name} failed for {issues.length} {check.type}
+                        {issues.length > 1 ? 's' : ''}.
+                      </div>
+                      <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
                     </div>
-                    <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
-                  </div>
-                }
-                isOpen={isOpen[step.stepID] ?? false}
-                collapsible={true}
-                onToggle={() => handleToggle(step.stepID)}
-              >
-                {step.issues.map((issue) => (
-                  <div key={issue.item} className={styles.issue} ref={issue.item === scrollToStep ? scrollToRef : null}>
-                    <div className={styles.issueReason}>
-                      {issue.item}
-                      {check.canRetry && (
-                        <Button
-                          size="sm"
-                          className={styles.issueLink}
-                          icon={issue.isRetrying ? 'spinner' : 'sync'}
-                          variant="secondary"
-                          title="Retry check"
-                          disabled={!isCompleted}
-                          onClick={() => handleRetryCheck(check.name, issue.itemID)}
-                        />
-                      )}
-                      {issue.links.map((link) => {
-                        const extraProps = link.url.startsWith('http')
-                          ? { target: '_self', rel: 'noopener noreferrer' }
-                          : {};
-                        return (
-                          <a key={link.url} href={link.url} onClick={() => handleStepClick(issue.item)} {...extraProps}>
+                  }
+                  isOpen={isOpen[step.stepID] ?? false}
+                  collapsible={true}
+                  onToggle={() => handleToggle(step.stepID)}
+                >
+                  {issues.map((issue) => {
+                    return (
+                      <div
+                        key={issue.item}
+                        className={issue.isHidden ? styles.issueHidden : styles.issue}
+                        ref={issue.item === scrollToStep ? scrollToRef : null}
+                      >
+                        <div className={styles.issueReason}>
+                          {issue.item}
+                          <Button
+                            size="sm"
+                            className={styles.issueLink}
+                            icon={issue.isHidden ? 'bell' : 'bell-slash'}
+                            variant="secondary"
+                            title={issue.isHidden ? 'Show issue' : 'Hide issue'}
+                            onClick={() => handleHideIssue(step.stepID, issue.itemID, !issue.isHidden)}
+                          />
+                          {check.canRetry && (
                             <Button
                               size="sm"
                               className={styles.issueLink}
-                              icon={getIcon(link.message)}
+                              icon={issue.isRetrying ? 'spinner' : 'sync'}
                               variant="secondary"
-                            >
-                              {link.message}
-                            </Button>
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </Collapse>
-            )}
-          </div>
-        ));
+                              title="Retry check"
+                              disabled={!isCompleted}
+                              onClick={() => handleRetryCheck(check.name, issue.itemID)}
+                            />
+                          )}
+                          {issue.links.map((link) => {
+                            const extraProps = link.url.startsWith('http')
+                              ? { target: '_self', rel: 'noopener noreferrer' }
+                              : {};
+                            return (
+                              <a
+                                key={link.url}
+                                href={link.url}
+                                onClick={() => handleStepClick(issue.item)}
+                                {...extraProps}
+                              >
+                                <Button
+                                  size="sm"
+                                  className={styles.issueLink}
+                                  icon={getIcon(link.message)}
+                                  variant="secondary"
+                                >
+                                  {link.message}
+                                </Button>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </Collapse>
+              )}
+            </div>
+          );
+        });
       })}
     </div>
   );
 }
 
-const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
+const getStyles = () => (theme: GrafanaTheme2) => {
   return {
     container: css({
       marginTop: theme.spacing(2),
@@ -174,6 +204,19 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
         borderColor: theme.colors.border.strong,
         borderStyle: 'solid',
       },
+    }),
+    issueHidden: css({
+      color: theme.colors.text.secondary,
+      backgroundColor: theme.colors.background.secondary,
+      padding: theme.spacing(2),
+      marginBottom: theme.spacing(1),
+      borderColor: 'transparent',
+      borderStyle: 'solid',
+      ':hover': {
+        borderColor: theme.colors.border.strong,
+        borderStyle: 'solid',
+      },
+      opacity: 0.6,
     }),
     issueReason: css({
       color: theme.colors.text.primary,

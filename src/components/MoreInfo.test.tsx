@@ -15,18 +15,18 @@ describe('Components/MoreInfo', () => {
     checkSummaries.high.checks.datasource.totalCheckCount = totalDatasourceCheckCount;
     checkSummaries.high.checks.plugin.totalCheckCount = totalPluginCheckCount;
 
-    render(<MoreInfo checkSummaries={checkSummaries} />);
+    render(<MoreInfo checkSummaries={checkSummaries} showHiddenIssues={false} setShowHiddenIssues={() => {}} />);
   });
 
   test('should visualise summaries of all the checks', async () => {
     const user = userEvent.setup();
-    expect(await screen.findByText('More info')).toBeInTheDocument();
+    expect(await screen.findByText('More')).toBeInTheDocument();
 
     // Should not be open by default
     expect(screen.queryByText(`${totalDatasourceCheckCount} datasource(s) analyzed`)).not.toBeInTheDocument();
 
     // Open "More info section"
-    await user.click(screen.getByText('More info'));
+    await user.click(screen.getByText('More'));
 
     expect(await screen.findByText(`${totalDatasourceCheckCount} datasource(s) analyzed`)).toBeInTheDocument();
     expect(await screen.findByText(`${totalPluginCheckCount} plugin(s) analyzed`)).toBeInTheDocument();
