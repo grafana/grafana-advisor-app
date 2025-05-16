@@ -12,9 +12,10 @@ test.describe('navigating app', () => {
     // Click on the "Refresh" button
     await page.getByRole('button', { name: 'Refresh' }).click();
     // Page should now show a report
-    await expect(page.getByText('More info')).toBeVisible();
-    // Click on the "More info"
-    await page.getByText('More info').click();
+    await expect(page.getByText('More Info')).toBeVisible();
+    await expect(page.getByText('Running checks...')).not.toBeVisible();
+    // Click on the "More Info"
+    await page.getByText('More Info').click();
     // Page should now show a report
     await expect(page.getByText('datasource(s) analyzed')).toBeVisible();
     await expect(page.getByText('plugin(s) analyzed')).toBeVisible();

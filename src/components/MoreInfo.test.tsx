@@ -20,13 +20,13 @@ describe('Components/MoreInfo', () => {
 
   test('should visualise summaries of all the checks', async () => {
     const user = userEvent.setup();
-    expect(await screen.findByText('More')).toBeInTheDocument();
+    expect(await screen.findByText('More Info')).toBeInTheDocument();
 
     // Should not be open by default
     expect(screen.queryByText(`${totalDatasourceCheckCount} datasource(s) analyzed`)).not.toBeInTheDocument();
 
     // Open "More info section"
-    await user.click(screen.getByText('More'));
+    await user.click(screen.getByText('More Info'));
 
     expect(await screen.findByText(`${totalDatasourceCheckCount} datasource(s) analyzed`)).toBeInTheDocument();
     expect(await screen.findByText(`${totalPluginCheckCount} plugin(s) analyzed`)).toBeInTheDocument();

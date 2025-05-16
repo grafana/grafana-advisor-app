@@ -21,7 +21,7 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
       collapsible={true}
       label={
         <div className={styles.labelContainer}>
-          <span>More</span>
+          <span>More Info</span>
           <LinkButton
             icon="cog"
             variant="secondary"
