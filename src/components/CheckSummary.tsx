@@ -4,7 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, Collapse } from '@grafana/ui';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { CheckSummaryTitle } from './CheckSummaryTitle';
-import CheckDrillDown from './CheckDrillDown';
+import CheckDrillDown from './CheckDrillDown/CheckDrillDown';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Props {
