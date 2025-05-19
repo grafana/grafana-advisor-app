@@ -37,6 +37,10 @@ jest.mock('@grafana/runtime', () => ({
   config: {
     namespace: 'test-namespace',
   },
+  usePluginUserStorage: () => ({
+    getItem: jest.fn().mockResolvedValue(''),
+    setItem: jest.fn(),
+  }),
 }));
 
 describe('API Hooks', () => {
@@ -421,6 +425,67 @@ describe('API Hooks', () => {
       const { result } = renderHook(() => useCheckSummaries());
       expect(result.current.summaries.high.checks.type1).toBeUndefined();
       expect(result.current.summaries.low.checks.type1).toBeUndefined();
+    });
+
+    it('hides an issue', async () => {
+      const mockCheckTypes = {
+        items: [
+          {
+            metadata: { name: 'type1' },
+            spec: {
+              name: 'type1',
+              steps: [{ stepID: 'step1', title: 'Step 1', description: 'desc', resolution: 'res' }],
+            },
+          },
+        ],
+      };
+
+      const mockChecks = {
+        items: [
+          {
+            metadata: {
+              name: 'check1',
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
+              creationTimestamp: '2024-01-01T00:00:00Z',
+              annotations: { [STATUS_ANNOTATION]: 'processed' },
+            },
+            status: {
+              report: {
+                count: 1,
+                failures: [{ stepID: 'step1', severity: 'High', itemID: 'item1' }],
+              },
+            },
+          },
+        ],
+      };
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: mockCheckTypes,
+        isLoading: false,
+        isError: false,
+      });
+
+      mockListCheckQuery.mockReturnValue({
+        data: mockChecks,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCheckSummaries());
+      expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isHidden).toBe(false);
+      expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(1);
+
+      await waitFor(() => {
+        result.current.handleHideIssue('step1', 'item1', true);
+      });
+      expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isHidden).toBe(true);
+      expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(0);
+
+      // Still counts as an issue if showHiddenIssues is true
+      await waitFor(() => {
+        result.current.setShowHiddenIssues(true);
+      });
+      expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(1);
     });
   });
 

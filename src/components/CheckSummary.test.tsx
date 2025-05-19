@@ -34,6 +34,7 @@ export function getMockCheckSummary(): CheckSummaryType {
                 stepID: 'step1',
                 itemID: 'item1',
                 isRetrying: false,
+                isHidden: false,
               },
               {
                 item: 'Issue 2',
@@ -42,6 +43,7 @@ export function getMockCheckSummary(): CheckSummaryType {
                 stepID: 'step1',
                 itemID: 'item2',
                 isRetrying: false,
+                isHidden: false,
               },
             ],
           },
@@ -57,6 +59,8 @@ describe('CheckSummary', () => {
     checkSummary: mockCheckSummary,
     retryCheck: jest.fn(),
     isCompleted: true,
+    handleHideIssue: jest.fn(),
+    showHiddenIssues: false,
   };
 
   beforeEach(() => {

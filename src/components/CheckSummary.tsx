@@ -4,16 +4,18 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, Collapse } from '@grafana/ui';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { CheckSummaryTitle } from './CheckSummaryTitle';
-import CheckDrillDown from './CheckDrillDown';
+import CheckDrillDown from './CheckDrillDown/CheckDrillDown';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Props {
   checkSummary: CheckSummaryType;
   retryCheck: (checkName: string, item: string) => void;
   isCompleted: boolean;
+  showHiddenIssues: boolean;
+  handleHideIssue: (stepID: string, itemID: string, isHidden: boolean) => void;
 }
 
-export function CheckSummary({ checkSummary, retryCheck, isCompleted }: Props) {
+export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHiddenIssues, handleHideIssue }: Props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles(checkSummary.severity));
   const issueCount = Object.values(checkSummary.checks).reduce((acc, check) => acc + check.issueCount, 0);
@@ -54,7 +56,13 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted }: Props) {
     >
       {/* Issues */}
       <div className={styles.issues}>
-        <CheckDrillDown checkSummary={checkSummary} retryCheck={retryCheck} isCompleted={isCompleted} />
+        <CheckDrillDown
+          checkSummary={checkSummary}
+          retryCheck={retryCheck}
+          isCompleted={isCompleted}
+          showHiddenIssues={showHiddenIssues}
+          handleHideIssue={handleHideIssue}
+        />
       </div>
     </Collapse>
   );
