@@ -45,7 +45,7 @@ test.describe('navigating app', () => {
     await expect(page.getByText('plugin(s) analyzed')).toBeVisible();
   });
 
-  test('it should detect an issue and fix it', async ({ gotoPage, page }) => {
+  test('it should detect an issue and fix it', async ({ gotoPage, page, grafanaVersion }) => {
     await expectEmptyReport(gotoPage, page);
     const dsName = await createEmptyDatasource(page);
     // Now go back to the advisor page and regenerate the report
@@ -65,12 +65,24 @@ test.describe('navigating app', () => {
     await gotoPage(`/`);
     await page.getByText('Action needed').click();
     await page.getByText('Health check failed').click();
-    await page.getByTestId(`retry-${dsName}`).click();
+    if (grafanaVersion.startsWith('12.0')) {
+      // "Retry" button is not available in Grafana 12.0
+      await page.getByRole('button', { name: 'Refresh' }).click();
+      await expect(page.getByText('Running checks...')).toBeVisible();
+      await expect(page.getByText('Running checks...')).not.toBeVisible();
+    } else {
+      await page.getByTestId(`retry-${dsName}`).click();
+    }
     // The issue should be fixed
     await expect(page.getByTestId(`action-link-${dsName}-fix-me`)).not.toBeVisible();
   });
 
-  test('should configure and skip a check step', async ({ gotoPage, page }) => {
+  test('should configure and skip a check step', async ({ gotoPage, page, grafanaVersion }) => {
+    if (grafanaVersion.startsWith('12.0')) {
+      // This feature is not available in Grafana 12.0
+      return;
+    }
+
     await expectEmptyReport(gotoPage, page);
     await createEmptyDatasource(page);
     await runChecks(gotoPage, page);
