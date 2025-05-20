@@ -241,7 +241,7 @@ export function useLastChecks() {
     for (const check of data.items) {
       const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
-      if (!type || !check.metadata.creationTimestamp || check.metadata.annotations?.[STATUS_ANNOTATION] === '') {
+      if (!type || !check.metadata.creationTimestamp || !check.metadata.annotations?.[STATUS_ANNOTATION]) {
         continue;
       }
 

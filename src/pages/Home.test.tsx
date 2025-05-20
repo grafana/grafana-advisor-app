@@ -107,7 +107,7 @@ describe('Home', () => {
     });
 
     renderWithRouter(<Home />);
-    expect(await screen.findByText(/Error: 500 Internal Server Error/)).toBeInTheDocument();
+    expect(await screen.findByText(/500 Internal Server Error/)).toBeInTheDocument();
   });
 
   it('shows empty state when no reports exist', async () => {

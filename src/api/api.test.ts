@@ -132,7 +132,7 @@ describe('API Hooks', () => {
               name: 'check2',
               labels: { [CHECK_TYPE_LABEL]: 'type1' },
               creationTimestamp: '2024-01-02T00:00:00Z',
-              annotations: { [STATUS_ANNOTATION]: 'unprocessed' },
+              annotations: {},
             },
             status: { report: { count: 1, failures: [] } },
           },

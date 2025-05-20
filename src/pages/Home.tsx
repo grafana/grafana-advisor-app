@@ -19,7 +19,7 @@ export default function Home() {
   const { retryCheck } = useRetryCheck();
 
   useEffect(() => {
-    if (!isLoading && !isError) {
+    if (!isLoading && !isError && isCompleted) {
       const isEmptyTemp = summaries.high.created.getTime() === 0;
       setIsEmpty(isEmptyTemp);
       if (!isEmptyTemp) {
@@ -30,7 +30,7 @@ export default function Home() {
         setIsHealthy(false);
       }
     }
-  }, [isLoading, isError, summaries]);
+  }, [isLoading, isError, summaries, isCompleted]);
 
   return (
     <PluginPage
