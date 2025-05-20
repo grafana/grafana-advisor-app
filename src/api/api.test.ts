@@ -487,6 +487,53 @@ describe('API Hooks', () => {
       });
       expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(1);
     });
+    it('shows an errored check', async () => {
+      const mockCheckTypes = {
+        items: [
+          {
+            metadata: { name: 'type1' },
+            spec: {
+              name: 'type1',
+              steps: [{ stepID: 'step1', title: 'Step 1', description: 'desc', resolution: 'res' }],
+            },
+          },
+        ],
+      };
+
+      const mockChecks = {
+        items: [
+          {
+            metadata: {
+              name: 'check1',
+              labels: { [CHECK_TYPE_LABEL]: 'type1' },
+              creationTimestamp: '2024-01-01T00:00:00Z',
+              annotations: { [STATUS_ANNOTATION]: 'error' },
+            },
+            status: {
+              report: {
+                count: 1,
+                failures: [{ stepID: 'step1', severity: 'High', itemID: 'item1' }],
+              },
+            },
+          },
+        ],
+      };
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: mockCheckTypes,
+        isLoading: false,
+        isError: false,
+      });
+
+      mockListCheckQuery.mockReturnValue({
+        data: mockChecks,
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCheckSummaries());
+      expect(result.current.isError).toBe(true);
+    });
   });
 
   describe('useCreateChecks', () => {
