@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { css } from '@emotion/css';
-import { EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { CheckSummary } from 'components/CheckSummary';
@@ -71,10 +71,12 @@ export default function Home() {
         )}
 
         {/* Error */}
-        {isError && isFetchError(error) && (
-          <div>
-            Error: {error.status} {error.statusText}
-          </div>
+        {isError && (
+          <Alert title="Failed to load checks" className={styles.error}>
+            {isFetchError(error)
+              ? `${error.status} ${error.statusText}`
+              : 'Check server logs for more details or open a support ticket.'}
+          </Alert>
         )}
 
         {/* Empty state */}
@@ -156,5 +158,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     ':hover': {
       color: theme.colors.text.link,
     },
+  }),
+  error: css({
+    marginTop: theme.spacing(2),
   }),
 });

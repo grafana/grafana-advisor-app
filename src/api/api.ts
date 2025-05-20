@@ -22,6 +22,7 @@ export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
   const { checkTypes, ...listCheckTypesState } = useCheckTypes();
   const [showHiddenIssues, setShowHiddenIssues] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const { isIssueHidden, handleHideIssue } = useHiddenIssues();
 
   const summaries = useMemo(() => {
@@ -47,6 +48,10 @@ export function useCheckSummaries() {
 
       if (checkType === undefined || !checkSummary[Severity.High].checks[checkType]) {
         continue;
+      }
+
+      if (check.metadata.annotations?.[STATUS_ANNOTATION] === 'error') {
+        setHasError(true);
       }
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
@@ -110,7 +115,7 @@ export function useCheckSummaries() {
   return {
     summaries,
     isLoading: listChecksState.isLoading || listCheckTypesState.isLoading,
-    isError: listChecksState.isError || listCheckTypesState.isError,
+    isError: listChecksState.isError || listCheckTypesState.isError || hasError,
     error: listChecksState.error || listCheckTypesState.error,
     showHiddenIssues,
     setShowHiddenIssues,
@@ -236,11 +241,7 @@ export function useLastChecks() {
     for (const check of data.items) {
       const type = check.metadata.labels?.[CHECK_TYPE_LABEL];
 
-      if (
-        !type ||
-        !check.metadata.creationTimestamp ||
-        check.metadata.annotations?.[STATUS_ANNOTATION] !== 'processed'
-      ) {
+      if (!type || !check.metadata.creationTimestamp || check.metadata.annotations?.[STATUS_ANNOTATION] === '') {
         continue;
       }
 
@@ -332,7 +333,8 @@ function useIncompleteChecks(names?: string[]) {
       .filter(
         (check) =>
           !check.metadata.annotations?.[STATUS_ANNOTATION] ||
-          check.metadata.annotations?.[RETRY_ANNOTATION] !== undefined
+          (check.metadata.annotations?.[RETRY_ANNOTATION] !== undefined &&
+            check.metadata.annotations?.[STATUS_ANNOTATION] !== 'error')
       )
       .map((check) => check.metadata.name ?? '');
   }, [listChecksState.data, names]);

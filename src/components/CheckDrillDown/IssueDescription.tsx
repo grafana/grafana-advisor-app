@@ -44,6 +44,7 @@ export function IssueDescription({
           icon={isHidden ? 'bell' : 'bell-slash'}
           variant="secondary"
           title={isHidden ? 'Show issue' : 'Hide issue'}
+          data-testid={`hide-${item}`}
           onClick={() => onHideIssue(!isHidden)}
         />
         {canRetry && (
@@ -54,6 +55,7 @@ export function IssueDescription({
             variant="secondary"
             title="Retry check"
             disabled={!isCompleted}
+            data-testid={`retry-${item}`}
             onClick={onRetryCheck}
           />
         )}
@@ -61,7 +63,13 @@ export function IssueDescription({
           const extraProps = link.url.startsWith('http') ? { target: '_self', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={() => handleStepClick(item)} {...extraProps}>
-              <Button size="sm" className={styles.issueLink} icon={getIcon(link.message)} variant="secondary">
+              <Button
+                size="sm"
+                className={styles.issueLink}
+                icon={getIcon(link.message)}
+                variant="secondary"
+                data-testid={`action-link-${item}-${link.message.toLowerCase().replace(/\s+/g, '-')}`}
+              >
                 {link.message}
               </Button>
             </a>

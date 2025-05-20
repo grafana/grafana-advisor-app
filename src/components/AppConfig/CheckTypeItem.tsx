@@ -33,6 +33,7 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
                 <div className={s.switchWrapper}>
                   <Switch
                     value={!ignoreSteps.includes(step.stepID)}
+                    data-testid={`ignore-${step.stepID}`}
                     onChange={(e) => {
                       const ignore = !e.currentTarget.checked;
                       if (ignore) {
