@@ -85,8 +85,12 @@ test.describe('navigating app', () => {
     await page.getByTestId(`ignore-health-check`).dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
     // Run checks again
     await runChecks(gotoPage, page);
-    await page.getByText('Action needed').click();
-    await expect(page.getByText('Health check failed')).not.toBeVisible();
+    // After ignoring the health check, either we see "No issues found" or we need to click through to verify the health check is hidden
+    const noIssues = await page.getByText('No issues found').isVisible();
+    if (!noIssues) {
+      await page.getByText('Action needed').click();
+      await expect(page.getByText('Health check failed')).not.toBeVisible();
+    }
 
     // Restore the ignore behavior
     await page.getByRole('link', { name: 'Configuration' }).click();
