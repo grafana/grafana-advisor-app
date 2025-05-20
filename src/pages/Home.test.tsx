@@ -107,7 +107,27 @@ describe('Home', () => {
     });
 
     renderWithRouter(<Home />);
-    expect(await screen.findByText(/Error: 500 Internal Server Error/)).toBeInTheDocument();
+    expect(await screen.findByText(/500 Internal Server Error/)).toBeInTheDocument();
+  });
+
+  it('shows error state when the check is errored', async () => {
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: {
+        ...defaultSummaries,
+        high: {
+          ...defaultSummaries.high,
+          checks: {
+            ...defaultSummaries.high.checks,
+            'check-1': { ...defaultSummaries.high.checks['check-1'], isError: true },
+          },
+        },
+      },
+      isLoading: false,
+      isError: true,
+    });
+
+    renderWithRouter(<Home />);
+    expect(await screen.findByText(/Check server logs for more details or open a support ticket/)).toBeInTheDocument();
   });
 
   it('shows empty state when no reports exist', async () => {
@@ -164,6 +184,40 @@ describe('Home', () => {
 
     renderWithRouter(<Home />);
     expect(await screen.findByText(/No issues found/)).toBeInTheDocument();
+  });
+
+  it('avoid showing completed state when checks are not completed', async () => {
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: {
+        high: {
+          created: new Date('2023-01-01'),
+          name: 'High Priority',
+          description: 'High priority issues',
+          severity: Severity.High,
+          checks: {
+            'check-1': mockCheck('check-1', 'datasource', 'Check 1', 0),
+          },
+        },
+        low: {
+          created: new Date('2023-01-01'),
+          name: 'Low Priority',
+          description: 'Low priority issues',
+          severity: Severity.Low,
+          checks: {},
+        },
+      },
+      isLoading: false,
+      isError: false,
+      error: undefined,
+    });
+
+    mockUseCompletedChecks.mockReturnValue({
+      isCompleted: false,
+      isLoading: false,
+    });
+
+    renderWithRouter(<Home />);
+    expect(screen.queryByText(/No issues found/)).not.toBeInTheDocument();
   });
 
   it('shows check summaries when issues exist', async () => {
