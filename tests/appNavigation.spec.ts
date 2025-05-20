@@ -24,8 +24,8 @@ async function createEmptyDatasource(page: Page): Promise<string> {
   // Navigate to datasources page
   await page.goto('/connections/datasources');
   // Wait for the page to load
-  await expect(page.getByText('Add new data source')).toBeVisible();
-  await page.getByText('Add new data source').click();
+  await expect(page.getByText(/Add( new)? data source/)).toBeVisible();
+  await page.getByText(/Add( new)? data source/).click();
   // Select the "Prometheus" option
   await page.getByRole('button', { name: 'Add new data source Prometheus' }).click();
   // Get the name of the datasource
