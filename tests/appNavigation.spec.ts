@@ -42,8 +42,8 @@ test.describe('navigating app', () => {
     // Click on the "More Info"
     await page.getByText('More Info').click();
     // Page should now show a report
-    await expect(page.getByText('datasource(s) analyzed')).toBeVisible();
-    await expect(page.getByText('plugin(s) analyzed')).toBeVisible();
+    await expect(page.getByText(/(datasource|Data Source)\(s\) analyzed/)).toBeVisible();
+    await expect(page.getByText(/(plugin|Plugin)\(s\) analyzed/)).toBeVisible();
   });
 
   test('it should detect an issue and fix it', async ({ gotoPage, page, grafanaVersion }) => {

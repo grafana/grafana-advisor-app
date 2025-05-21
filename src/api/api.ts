@@ -14,6 +14,7 @@ import { CheckTypeSpec } from 'generated/endpoints.gen';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
+export const CHECK_TYPE_NAME_ANNOTATION = 'advisor.grafana.app/checktype-name';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
 export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
@@ -50,14 +51,17 @@ export function useCheckSummaries() {
         continue;
       }
 
+      const checkTypeDefinition = checkTypes.find((ct) => ct.metadata.name === checkType);
+
       if (check.metadata.annotations?.[STATUS_ANNOTATION] === 'error') {
         setHasError(true);
       }
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
+      checkSummary[Severity.High].checks[checkType].typeName =
+        checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType;
       checkSummary[Severity.High].checks[checkType].name = check.metadata.name ?? '';
       checkSummary[Severity.Low].checks[checkType].name = check.metadata.name ?? '';
-      const checkTypeDefinition = checkTypes.find((ct) => ct.metadata.name === checkType);
       const canRetry = !!checkTypeDefinition?.metadata.annotations?.[RETRY_ANNOTATION];
       // Enable retry if the check type has a retry annotation
       checkSummary[Severity.High].checks[checkType].canRetry = canRetry;
