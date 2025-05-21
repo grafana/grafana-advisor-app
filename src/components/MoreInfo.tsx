@@ -40,7 +40,7 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
         {Object.values(checkSummaries.high.checks).map((check) => (
           <div key={check.type} className={styles.check}>
             <div className={styles.checkTitle}>
-              {check.totalCheckCount} {check.type}(s) analyzed
+              {check.totalCheckCount} {check.typeName || check.type}(s) analyzed
             </div>
             <div>
               {Object.values(check.steps).map((step) => (

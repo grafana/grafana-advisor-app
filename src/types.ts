@@ -22,6 +22,7 @@ export type CheckSummary = {
 export type Check = {
   name: string;
   type: string;
+  typeName: string;
   description: string;
   totalCheckCount: number;
   issueCount: number;

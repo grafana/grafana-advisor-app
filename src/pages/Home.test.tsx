@@ -18,6 +18,7 @@ jest.mock('@grafana/runtime', () => ({
 const mockCheck = (name: string, type: string, description: string, issueCount: number) => ({
   name,
   type,
+  typeName: type,
   description,
   totalCheckCount: issueCount,
   issueCount,
