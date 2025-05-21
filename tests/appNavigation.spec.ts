@@ -1,6 +1,7 @@
 import { AppPage } from '@grafana/plugin-e2e';
 import { test, expect } from './fixtures';
 import { Page } from '@playwright/test';
+import { testIds } from '../src/components/testIds';
 
 async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
@@ -55,7 +56,7 @@ test.describe('navigating app', () => {
     await page.getByText('Action needed').click();
     await page.getByText('Health check failed').click();
     // Click on the "Fix me" button
-    await page.getByTestId(`action-link-${dsName}-fix-me`).click();
+    await page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me')).click();
     // Now delete the datasource
     await expect(page.getByText('Loading')).not.toBeVisible();
     await page.getByText('Delete').click();
@@ -71,10 +72,10 @@ test.describe('navigating app', () => {
       await expect(page.getByText('Running checks...')).toBeVisible();
       await expect(page.getByText('Running checks...')).not.toBeVisible();
     } else {
-      await page.getByTestId(`retry-${dsName}`).click();
+      await page.getByTestId(testIds.CheckDrillDown.retryButton(dsName)).click();
     }
     // The issue should be fixed
-    await expect(page.getByTestId(`action-link-${dsName}-fix-me`)).not.toBeVisible();
+    await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).not.toBeVisible();
   });
 
   test('should configure and skip a check step', async ({ gotoPage, page, grafanaVersion }) => {
@@ -94,7 +95,7 @@ test.describe('navigating app', () => {
     // Click on the "Configuration" button
     await page.getByRole('link', { name: 'Configuration' }).click();
     // Click on the "Ignore" button
-    await page.getByTestId(`ignore-health-check`).dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
+    await page.getByTestId(testIds.AppConfig.ignoreSwitch('health-check')).dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
     // Run checks again
     await runChecks(gotoPage, page);
     // After ignoring the health check, either we see "No issues found" or we need to click through to verify the health check is hidden
@@ -106,7 +107,7 @@ test.describe('navigating app', () => {
 
     // Restore the ignore behavior
     await page.getByRole('link', { name: 'Configuration' }).click();
-    await page.getByTestId(`ignore-health-check`).dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
+    await page.getByTestId(testIds.AppConfig.ignoreSwitch('health-check')).dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
     await runChecks(gotoPage, page);
     await page.getByText('Action needed').click();
     await expect(page.getByText('Health check failed')).toBeVisible();
@@ -120,14 +121,14 @@ test.describe('navigating app', () => {
     // Page should now show a report
     await page.getByText('Action needed').click();
     await page.getByText('Health check failed').click();
-    await expect(page.getByTestId(`action-link-${dsName}-fix-me`)).toBeVisible();
+    await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).toBeVisible();
     // Click on the hide button
-    await page.getByTestId(`hide-${dsName}`).click();
-    await expect(page.getByTestId(`action-link-${dsName}-fix-me`)).not.toBeVisible();
+    await page.getByTestId(testIds.CheckDrillDown.hideButton(dsName)).click();
+    await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).not.toBeVisible();
 
     // Now enable hidden checks, the issue should be visible again
     await page.getByText('More Info').click();
     await page.getByRole('switch').dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
-    await expect(page.getByTestId(`action-link-${dsName}-fix-me`)).toBeVisible();
+    await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).toBeVisible();
   });
 });
