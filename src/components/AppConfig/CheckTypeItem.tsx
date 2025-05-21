@@ -4,6 +4,7 @@ import { useStyles2, Card, Switch, Stack } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { IGNORE_STEPS_ANNOTATION, IGNORE_STEPS_ANNOTATION_LIST } from 'api/api';
 import { CheckType } from 'generated';
+import { testIds } from 'components/testIds';
 
 interface CheckTypeItemProps {
   checkType: CheckType;
@@ -33,6 +34,7 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
                 <div className={s.switchWrapper}>
                   <Switch
                     value={!ignoreSteps.includes(step.stepID)}
+                    data-testid={testIds.AppConfig.ignoreSwitch(step.stepID)}
                     onChange={(e) => {
                       const ignore = !e.currentTarget.checked;
                       if (ignore) {

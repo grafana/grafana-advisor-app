@@ -3,6 +3,7 @@ import { css } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
+import { testIds } from 'components/testIds';
 
 interface IssueDescriptionProps {
   item: string;
@@ -44,6 +45,7 @@ export function IssueDescription({
           icon={isHidden ? 'bell' : 'bell-slash'}
           variant="secondary"
           title={isHidden ? 'Show issue' : 'Hide issue'}
+          data-testid={testIds.CheckDrillDown.hideButton(item)}
           onClick={() => onHideIssue(!isHidden)}
         />
         {canRetry && (
@@ -54,6 +56,7 @@ export function IssueDescription({
             variant="secondary"
             title="Retry check"
             disabled={!isCompleted}
+            data-testid={testIds.CheckDrillDown.retryButton(item)}
             onClick={onRetryCheck}
           />
         )}
@@ -61,7 +64,13 @@ export function IssueDescription({
           const extraProps = link.url.startsWith('http') ? { target: '_self', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={() => handleStepClick(item)} {...extraProps}>
-              <Button size="sm" className={styles.issueLink} icon={getIcon(link.message)} variant="secondary">
+              <Button
+                size="sm"
+                className={styles.issueLink}
+                icon={getIcon(link.message)}
+                variant="secondary"
+                data-testid={testIds.CheckDrillDown.actionLink(item, link.message)}
+              >
                 {link.message}
               </Button>
             </a>
