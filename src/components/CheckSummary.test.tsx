@@ -15,7 +15,7 @@ export function getMockCheckSummary(): CheckSummaryType {
       testCheck: {
         name: 'test1',
         type: 'test',
-        typeName: 'Test Type',
+        typeName: 'test',
         description: 'Test check description',
         totalCheckCount: 5,
         issueCount: 2,

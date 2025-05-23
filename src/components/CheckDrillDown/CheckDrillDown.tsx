@@ -85,7 +85,7 @@ export default function CheckDrillDown({
                   label={
                     <div className={styles.description}>
                       <div>
-                        {step.name} failed for {issues.length} {check.typeName}
+                        {step.name} failed for {issues.length} {check.typeName || check.type}
                         {issues.length > 1 ? 's' : ''}.
                       </div>
                       <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
