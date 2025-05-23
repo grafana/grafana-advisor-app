@@ -61,7 +61,7 @@ export function IssueDescription({
           />
         )}
         {links.map((link) => {
-          const extraProps = link.url.startsWith('http') ? { target: '_self', rel: 'noopener noreferrer' } : {};
+          const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={() => handleStepClick(item)} {...extraProps}>
               <Button
