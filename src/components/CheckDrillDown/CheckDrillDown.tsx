@@ -145,6 +145,7 @@ const getStyles = () => (theme: GrafanaTheme2) => {
     }),
     resolution: css({
       color: theme.colors.text.secondary,
+      marginRight: theme.spacing(1),
     }),
   };
 };
