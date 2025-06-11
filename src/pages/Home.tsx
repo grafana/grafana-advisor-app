@@ -75,7 +75,7 @@ export default function Home() {
           <Alert title="Failed to load checks" className={styles.error}>
             {isFetchError(error)
               ? `${error.status} ${error.statusText}`
-              : 'Check server logs for more details or open a support ticket.'}
+              : 'Check server logs for more details, refresh the report or open a support ticket if the problem persists.'}
           </Alert>
         )}
 

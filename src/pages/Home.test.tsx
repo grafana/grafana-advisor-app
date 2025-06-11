@@ -128,7 +128,7 @@ describe('Home', () => {
     });
 
     renderWithRouter(<Home />);
-    expect(await screen.findByText(/Check server logs for more details or open a support ticket/)).toBeInTheDocument();
+    expect(await screen.findByText(/Check server logs for more details/)).toBeInTheDocument();
   });
 
   it('shows empty state when no reports exist', async () => {
