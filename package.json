@@ -1,6 +1,6 @@
 {
   "name": "advisor",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
@@ -73,6 +73,7 @@
     "@grafana/schema": "^11.5.3",
     "@grafana/ui": "^11.5.3",
     "@reduxjs/toolkit": "^2.6.1",
+    "date-fns": "^4.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "^6.22.0",

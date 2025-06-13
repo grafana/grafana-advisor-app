@@ -1,4 +1,4 @@
-import { CheckSummaries, Severity } from 'types';
+import { CheckSummaries, Severity, CheckStatus } from 'types';
 import {
   Check,
   useListCheckQuery,
@@ -23,7 +23,6 @@ export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
   const { checkTypes, ...listCheckTypesState } = useCheckTypes();
   const [showHiddenIssues, setShowHiddenIssues] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const { isIssueHidden, handleHideIssue } = useHiddenIssues();
 
   const summaries = useMemo(() => {
@@ -52,10 +51,6 @@ export function useCheckSummaries() {
       }
 
       const checkTypeDefinition = checkTypes.find((ct) => ct.metadata.name === checkType);
-
-      if (check.metadata.annotations?.[STATUS_ANNOTATION] === 'error') {
-        setHasError(true);
-      }
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
       checkSummary[Severity.High].checks[checkType].typeName =
@@ -119,7 +114,7 @@ export function useCheckSummaries() {
   return {
     summaries,
     isLoading: listChecksState.isLoading || listCheckTypesState.isLoading,
-    isError: listChecksState.isError || listCheckTypesState.isError || hasError,
+    isError: listChecksState.isError || listCheckTypesState.isError,
     error: listChecksState.error || listCheckTypesState.error,
     showHiddenIssues,
     setShowHiddenIssues,
@@ -307,7 +302,8 @@ function useIncompleteChecks(names?: string[]) {
       pollingInterval,
     }
   );
-  const incompleteChecks = useMemo(() => {
+
+  const checkStatuses = useMemo((): CheckStatus[] => {
     if (!listChecksState.data?.items) {
       return [];
     }
@@ -334,31 +330,36 @@ function useIncompleteChecks(names?: string[]) {
     // Filter incomplete checks from the most recent ones
     return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
-      .filter(
-        (check) =>
-          !check.metadata.annotations?.[STATUS_ANNOTATION] ||
-          (check.metadata.annotations?.[RETRY_ANNOTATION] !== undefined &&
-            check.metadata.annotations?.[STATUS_ANNOTATION] !== 'error')
-      )
-      .map((check) => check.metadata.name ?? '');
+      .map(
+        (check): CheckStatus => ({
+          name: check.metadata.labels?.[CHECK_TYPE_LABEL] ?? '',
+          creationTimestamp: check.metadata.creationTimestamp ?? '',
+          incomplete:
+            !check.metadata.annotations?.[STATUS_ANNOTATION] ||
+            (check.metadata.annotations?.[RETRY_ANNOTATION] !== undefined &&
+              check.metadata.annotations?.[STATUS_ANNOTATION] !== 'error'),
+          hasError: check.metadata.annotations?.[STATUS_ANNOTATION] === 'error',
+        })
+      );
   }, [listChecksState.data, names]);
 
   // Update polling interval based on incomplete checks
   useEffect(() => {
-    setPollingInterval(incompleteChecks.length > 0 ? 2000 : 0);
-  }, [incompleteChecks.length]);
+    setPollingInterval(checkStatuses.filter((check) => check.incomplete).length > 0 ? 2000 : 0);
+  }, [checkStatuses]);
 
   return {
-    incompleteChecks,
+    checkStatuses,
     ...listChecksState,
   };
 }
 
 export function useCompletedChecks(names?: string[]) {
-  const { incompleteChecks, isLoading, ...incompleteChecksState } = useIncompleteChecks(names);
+  const { checkStatuses, isLoading, ...incompleteChecksState } = useIncompleteChecks(names);
 
   return {
-    isCompleted: incompleteChecks.length === 0,
+    isCompleted: checkStatuses.filter((check) => check.incomplete).length === 0,
+    checkStatuses,
     isLoading,
     ...incompleteChecksState,
   };

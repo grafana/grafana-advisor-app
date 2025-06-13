@@ -29,7 +29,7 @@ describe('Actions', () => {
   });
 
   it('renders refresh and delete buttons', async () => {
-    render(<Actions isCompleted={true} />);
+    render(<Actions isCompleted={true} checkStatuses={[]} />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /delete reports/i })).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe('Actions', () => {
   });
 
   it('shows loading state when running checks', async () => {
-    render(<Actions isCompleted={false} />);
+    render(<Actions isCompleted={false} checkStatuses={[]} />);
     await waitFor(() => {
       expect(screen.getByText('Running checks...')).toBeInTheDocument();
     });
@@ -55,14 +55,14 @@ describe('Actions', () => {
       createCheckState: { isError: true, error },
     });
 
-    render(<Actions isCompleted={true} />);
+    render(<Actions isCompleted={true} checkStatuses={[]} />);
     await waitFor(() => {
       expect(screen.getByText(/error while running checks: 500 internal server error/i)).toBeInTheDocument();
     });
   });
 
   it('shows confirmation modal when delete button clicked', async () => {
-    render(<Actions isCompleted={true} />);
+    render(<Actions isCompleted={true} checkStatuses={[]} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
@@ -79,7 +79,7 @@ describe('Actions', () => {
       deleteChecksState: { isLoading: false, isError: false, error: undefined },
     });
 
-    render(<Actions isCompleted={true} />);
+    render(<Actions isCompleted={true} checkStatuses={[]} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
@@ -103,7 +103,7 @@ describe('Actions', () => {
       deleteChecksState: { isLoading: false, isError: true, error },
     });
 
-    render(<Actions isCompleted={true} />);
+    render(<Actions isCompleted={true} checkStatuses={[]} />);
     await waitFor(() => {
       expect(screen.getByText(/error deleting checks: 500 internal server error/i)).toBeInTheDocument();
     });
@@ -116,7 +116,7 @@ describe('Actions', () => {
       createCheckState: { isError: false, error: undefined },
     });
 
-    render(<Actions isCompleted={true} />);
+    render(<Actions isCompleted={true} checkStatuses={[]} />);
     const refreshButton = screen.getByRole('button', { name: /refresh/i });
     await user.click(refreshButton);
 

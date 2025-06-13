@@ -81,6 +81,7 @@ describe('Home', () => {
     mockUseCompletedChecks.mockReturnValue({
       isCompleted: true,
       isLoading: false,
+      checkStatuses: [],
     });
 
     mockUseCreateChecks.mockReturnValue({
@@ -215,6 +216,7 @@ describe('Home', () => {
     mockUseCompletedChecks.mockReturnValue({
       isCompleted: false,
       isLoading: false,
+      checkStatuses: [],
     });
 
     renderWithRouter(<Home />);
