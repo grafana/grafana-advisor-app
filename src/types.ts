@@ -44,3 +44,10 @@ export type CheckReportFailureExtended = CheckReportFailure & {
   isRetrying: boolean;
   isHidden: boolean;
 };
+
+export interface CheckStatus {
+  name: string;
+  creationTimestamp: string;
+  incomplete: boolean;
+  hasError: boolean;
+}

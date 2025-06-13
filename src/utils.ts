@@ -1,12 +1,4 @@
-// TODO: this should come from the backend (be part of the data)
-export function formatCheckName(name: string): string {
-  const checkNameMapping: Record<string, string> = {
-    datasource: 'Datasources',
-    plugin: 'Plugins',
-  };
-
-  return checkNameMapping[name] ?? name;
-}
+import { CheckStatus } from 'types';
 
 export function formatDate(date: Date): string {
   const formatter = new Intl.DateTimeFormat('hu-HU', {
@@ -20,3 +12,8 @@ export function formatDate(date: Date): string {
 
   return formatter.format(date).replace(',', ' -');
 }
+
+export const isOld = (check: CheckStatus) => {
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+  return new Date(check.creationTimestamp).getTime() < tenMinutesAgo.getTime();
+};
