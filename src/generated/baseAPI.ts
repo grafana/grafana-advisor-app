@@ -6,28 +6,14 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 
 import { createBaseQuery } from './createBaseQuery';
 import { getAPIBaseURL } from './utils';
+import { config } from '@grafana/runtime';
 
 export const BASE_URL = getAPIBaseURL('advisor.grafana.app', 'v0alpha1');
 
-function createAdvisorApi() {
-  try {
-    return createApi({
-      reducerPath: 'advisorAPIv0alpha1',
-      baseQuery: createBaseQuery({
-        baseURL: BASE_URL,
-      }),
-      endpoints: () => ({}),
-    });
-  } catch (error) {
-    // Previous to Grafana 12.1
-    return createApi({
-      reducerPath: 'advisorAPI',
-      baseQuery: createBaseQuery({
-        baseURL: BASE_URL,
-      }),
-      endpoints: () => ({}),
-    });
-  }
-}
-
-export const api = createAdvisorApi();
+export const api = createApi({
+  reducerPath: config.buildInfo.version.startsWith('12.0') ? 'advisorAPI' : 'advisorAPIv0alpha1', // Since Grafana 12.1 the reducerPath includes the version
+  baseQuery: createBaseQuery({
+    baseURL: BASE_URL,
+  }),
+  endpoints: () => ({}),
+});
