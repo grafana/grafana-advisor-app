@@ -9,10 +9,25 @@ import { getAPIBaseURL } from './utils';
 
 export const BASE_URL = getAPIBaseURL('advisor.grafana.app', 'v0alpha1');
 
-export const api = createApi({
-  reducerPath: 'advisorAPI',
-  baseQuery: createBaseQuery({
-    baseURL: BASE_URL,
-  }),
-  endpoints: () => ({}),
-});
+function createAdvisorApi() {
+  try {
+    return createApi({
+      reducerPath: 'advisorAPIv0alpha1',
+      baseQuery: createBaseQuery({
+        baseURL: BASE_URL,
+      }),
+      endpoints: () => ({}),
+    });
+  } catch (error) {
+    // Previous to Grafana 12.1
+    return createApi({
+      reducerPath: 'advisorAPI',
+      baseQuery: createBaseQuery({
+        baseURL: BASE_URL,
+      }),
+      endpoints: () => ({}),
+    });
+  }
+}
+
+export const api = createAdvisorApi();
