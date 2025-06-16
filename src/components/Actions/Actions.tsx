@@ -4,8 +4,15 @@ import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
 import { useDeleteChecks, useCreateChecks } from 'api/api';
+import { CheckStatus } from 'types';
+import ChecksStatus from './ChecksStatus';
 
-export default function Actions({ isCompleted }: { isCompleted: boolean }) {
+interface ActionsProps {
+  isCompleted: boolean;
+  checkStatuses: CheckStatus[];
+}
+
+export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
   const { createChecks, createCheckState } = useCreateChecks();
   const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
@@ -35,7 +42,7 @@ export default function Actions({ isCompleted }: { isCompleted: boolean }) {
             }}
             disabled={!isCompleted}
             variant="secondary"
-            icon={!isCompleted ? 'spinner' : 'sync'}
+            icon={isCompleted ? 'sync' : 'spinner'}
           >
             {isCompleted ? 'Refresh' : 'Running checks...'}
           </Button>
@@ -47,6 +54,8 @@ export default function Actions({ isCompleted }: { isCompleted: boolean }) {
             aria-label="Delete reports"
           ></Button>
         </Stack>
+
+        <ChecksStatus checkStatuses={checkStatuses} />
 
         <div className={styles.rightColumn}>
           {createCheckState.isError && isFetchError(createCheckState.error) && (
