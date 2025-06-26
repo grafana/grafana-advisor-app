@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
+import { useLLMSuggestion } from 'api/api';
+import { LLMSuggestionContent } from './LLMSuggestionContent';
 
 interface IssueDescriptionProps {
   item: string;
@@ -11,6 +13,9 @@ interface IssueDescriptionProps {
   isRetrying?: boolean;
   canRetry?: boolean;
   isCompleted?: boolean;
+  checkName: string;
+  itemID: string;
+  stepID: string;
   links: Array<{ url: string; message: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
@@ -22,12 +27,17 @@ export function IssueDescription({
   isRetrying,
   canRetry,
   isCompleted,
+  checkName,
+  itemID,
+  stepID,
   links,
   onHideIssue,
   onRetryCheck,
 }: IssueDescriptionProps) {
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
+  const [llmSectionOpen, setLlmSectionOpen] = useState(false);
+  const { getSuggestion, response, isLoading, isLLMEnabled } = useLLMSuggestion();
 
   const handleStepClick = (item: string) => {
     const params = new URLSearchParams(location.search);
@@ -39,6 +49,21 @@ export function IssueDescription({
     <div className={isHidden ? styles.issueHidden : styles.issue}>
       <div className={styles.issueReason}>
         {item}
+        {isLLMEnabled && (
+          <Button
+            size="sm"
+            className={styles.issueLink}
+            icon="ai"
+            variant={llmSectionOpen ? 'primary' : 'secondary'}
+            title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            onClick={() => {
+              if (!llmSectionOpen) {
+                getSuggestion(checkName, stepID, itemID);
+              }
+              setLlmSectionOpen(!llmSectionOpen);
+            }}
+          />
+        )}
         <Button
           size="sm"
           className={styles.issueLink}
@@ -76,6 +101,7 @@ export function IssueDescription({
             </a>
           );
         })}
+        {llmSectionOpen && <LLMSuggestionContent isLoading={isLoading} response={response} />}
       </div>
     </div>
   );
