@@ -12,8 +12,10 @@ import {
   useRetryCheck,
   useSkipCheckTypeStep,
   IGNORE_STEPS_ANNOTATION_LIST,
+  useLLMSuggestion,
 } from './api';
 import { config } from '@grafana/runtime';
+import { llm } from '@grafana/llm';
 
 // Mock the generated API hooks
 const mockListCheckQuery = jest.fn();
@@ -41,6 +43,18 @@ jest.mock('@grafana/runtime', () => ({
     getItem: jest.fn().mockResolvedValue(''),
     setItem: jest.fn(),
   }),
+}));
+
+jest.mock('@grafana/llm', () => ({
+  llm: {
+    Model: {
+      BASE: 'base',
+    },
+    enabled: jest.fn().mockResolvedValue(true),
+    chatCompletions: jest.fn().mockResolvedValue({
+      choices: [{ message: { content: 'test' } }],
+    }),
+  },
 }));
 
 describe('API Hooks', () => {
@@ -723,6 +737,56 @@ describe('API Hooks', () => {
       expect(mockUpdateCheck).toHaveBeenCalledWith({
         name: 'check1',
         patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1retry', value: 'item1' }],
+      });
+    });
+  });
+
+  describe('useLLMSuggestion', () => {
+    it('returns a list of check statuses', async () => {
+      const { result } = renderHook(() => useLLMSuggestion());
+      await waitFor(() => {
+        expect(result.current.isLLMEnabled).toBe(true);
+      });
+    });
+
+    it('returns a suggestion', async () => {
+      const mockUpdateCheck = jest.fn();
+      mockUpdateCheckMutation.mockReturnValue([mockUpdateCheck, { isError: false }]);
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: { name: 'check1' },
+              status: {
+                report: {
+                  failures: [
+                    {
+                      stepID: 'step1',
+                      itemID: 'item1',
+                      item: 'item1',
+                      severity: 'High',
+                      moreInfo: 'moreInfo',
+                      links: [],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useLLMSuggestion());
+      await waitFor(() => {
+        result.current.getSuggestion('check1', 'step1', 'item1');
+      });
+
+      // Wait for the assertions to pass
+      await waitFor(() => {
+        expect(llm.chatCompletions).toHaveBeenCalledTimes(1);
+        expect(result.current.response).toBe('test');
       });
     });
   });

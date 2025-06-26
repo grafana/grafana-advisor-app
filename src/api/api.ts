@@ -10,7 +10,8 @@ import {
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
-import { CheckTypeSpec } from 'generated/endpoints.gen';
+import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
+import { llm } from '@grafana/llm';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
@@ -18,6 +19,7 @@ export const CHECK_TYPE_NAME_ANNOTATION = 'advisor.grafana.app/checktype-name';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
 export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
+export const LLM_RESPONSE_ANNOTATION_PREFIX = 'advisor.grafana.app/llm-response';
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -428,3 +430,102 @@ const useHiddenIssues = () => {
 
   return { handleHideIssue, isIssueHidden };
 };
+
+async function llmRequest(failure: CheckReportFailure) {
+  // Construct messages for the LLM
+  const messages: llm.Message[] = [
+    { role: 'system', content: 'You are an experienced, competent SRE with knowledge of Grafana.' },
+    {
+      role: 'user',
+      content:
+        `I have received an error message from the Grafana Advisor with the following details:\n\n` +
+        `Step ID: ${failure.stepID}\n` +
+        `Item ID: ${failure.itemID}\n` +
+        `Item: ${failure.item}\n` +
+        `Severity: ${failure.severity}\n` +
+        `More info: ${failure.moreInfo}\n` +
+        `Links: ${failure.links.map((link) => `${link.message} (${link.url})`).join(', ') || 'N/A'}\n\n` +
+        `Please provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
+        `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`,
+    },
+  ];
+
+  const result = await llm.chatCompletions({
+    model: llm.Model.BASE,
+    messages,
+  });
+
+  const content = result?.choices[0]?.message?.content || '';
+
+  return content;
+}
+
+export function useLLMSuggestion() {
+  const [response, setResponse] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLLMEnabled, setIsLLMEnabled] = useState(false);
+  const { data: checksData } = useListCheckQuery({});
+  const [updateCheck] = useUpdateCheckMutation();
+
+  useEffect(() => {
+    llm.enabled().then((enabled) => setIsLLMEnabled(enabled));
+  }, []);
+
+  const getSuggestion = useCallback(
+    async (checkName: string, stepID: string, itemID: string) => {
+      setIsLoading(true);
+
+      try {
+        // Find the specific failure from the check data
+        const check = checksData?.items.find((c) => c.metadata.name === checkName);
+        if (!check?.status.report.failures) {
+          console.error('No failures found for check:', checkName);
+          return;
+        }
+
+        const failure = check.status.report.failures.find((f) => f.stepID === stepID && f.itemID === itemID);
+        if (!failure) {
+          console.error('No failure found for stepID:', stepID, 'and itemID:', itemID);
+          return;
+        }
+
+        // Create annotation key for this specific step+item combination
+        const annotationKey = `${LLM_RESPONSE_ANNOTATION_PREFIX}-${stepID}-${itemID}`;
+
+        // Check if we already have a cached response
+        const cachedResponse = check.metadata.annotations?.[annotationKey];
+        if (cachedResponse) {
+          setResponse(cachedResponse);
+          return;
+        }
+
+        // Get the LLM response
+        const content = await llmRequest(failure);
+        setResponse(content);
+
+        // Store the response content as an annotation in the check
+        try {
+          await updateCheck({
+            name: checkName,
+            patch: [
+              {
+                op: 'add',
+                path: `/metadata/annotations/${annotationKey.replace(/\//g, '~1')}`,
+                value: content,
+              },
+            ],
+          });
+        } catch (updateError) {
+          console.error('Failed to cache LLM response:', updateError);
+        }
+      } catch (error) {
+        console.error('Error getting LLM suggestion:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [checksData, updateCheck]
+  );
+
+  return { getSuggestion, response, isLoading, isLLMEnabled };
+}
