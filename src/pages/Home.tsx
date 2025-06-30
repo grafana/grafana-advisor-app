@@ -8,6 +8,7 @@ import { MoreInfo } from 'components/MoreInfo';
 import Actions from 'components/Actions/Actions';
 import { useCheckSummaries, useCompletedChecks, useRetryCheck } from 'api/api';
 import { formatDate } from 'utils';
+import { llm } from '@grafana/llm';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
@@ -16,6 +17,7 @@ export default function Home() {
   const [isEmpty, setIsEmpty] = useState(false);
   const [isHealthy, setIsHealthy] = useState(false);
   const { isCompleted, checkStatuses } = useCompletedChecks();
+  const [isLLMEnabled, setIsLLMEnabled] = useState(false);
   const { retryCheck } = useRetryCheck();
 
   useEffect(() => {
@@ -31,6 +33,10 @@ export default function Home() {
       }
     }
   }, [isLoading, isError, summaries, isCompleted]);
+
+  useEffect(() => {
+    llm.enabled().then((enabled) => setIsLLMEnabled(enabled));
+  }, []);
 
   return (
     <PluginPage
@@ -98,6 +104,7 @@ export default function Home() {
                   isCompleted={isCompleted}
                   showHiddenIssues={showHiddenIssues}
                   handleHideIssue={handleHideIssue}
+                  isLLMEnabled={isLLMEnabled}
                 />
                 <CheckSummary
                   checkSummary={summaries.low}
@@ -105,6 +112,7 @@ export default function Home() {
                   isCompleted={isCompleted}
                   showHiddenIssues={showHiddenIssues}
                   handleHideIssue={handleHideIssue}
+                  isLLMEnabled={isLLMEnabled}
                 />
                 <MoreInfo
                   checkSummaries={summaries}

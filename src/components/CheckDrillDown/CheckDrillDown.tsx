@@ -12,6 +12,7 @@ export interface CheckDrillDownProps {
   isCompleted: boolean;
   showHiddenIssues: boolean;
   handleHideIssue: (stepID: string, itemID: string, isHidden: boolean) => void;
+  isLLMEnabled: boolean;
 }
 
 export default function CheckDrillDown({
@@ -20,6 +21,7 @@ export default function CheckDrillDown({
   isCompleted,
   showHiddenIssues,
   handleHideIssue,
+  isLLMEnabled,
 }: CheckDrillDownProps) {
   const styles = useStyles2(getStyles());
   const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
@@ -110,6 +112,7 @@ export default function CheckDrillDown({
                           links={issue.links}
                           onHideIssue={(isHidden) => handleHideIssue(step.stepID, issue.itemID, isHidden)}
                           onRetryCheck={() => retryCheck(check.name, issue.itemID)}
+                          isLLMEnabled={isLLMEnabled}
                         />
                       </div>
                     );

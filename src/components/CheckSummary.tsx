@@ -13,9 +13,17 @@ interface Props {
   isCompleted: boolean;
   showHiddenIssues: boolean;
   handleHideIssue: (stepID: string, itemID: string, isHidden: boolean) => void;
+  isLLMEnabled: boolean;
 }
 
-export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHiddenIssues, handleHideIssue }: Props) {
+export function CheckSummary({
+  checkSummary,
+  retryCheck,
+  isCompleted,
+  showHiddenIssues,
+  handleHideIssue,
+  isLLMEnabled,
+}: Props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles(checkSummary.severity));
   const issueCount = Object.values(checkSummary.checks).reduce((acc, check) => acc + check.issueCount, 0);
@@ -62,6 +70,7 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
           isCompleted={isCompleted}
           showHiddenIssues={showHiddenIssues}
           handleHideIssue={handleHideIssue}
+          isLLMEnabled={isLLMEnabled}
         />
       </div>
     </Collapse>

@@ -455,21 +455,14 @@ async function llmRequest(failure: CheckReportFailure) {
     messages,
   });
 
-  const content = result?.choices[0]?.message?.content || '';
-
-  return content;
+  return result?.choices[0]?.message?.content || '';
 }
 
 export function useLLMSuggestion() {
   const [response, setResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLLMEnabled, setIsLLMEnabled] = useState(false);
   const { data: checksData } = useListCheckQuery({});
   const [updateCheck] = useUpdateCheckMutation();
-
-  useEffect(() => {
-    llm.enabled().then((enabled) => setIsLLMEnabled(enabled));
-  }, []);
 
   const getSuggestion = useCallback(
     async (checkName: string, stepID: string, itemID: string) => {
@@ -527,5 +520,5 @@ export function useLLMSuggestion() {
     [checksData, updateCheck]
   );
 
-  return { getSuggestion, response, isLoading, isLLMEnabled };
+  return { getSuggestion, response, isLoading };
 }

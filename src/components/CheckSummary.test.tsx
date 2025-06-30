@@ -62,6 +62,7 @@ describe('CheckSummary', () => {
     isCompleted: true,
     handleHideIssue: jest.fn(),
     showHiddenIssues: false,
+    isLLMEnabled: true,
   };
 
   beforeEach(() => {
@@ -91,7 +92,7 @@ describe('CheckSummary', () => {
     expect(screen.getByText('Issue 2')).toBeInTheDocument();
   });
 
-  it('does not render when there are no issues', () => {
+  it('does not render when there are no issues', async () => {
     const noIssuesCheckSummary = {
       ...mockCheckSummary,
       checks: {
@@ -108,7 +109,9 @@ describe('CheckSummary', () => {
       },
     };
 
-    const { container } = renderWithRouter(<CheckSummary {...defaultProps} checkSummary={noIssuesCheckSummary} />);
+    const { container } = await renderWithRouter(
+      <CheckSummary {...defaultProps} checkSummary={noIssuesCheckSummary} />
+    );
     expect(container.firstChild).toBeNull();
   });
 });

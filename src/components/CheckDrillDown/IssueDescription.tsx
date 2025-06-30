@@ -19,6 +19,7 @@ interface IssueDescriptionProps {
   links: Array<{ url: string; message: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
+  isLLMEnabled: boolean;
 }
 
 export function IssueDescription({
@@ -33,11 +34,12 @@ export function IssueDescription({
   links,
   onHideIssue,
   onRetryCheck,
+  isLLMEnabled,
 }: IssueDescriptionProps) {
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
-  const { getSuggestion, response, isLoading, isLLMEnabled } = useLLMSuggestion();
+  const { getSuggestion, response, isLoading } = useLLMSuggestion();
 
   const handleStepClick = (item: string) => {
     const params = new URLSearchParams(location.search);

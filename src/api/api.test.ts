@@ -733,13 +733,6 @@ describe('API Hooks', () => {
   });
 
   describe('useLLMSuggestion', () => {
-    it('returns a list of check statuses', async () => {
-      const { result } = renderHook(() => useLLMSuggestion());
-      await waitFor(() => {
-        expect(result.current.isLLMEnabled).toBe(true);
-      });
-    });
-
     it('returns a suggestion', async () => {
       const mockUpdateCheck = jest.fn();
       mockUpdateCheckMutation.mockReturnValue([mockUpdateCheck, { isError: false }]);
