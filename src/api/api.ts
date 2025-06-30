@@ -445,7 +445,7 @@ async function llmRequest(failure: CheckReportFailure) {
         `Severity: ${failure.severity}\n` +
         `More info: ${failure.moreInfo}\n` +
         `Links: ${failure.links.map((link) => `${link.message} (${link.url})`).join(', ') || 'N/A'}\n\n` +
-        `Please provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
+        `Provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
         `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`,
     },
   ];

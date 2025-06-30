@@ -17,6 +17,9 @@ import {
 import { config } from '@grafana/runtime';
 import { llm } from '@grafana/llm';
 
+// Unmock the api module for this test file so we can test the real implementations
+jest.unmock('api/api');
+
 // Mock the generated API hooks
 const mockListCheckQuery = jest.fn();
 const mockListCheckTypeQuery = jest.fn();
@@ -43,18 +46,6 @@ jest.mock('@grafana/runtime', () => ({
     getItem: jest.fn().mockResolvedValue(''),
     setItem: jest.fn(),
   }),
-}));
-
-jest.mock('@grafana/llm', () => ({
-  llm: {
-    Model: {
-      BASE: 'base',
-    },
-    enabled: jest.fn().mockResolvedValue(true),
-    chatCompletions: jest.fn().mockResolvedValue({
-      choices: [{ message: { content: 'test' } }],
-    }),
-  },
 }));
 
 describe('API Hooks', () => {

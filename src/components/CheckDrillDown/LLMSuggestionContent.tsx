@@ -9,7 +9,6 @@ interface LLMSuggestionContentProps {
   response: string | null;
 }
 
-// TODO: Needs to split this in two components to fix the rendering issue.
 export function LLMSuggestionContent({ isLoading, response }: LLMSuggestionContentProps) {
   const styles = useStyles2(getStyles);
 
