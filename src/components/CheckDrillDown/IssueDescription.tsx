@@ -5,6 +5,7 @@ import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useLLMSuggestion } from 'api/api';
+import { useLLM } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 
 interface IssueDescriptionProps {
@@ -19,7 +20,6 @@ interface IssueDescriptionProps {
   links: Array<{ url: string; message: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
-  isLLMEnabled: boolean;
 }
 
 export function IssueDescription({
@@ -34,10 +34,10 @@ export function IssueDescription({
   links,
   onHideIssue,
   onRetryCheck,
-  isLLMEnabled,
 }: IssueDescriptionProps) {
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
+  const { isLLMEnabled } = useLLM();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
 

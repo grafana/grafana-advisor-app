@@ -11,8 +11,8 @@ module.exports = {
     // Existing mappings from the base config
     ...require('./.config/jest.config').moduleNameMapper,
     // Add react-markdown mock
-    '^react-markdown$': path.resolve(__dirname, '.config/jest/mocks/react-markdown.tsx'),
+    '^react-markdown$': path.resolve(__dirname, 'src/__mocks__/react-markdown.tsx'),
     // Add @grafana/llm mock
-    '^@grafana/llm$': path.resolve(__dirname, '.config/jest/mocks/grafana-llm.ts'),
+    '^@grafana/llm$': path.resolve(__dirname, 'src/__mocks__/grafana-llm.ts'),
   },
 };

@@ -473,12 +473,14 @@ export function useLLMSuggestion() {
         const check = checksData?.items.find((c) => c.metadata.name === checkName);
         if (!check?.status.report.failures) {
           console.error('No failures found for check:', checkName);
+          setIsLoading(false);
           return;
         }
 
         const failure = check.status.report.failures.find((f) => f.stepID === stepID && f.itemID === itemID);
         if (!failure) {
           console.error('No failure found for stepID:', stepID, 'and itemID:', itemID);
+          setIsLoading(false);
           return;
         }
 
@@ -489,6 +491,7 @@ export function useLLMSuggestion() {
         const cachedResponse = check.metadata.annotations?.[annotationKey];
         if (cachedResponse) {
           setResponse(cachedResponse);
+          setIsLoading(false);
           return;
         }
 

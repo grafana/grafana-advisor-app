@@ -39,7 +39,6 @@ describe('Components/CheckDrillDown', () => {
       isCompleted: true,
       handleHideIssue: jest.fn(),
       showHiddenIssues: false,
-      isLLMEnabled: true,
     };
   });
 

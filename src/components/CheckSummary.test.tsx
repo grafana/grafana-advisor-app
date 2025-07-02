@@ -62,7 +62,6 @@ describe('CheckSummary', () => {
     isCompleted: true,
     handleHideIssue: jest.fn(),
     showHiddenIssues: false,
-    isLLMEnabled: true,
   };
 
   beforeEach(() => {

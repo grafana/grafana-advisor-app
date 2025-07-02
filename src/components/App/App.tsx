@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import FeatureFlagMissing from 'pages/FeatureFlagMissing';
+import { ContextProvider } from 'contexts/Context';
 const Home = React.lazy(() => import('../../pages/Home'));
 
 export default function App(props: AppRootProps) {
@@ -11,8 +12,10 @@ export default function App(props: AppRootProps) {
     return <FeatureFlagMissing />;
   }
   return (
-    <Routes>
-      <Route path="*" element={<Home />} />
-    </Routes>
+    <ContextProvider>
+      <Routes>
+        <Route path="*" element={<Home />} />
+      </Routes>
+    </ContextProvider>
   );
 }
