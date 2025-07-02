@@ -12,8 +12,13 @@ import {
   useRetryCheck,
   useSkipCheckTypeStep,
   IGNORE_STEPS_ANNOTATION_LIST,
+  useLLMSuggestion,
 } from './api';
 import { config } from '@grafana/runtime';
+import { llm } from '@grafana/llm';
+
+// Unmock the api module for this test file so we can test the real implementations
+jest.unmock('api/api');
 
 // Mock the generated API hooks
 const mockListCheckQuery = jest.fn();
@@ -723,6 +728,49 @@ describe('API Hooks', () => {
       expect(mockUpdateCheck).toHaveBeenCalledWith({
         name: 'check1',
         patch: [{ op: 'add', path: '/metadata/annotations/advisor.grafana.app~1retry', value: 'item1' }],
+      });
+    });
+  });
+
+  describe('useLLMSuggestion', () => {
+    it('returns a suggestion', async () => {
+      const mockUpdateCheck = jest.fn();
+      mockUpdateCheckMutation.mockReturnValue([mockUpdateCheck, { isError: false }]);
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: { name: 'check1' },
+              status: {
+                report: {
+                  failures: [
+                    {
+                      stepID: 'step1',
+                      itemID: 'item1',
+                      item: 'item1',
+                      severity: 'High',
+                      moreInfo: 'moreInfo',
+                      links: [],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useLLMSuggestion());
+      await waitFor(() => {
+        result.current.getSuggestion('check1', 'step1', 'item1');
+      });
+
+      // Wait for the assertions to pass
+      await waitFor(() => {
+        expect(llm.chatCompletions).toHaveBeenCalledTimes(1);
+        expect(result.current.response).toBe('test');
       });
     });
   });
