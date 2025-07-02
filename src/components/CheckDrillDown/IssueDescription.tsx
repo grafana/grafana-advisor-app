@@ -5,7 +5,7 @@ import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useLLMSuggestion } from 'api/api';
-import { useLLM } from 'contexts/Context';
+import { usePluginContext } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 
 interface IssueDescriptionProps {
@@ -37,7 +37,7 @@ export function IssueDescription({
 }: IssueDescriptionProps) {
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
-  const { isLLMEnabled } = useLLM();
+  const { isLLMEnabled } = usePluginContext();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
 

@@ -24,10 +24,10 @@ export function ContextProvider({ children }: ProviderProps) {
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
-export function useLLM(): ContextType {
+export function usePluginContext(): ContextType {
   const context = useContext(Context);
   if (context === undefined) {
-    throw new Error('useLLM must be used within an LLMProvider');
+    throw new Error('usePluginContext must be used within an PluginContextProvider');
   }
   return context;
 }
