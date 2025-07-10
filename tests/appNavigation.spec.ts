@@ -5,7 +5,7 @@ import { testIds } from '../src/components/testIds';
 
 async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
-  await expect(page.getByText('Keep Grafana running smoothly and securely')).toBeVisible();
+  await expect(page.getByText('Runs health checks and suggests action items to fix identified issues')).toBeVisible();
   // It should delete the report
   await page.getByRole('button', { name: 'Delete reports' }).click();
   await page.getByRole('button', { name: 'Confirm' }).click();
