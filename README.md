@@ -70,3 +70,4 @@ ln -s <PATH_TO_YOUR_PLUGIN>/dist/ <PATH_TO_LOCAL_GRAFANA>/data/plugins/grafana-a
 ```bash
 make run
 ```
+
