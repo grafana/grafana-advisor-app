@@ -73,7 +73,7 @@
     "@grafana/runtime": "^12.0.2",
     "@grafana/schema": "^12.0.2",
     "@grafana/ui": "^12.0.2",
-    "@reduxjs/toolkit": "^2.6.1",
+    "@reduxjs/toolkit": "^2.8.2",
     "date-fns": "^4.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
