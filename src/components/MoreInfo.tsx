@@ -3,6 +3,7 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, Collapse, LinkButton, Switch, Field } from '@grafana/ui';
 import { type CheckSummaries } from 'types';
+import { useInteractionTracker } from '../api/useInteractionTracker';
 
 interface Props {
   checkSummaries: CheckSummaries;
@@ -13,6 +14,12 @@ interface Props {
 export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues }: Props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles);
+  const { trackGlobalAction } = useInteractionTracker();
+
+  const handleConfigureClick = () => {
+    // Track global configure interaction
+    trackGlobalAction('configure_clicked');
+  };
 
   return (
     <Collapse
@@ -31,6 +38,7 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
             tooltip="Configure advisor steps"
             className={styles.configButton}
             href="/plugins/grafana-advisor-app?page=configuration"
+            onClick={handleConfigureClick}
           />
         </div>
       }

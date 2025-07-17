@@ -6,6 +6,7 @@ import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 import { CheckSummaryTitle } from './CheckSummaryTitle';
 import CheckDrillDown from './CheckDrillDown/CheckDrillDown';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useInteractionTracker } from '../api/useInteractionTracker';
 
 interface Props {
   checkSummary: CheckSummaryType;
@@ -22,6 +23,7 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
   const location = useLocation();
   const navigate = useNavigate();
   const isSummaryOpenParam = 'summaryOpen' + checkSummary.severity;
+  const { trackGroupToggle } = useInteractionTracker();
 
   useEffect(() => {
     // Restore state from URL
@@ -32,6 +34,9 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
 
   const handleToggle = (isOpen: boolean) => {
     setIsOpen(isOpen);
+
+    // Track group toggle interaction
+    trackGroupToggle(checkSummary.severity);
 
     // Update URL with summary state
     const params = new URLSearchParams(location.search);
