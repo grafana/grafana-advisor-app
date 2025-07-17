@@ -34,8 +34,6 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
 
   const handleToggle = (isOpen: boolean) => {
     setIsOpen(isOpen);
-
-    // Track group toggle interaction
     trackGroupToggle(checkSummary.severity);
 
     // Update URL with summary state

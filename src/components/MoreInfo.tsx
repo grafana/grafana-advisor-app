@@ -17,7 +17,6 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
   const { trackGlobalAction } = useInteractionTracker();
 
   const handleConfigureClick = () => {
-    // Track global configure interaction
     trackGlobalAction('configure_clicked');
   };
 

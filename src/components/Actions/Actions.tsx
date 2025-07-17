@@ -24,16 +24,12 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
   const handleRefreshClick = (e: React.MouseEvent) => {
     e.preventDefault();
     createChecks();
-
-    // Track global refresh interaction
     trackGlobalAction('refresh_clicked');
   };
 
   const handlePurgeClick = () => {
     deleteChecks();
     setConfirmDeleteModalOpen(false);
-
-    // Track global purge interaction
     trackGlobalAction('purge_clicked');
   };
 
