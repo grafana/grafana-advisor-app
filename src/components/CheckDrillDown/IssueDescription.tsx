@@ -7,6 +7,7 @@ import { testIds } from 'components/testIds';
 import { useLLMSuggestion } from 'api/api';
 import { usePluginContext } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
+import { useInteractionTracker } from '../../api/useInteractionTracker';
 
 interface IssueDescriptionProps {
   item: string;
@@ -14,6 +15,7 @@ interface IssueDescriptionProps {
   isRetrying?: boolean;
   canRetry?: boolean;
   isCompleted?: boolean;
+  checkType: string;
   checkName: string;
   itemID: string;
   stepID: string;
@@ -28,6 +30,7 @@ export function IssueDescription({
   isRetrying,
   canRetry,
   isCompleted,
+  checkType,
   checkName,
   itemID,
   stepID,
@@ -40,11 +43,35 @@ export function IssueDescription({
   const { isLLMEnabled } = usePluginContext();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
+  const { trackCheckInteraction } = useInteractionTracker();
 
   const handleStepClick = (item: string) => {
     const params = new URLSearchParams(location.search);
     params.set('scrollToStep', item);
     navigate({ search: params.toString() }, { replace: true });
+  };
+
+  const handleAISuggestionClick = () => {
+    if (!llmSectionOpen) {
+      getSuggestion(checkName, stepID, itemID);
+    }
+    setLlmSectionOpen(!llmSectionOpen);
+    trackCheckInteraction('aisuggestion_clicked', checkType, stepID);
+  };
+
+  const handleSilenceClick = () => {
+    onHideIssue(!isHidden);
+    trackCheckInteraction('silence_clicked', checkType, stepID);
+  };
+
+  const handleRetryClick = () => {
+    onRetryCheck();
+    trackCheckInteraction('refresh_clicked', checkType, stepID);
+  };
+
+  const handleResolutionClick = () => {
+    handleStepClick(item);
+    trackCheckInteraction('resolution_clicked', checkType, stepID);
   };
 
   return (
@@ -58,12 +85,7 @@ export function IssueDescription({
             icon="ai"
             variant={llmSectionOpen ? 'primary' : 'secondary'}
             title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
-            onClick={() => {
-              if (!llmSectionOpen) {
-                getSuggestion(checkName, stepID, itemID);
-              }
-              setLlmSectionOpen(!llmSectionOpen);
-            }}
+            onClick={handleAISuggestionClick}
           />
         )}
         <Button
@@ -73,7 +95,7 @@ export function IssueDescription({
           variant="secondary"
           title={isHidden ? 'Show issue' : 'Hide issue'}
           data-testid={testIds.CheckDrillDown.hideButton(item)}
-          onClick={() => onHideIssue(!isHidden)}
+          onClick={handleSilenceClick}
         />
         {canRetry && (
           <Button
@@ -84,13 +106,13 @@ export function IssueDescription({
             title="Retry check"
             disabled={!isCompleted}
             data-testid={testIds.CheckDrillDown.retryButton(item)}
-            onClick={onRetryCheck}
+            onClick={handleRetryClick}
           />
         )}
         {links.map((link) => {
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
-            <a key={link.url} href={link.url} onClick={() => handleStepClick(item)} {...extraProps}>
+            <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
               <Button
                 size="sm"
                 className={styles.issueLink}
