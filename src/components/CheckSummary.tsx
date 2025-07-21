@@ -34,7 +34,7 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
 
   const handleToggle = (isOpen: boolean) => {
     setIsOpen(isOpen);
-    trackGroupToggle(checkSummary.severity);
+    trackGroupToggle(checkSummary.severity, isOpen);
 
     // Update URL with summary state
     const params = new URLSearchParams(location.search);

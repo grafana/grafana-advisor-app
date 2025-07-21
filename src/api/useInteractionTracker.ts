@@ -15,10 +15,11 @@ export function useInteractionTracker() {
 
   // Group toggle tracking
   const trackGroupToggle = useCallback(
-    (groupName: string) => {
+    (groupName: string, open: boolean) => {
       const normalizedGroupName = normalizeEventName(groupName);
       report('grafana_plugin_advisor_group_toggled', {
         group: normalizedGroupName,
+        open,
       });
     },
     [report]
@@ -29,12 +30,14 @@ export function useInteractionTracker() {
     (
       interactionType: 'resolution_clicked' | 'refresh_clicked' | 'silence_clicked' | 'aisuggestion_clicked',
       checkType: string,
-      stepID: string
+      stepID: string,
+      otherProperties?: Record<string, any>
     ) => {
       report(`grafana_plugin_advisor_check_interaction`, {
         interaction_type: interactionType,
         check_type: checkType,
         step_id: stepID,
+        ...otherProperties,
       });
     },
     [report]

@@ -61,7 +61,9 @@ export function IssueDescription({
 
   const handleSilenceClick = () => {
     onHideIssue(!isHidden);
-    trackCheckInteraction('silence_clicked', checkType, stepID);
+    trackCheckInteraction('silence_clicked', checkType, stepID, {
+      silenced: isHidden,
+    });
   };
 
   const handleRetryClick = () => {

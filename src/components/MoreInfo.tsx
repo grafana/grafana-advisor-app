@@ -14,16 +14,21 @@ interface Props {
 export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues }: Props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles);
-  const { trackGlobalAction } = useInteractionTracker();
+  const { trackGlobalAction, trackGroupToggle } = useInteractionTracker();
 
   const handleConfigureClick = () => {
     trackGlobalAction('configure_clicked');
   };
 
+  const handleToggle = (isOpen: boolean) => {
+    setIsOpen(isOpen);
+    trackGroupToggle('more_info', isOpen);
+  };
+
   return (
     <Collapse
       isOpen={isOpen}
-      onToggle={() => setIsOpen(!isOpen)}
+      onToggle={handleToggle}
       collapsible={true}
       label={
         <div className={styles.labelContainer}>

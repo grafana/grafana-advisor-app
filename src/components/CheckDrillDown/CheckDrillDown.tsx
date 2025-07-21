@@ -54,7 +54,7 @@ export default function CheckDrillDown({
       [stepId]: !isOpen[stepId],
     };
     setIsOpen(newState);
-    trackGroupToggle(stepId);
+    trackGroupToggle(stepId, newState[stepId]);
 
     // Update URL with open steps
     const openSteps = Object.entries(newState)
@@ -91,7 +91,17 @@ export default function CheckDrillDown({
                         {step.name} failed for {issues.length} {check.typeName || check.type}
                         {issues.length > 1 ? 's' : ''}.
                       </div>
-                      <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
+                      <div
+                        className={styles.resolution}
+                        dangerouslySetInnerHTML={{ __html: step.resolution }}
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement;
+                          if (target.closest('a')) {
+                            // Avoid expanding/collapsing the section when clicking on a link
+                            e.stopPropagation();
+                          }
+                        }}
+                      ></div>
                     </div>
                   }
                   isOpen={isOpen[step.stepID] ?? false}
