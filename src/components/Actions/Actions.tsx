@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { useDeleteChecks, useCreateChecks } from 'api/api';
 import { CheckStatus } from 'types';
 import ChecksStatus from './ChecksStatus';
-import { useInteractionTracker } from '../../api/useInteractionTracker';
+import { useInteractionTracker, GlobalActionType } from '../../api/useInteractionTracker';
 
 interface ActionsProps {
   isCompleted: boolean;
@@ -21,16 +21,15 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
 
   const styles = useStyles2(getStyles);
 
-  const handleRefreshClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleRefreshClick = () => {
     createChecks();
-    trackGlobalAction('refresh_clicked');
+    trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
   };
 
   const handlePurgeClick = () => {
     deleteChecks();
     setConfirmDeleteModalOpen(false);
-    trackGlobalAction('purge_clicked');
+    trackGlobalAction(GlobalActionType.PURGE_CLICKED);
   };
 
   return (

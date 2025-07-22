@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, Collapse, LinkButton, Switch, Field } from '@grafana/ui';
 import { type CheckSummaries } from 'types';
-import { useInteractionTracker } from '../api/useInteractionTracker';
+import { useInteractionTracker, GlobalActionType } from '../api/useInteractionTracker';
 
 interface Props {
   checkSummaries: CheckSummaries;
@@ -16,9 +16,10 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
   const styles = useStyles2(getStyles);
   const { trackGlobalAction, trackGroupToggle } = useInteractionTracker();
 
-  const handleConfigureClick = () => {
-    trackGlobalAction('configure_clicked');
-  };
+  const handleConfigureClick = useCallback(() => {
+    trackGlobalAction(GlobalActionType.CONFIGURE_CLICKED);
+    trackGroupToggle('more_info', true);
+  }, [trackGlobalAction, trackGroupToggle]);
 
   const handleToggle = (isOpen: boolean) => {
     setIsOpen(isOpen);

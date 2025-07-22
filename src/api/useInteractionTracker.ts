@@ -1,6 +1,20 @@
 import { usePluginInteractionReporter } from '@grafana/runtime';
 import { useCallback } from 'react';
 
+// Enums for interaction types
+export enum CheckInteractionType {
+  RESOLUTION_CLICKED = 'resolution_clicked',
+  REFRESH_CLICKED = 'refresh_clicked',
+  SILENCE_CLICKED = 'silence_clicked',
+  AI_SUGGESTION_CLICKED = 'aisuggestion_clicked',
+}
+
+export enum GlobalActionType {
+  REFRESH_CLICKED = 'refresh_clicked',
+  PURGE_CLICKED = 'purge_clicked',
+  CONFIGURE_CLICKED = 'configure_clicked',
+}
+
 // Utility function to normalize names for event properties
 function normalizeEventName(name: string): string {
   return name
@@ -28,7 +42,7 @@ export function useInteractionTracker() {
   // Check interaction tracking
   const trackCheckInteraction = useCallback(
     (
-      interactionType: 'resolution_clicked' | 'refresh_clicked' | 'silence_clicked' | 'aisuggestion_clicked',
+      interactionType: CheckInteractionType,
       checkType: string,
       stepID: string,
       otherProperties?: Record<string, any>
@@ -45,7 +59,7 @@ export function useInteractionTracker() {
 
   // Global actions tracking
   const trackGlobalAction = useCallback(
-    (actionType: 'refresh_clicked' | 'purge_clicked' | 'configure_clicked') => {
+    (actionType: GlobalActionType) => {
       report(`grafana_plugin_advisor_global_actions_interaction`, {
         action_type: actionType,
       });

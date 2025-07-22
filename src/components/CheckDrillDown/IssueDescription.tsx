@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { css } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
@@ -7,7 +7,7 @@ import { testIds } from 'components/testIds';
 import { useLLMSuggestion } from 'api/api';
 import { usePluginContext } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
-import { useInteractionTracker } from '../../api/useInteractionTracker';
+import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
 interface IssueDescriptionProps {
   item: string;
@@ -45,36 +45,39 @@ export function IssueDescription({
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
   const { trackCheckInteraction } = useInteractionTracker();
 
-  const handleStepClick = (item: string) => {
-    const params = new URLSearchParams(location.search);
-    params.set('scrollToStep', item);
-    navigate({ search: params.toString() }, { replace: true });
-  };
+  const handleStepClick = useCallback(
+    (item: string) => {
+      const params = new URLSearchParams(location.search);
+      params.set('scrollToStep', item);
+      navigate({ search: params.toString() }, { replace: true });
+    },
+    [navigate]
+  );
 
-  const handleAISuggestionClick = () => {
+  const handleAISuggestionClick = useCallback(() => {
     if (!llmSectionOpen) {
       getSuggestion(checkName, stepID, itemID);
     }
     setLlmSectionOpen(!llmSectionOpen);
-    trackCheckInteraction('aisuggestion_clicked', checkType, stepID);
-  };
+    trackCheckInteraction(CheckInteractionType.AI_SUGGESTION_CLICKED, checkType, stepID);
+  }, [llmSectionOpen, getSuggestion, checkName, stepID, itemID, trackCheckInteraction, checkType]);
 
-  const handleSilenceClick = () => {
+  const handleSilenceClick = useCallback(() => {
     onHideIssue(!isHidden);
-    trackCheckInteraction('silence_clicked', checkType, stepID, {
-      silenced: isHidden,
+    trackCheckInteraction(CheckInteractionType.SILENCE_CLICKED, checkType, stepID, {
+      silenced: !isHidden,
     });
-  };
+  }, [onHideIssue, isHidden, trackCheckInteraction, checkType, stepID]);
 
   const handleRetryClick = () => {
     onRetryCheck();
-    trackCheckInteraction('refresh_clicked', checkType, stepID);
+    trackCheckInteraction(CheckInteractionType.REFRESH_CLICKED, checkType, stepID);
   };
 
-  const handleResolutionClick = () => {
+  const handleResolutionClick = useCallback(() => {
     handleStepClick(item);
-    trackCheckInteraction('resolution_clicked', checkType, stepID);
-  };
+    trackCheckInteraction(CheckInteractionType.RESOLUTION_CLICKED, checkType, stepID);
+  }, [handleStepClick, item, trackCheckInteraction, checkType, stepID]);
 
   return (
     <div className={isHidden ? styles.issueHidden : styles.issue}>
