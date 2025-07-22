@@ -120,7 +120,7 @@ describe('API Hooks', () => {
       expect(result.current.checks).toEqual([]);
     });
 
-    it('returns only processed checks', () => {
+    it('returns unprocessed checks', () => {
       const mockChecks = {
         items: [
           {
@@ -152,7 +152,7 @@ describe('API Hooks', () => {
 
       const { result } = renderHook(() => useLastChecks());
       expect(result.current.checks).toHaveLength(1);
-      expect(result.current.checks[0].metadata.name).toBe('check1');
+      expect(result.current.checks[0].metadata.name).toBe('check2');
     });
 
     it('returns only the latest check for each type', () => {

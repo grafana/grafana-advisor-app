@@ -267,4 +267,31 @@ describe('Home', () => {
       expect(screen.queryByText(/last checked:/i)).not.toBeInTheDocument();
     });
   });
+
+  it('shows progress warning when checks are incomplete', async () => {
+    mockUseCompletedChecks.mockReturnValue({
+      isCompleted: false,
+      isLoading: false,
+      checkStatuses: [],
+    });
+
+    renderWithRouter(<Home />);
+    await waitFor(() => {
+      expect(screen.getByText(/report in progress/i)).toBeInTheDocument();
+      expect(screen.getByText(/results may change as checks complete/i)).toBeInTheDocument();
+    });
+  });
+
+  it('hides progress warning when checks are completed', async () => {
+    mockUseCompletedChecks.mockReturnValue({
+      isCompleted: true,
+      isLoading: false,
+      checkStatuses: [],
+    });
+
+    renderWithRouter(<Home />);
+    await waitFor(() => {
+      expect(screen.queryByText(/report in progress/i)).not.toBeInTheDocument();
+    });
+  });
 });

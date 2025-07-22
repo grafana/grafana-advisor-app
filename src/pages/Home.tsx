@@ -19,10 +19,10 @@ export default function Home() {
   const { retryCheck } = useRetryCheck();
 
   useEffect(() => {
-    if (!isLoading && !isError && isCompleted) {
+    if (!isLoading && !isError) {
       const isEmptyTemp = summaries.high.created.getTime() === 0;
       setIsEmpty(isEmptyTemp);
-      if (!isEmptyTemp) {
+      if (!isEmptyTemp && isCompleted) {
         const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
         const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
         setIsHealthy(highIssueCount + lowIssueCount === 0);
@@ -89,6 +89,14 @@ export default function Home() {
         {/* Checks */}
         {!isLoading && !isError && summaries && !isEmpty && (
           <>
+            {/* Warning for incomplete report */}
+            {!isCompleted && (
+              <div className={styles.incompleteWarning}>
+                <Icon name="hourglass" />
+                Report in progress - <span className={styles.warningText}>results may change as checks complete</span>
+              </div>
+            )}
+
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
               <Stack direction="column">
@@ -157,5 +165,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   error: css({
     marginTop: theme.spacing(2),
+  }),
+  incompleteWarning: css({
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    color: theme.colors.warning.text,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontStyle: 'italic',
+  }),
+  warningText: css({
+    color: theme.colors.text.primary,
   }),
 });
