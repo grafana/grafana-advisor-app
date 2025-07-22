@@ -13,6 +13,12 @@ jest.mock('api/api', () => ({
 
 describe('Actions', () => {
   const user = userEvent.setup();
+  const defaultProps = {
+    isCompleted: true,
+    checkStatuses: [],
+    showHiddenIssues: false,
+    setShowHiddenIssues: jest.fn(),
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -28,16 +34,18 @@ describe('Actions', () => {
     });
   });
 
-  it('renders refresh and delete buttons', async () => {
-    render(<Actions isCompleted={true} checkStatuses={[]} />);
+  it('renders refresh, configuration, toggle hidden issues, and delete buttons', async () => {
+    render(<Actions {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /configuration/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /show silenced issues/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /delete reports/i })).toBeInTheDocument();
     });
   });
 
   it('shows loading state when running checks', async () => {
-    render(<Actions isCompleted={false} checkStatuses={[]} />);
+    render(<Actions {...defaultProps} isCompleted={false} />);
     await waitFor(() => {
       expect(screen.getByText('Running checks...')).toBeInTheDocument();
     });
@@ -55,14 +63,14 @@ describe('Actions', () => {
       createCheckState: { isError: true, error },
     });
 
-    render(<Actions isCompleted={true} checkStatuses={[]} />);
+    render(<Actions {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByText(/error while running checks: 500 internal server error/i)).toBeInTheDocument();
     });
   });
 
-  it('shows confirmation modal when delete button clicked', async () => {
-    render(<Actions isCompleted={true} checkStatuses={[]} />);
+  it('shows confirmation modal when delete reports button clicked', async () => {
+    render(<Actions {...defaultProps} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
@@ -79,7 +87,7 @@ describe('Actions', () => {
       deleteChecksState: { isLoading: false, isError: false, error: undefined },
     });
 
-    render(<Actions isCompleted={true} checkStatuses={[]} />);
+    render(<Actions {...defaultProps} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
     await user.click(deleteButton);
 
@@ -103,7 +111,7 @@ describe('Actions', () => {
       deleteChecksState: { isLoading: false, isError: true, error },
     });
 
-    render(<Actions isCompleted={true} checkStatuses={[]} />);
+    render(<Actions {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByText(/error deleting checks: 500 internal server error/i)).toBeInTheDocument();
     });
@@ -116,12 +124,39 @@ describe('Actions', () => {
       createCheckState: { isError: false, error: undefined },
     });
 
-    render(<Actions isCompleted={true} checkStatuses={[]} />);
+    render(<Actions {...defaultProps} />);
     const refreshButton = screen.getByRole('button', { name: /refresh/i });
     await user.click(refreshButton);
 
     await waitFor(() => {
       expect(mockCreateFn).toHaveBeenCalled();
     });
+  });
+
+  it('toggles show hidden issues when toggle button clicked', async () => {
+    const mockSetShowHiddenIssues = jest.fn();
+    render(<Actions {...defaultProps} setShowHiddenIssues={mockSetShowHiddenIssues} />);
+
+    const toggleButton = screen.getByRole('button', { name: /show silenced issues/i });
+    await user.click(toggleButton);
+
+    await waitFor(() => {
+      expect(mockSetShowHiddenIssues).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it('shows correct icon and label when hidden issues are visible', async () => {
+    render(<Actions {...defaultProps} showHiddenIssues={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /hide silenced issues/i })).toBeInTheDocument();
+    });
+  });
+
+  it('has configuration link with correct href', async () => {
+    render(<Actions {...defaultProps} />);
+
+    const configLink = screen.getByRole('link', { name: /configuration/i });
+    expect(configLink).toHaveAttribute('href', '/plugins/grafana-advisor-app?page=configuration');
   });
 });

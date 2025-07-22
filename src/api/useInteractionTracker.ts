@@ -45,9 +45,13 @@ export function useInteractionTracker() {
 
   // Global actions tracking
   const trackGlobalAction = useCallback(
-    (actionType: 'refresh_clicked' | 'purge_clicked' | 'configure_clicked') => {
+    (
+      actionType: 'refresh_clicked' | 'purge_clicked' | 'configure_clicked' | 'toggle_hidden_issues',
+      otherProperties?: Record<string, any>
+    ) => {
       report(`grafana_plugin_advisor_global_actions_interaction`, {
         action_type: actionType,
+        ...otherProperties,
       });
     },
     [report]

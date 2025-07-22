@@ -38,7 +38,14 @@ export default function Home() {
         text: 'Advisor',
         subTitle: 'Run checks and get suggested action items to fix identified issues',
       }}
-      actions={<Actions isCompleted={isCompleted} checkStatuses={checkStatuses} />}
+      actions={
+        <Actions
+          isCompleted={isCompleted}
+          checkStatuses={checkStatuses}
+          showHiddenIssues={showHiddenIssues}
+          setShowHiddenIssues={setShowHiddenIssues}
+        />
+      }
     >
       <Stack direction="row" gap={1} justifyContent="space-between" alignItems="center">
         <div className={styles.feedbackContainer}>
@@ -106,11 +113,7 @@ export default function Home() {
                   showHiddenIssues={showHiddenIssues}
                   handleHideIssue={handleHideIssue}
                 />
-                <MoreInfo
-                  checkSummaries={summaries}
-                  showHiddenIssues={showHiddenIssues}
-                  setShowHiddenIssues={setShowHiddenIssues}
-                />
+                <MoreInfo checkSummaries={summaries} />
               </Stack>
             </div>
           </>

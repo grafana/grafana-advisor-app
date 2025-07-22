@@ -1,24 +1,18 @@
 import React from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, Collapse, LinkButton, Switch, Field } from '@grafana/ui';
+import { useStyles2, Collapse } from '@grafana/ui';
 import { type CheckSummaries } from 'types';
 import { useInteractionTracker } from '../api/useInteractionTracker';
 
 interface Props {
   checkSummaries: CheckSummaries;
-  showHiddenIssues: boolean;
-  setShowHiddenIssues: (showHiddenIssues: boolean) => void;
 }
 
-export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues }: Props) {
+export function MoreInfo({ checkSummaries }: Props) {
   const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles);
-  const { trackGlobalAction, trackGroupToggle } = useInteractionTracker();
-
-  const handleConfigureClick = () => {
-    trackGlobalAction('configure_clicked');
-  };
+  const { trackGroupToggle } = useInteractionTracker();
 
   const handleToggle = (isOpen: boolean) => {
     setIsOpen(isOpen);
@@ -26,27 +20,7 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
   };
 
   return (
-    <Collapse
-      isOpen={isOpen}
-      onToggle={handleToggle}
-      collapsible={true}
-      label={
-        <div className={styles.labelContainer}>
-          <span>More Info</span>
-          <LinkButton
-            icon="cog"
-            variant="secondary"
-            size="sm"
-            fill="text"
-            aria-label="Configuration"
-            tooltip="Configure advisor steps"
-            className={styles.configButton}
-            href="/plugins/grafana-advisor-app?page=configuration"
-            onClick={handleConfigureClick}
-          />
-        </div>
-      }
-    >
+    <Collapse isOpen={isOpen} onToggle={handleToggle} collapsible={true} label="More Info">
       <div className={styles.container}>
         <div>Summary: </div>
         {Object.values(checkSummaries.high.checks).map((check) => (
@@ -64,15 +38,6 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
             </div>
           </div>
         ))}
-        <div>
-          <div>Options: </div>
-          <Field
-            label="Show silenced issues"
-            description="Silenced issues are still evaluated but can be hidden from this report"
-          >
-            <Switch value={showHiddenIssues} onChange={() => setShowHiddenIssues(!showHiddenIssues)} />
-          </Field>
-        </div>
       </div>
     </Collapse>
   );
@@ -80,21 +45,11 @@ export function MoreInfo({ checkSummaries, showHiddenIssues, setShowHiddenIssues
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
-    labelContainer: css({
-      display: 'flex',
-      width: '100%',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }),
     container: css({
       padding: theme.spacing(1),
       paddingTop: 0,
       color: theme.colors.text.secondary,
       position: 'relative',
-    }),
-    configButton: css({
-      marginRight: theme.spacing(1),
-      opacity: 0.7,
     }),
     check: css({
       marginBottom: theme.spacing(2),
