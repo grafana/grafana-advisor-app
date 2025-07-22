@@ -93,7 +93,8 @@ export default function Home() {
             {!isCompleted && (
               <div className={styles.incompleteWarning}>
                 <Icon name="hourglass" />
-                Report in progress - <span className={styles.warningText}>results may change as checks complete</span>
+                Report in progress -
+                <span className={styles.incompleteInfo}> results may change as checks complete</span>
               </div>
             )}
 
@@ -176,7 +177,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
     fontStyle: 'italic',
   }),
-  warningText: css({
+  incompleteInfo: css({
     color: theme.colors.text.primary,
   }),
 });
