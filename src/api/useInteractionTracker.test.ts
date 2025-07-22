@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { useInteractionTracker } from './useInteractionTracker';
+import { useInteractionTracker, CheckInteractionType, GlobalActionType } from './useInteractionTracker';
 import { usePluginInteractionReporter } from '@grafana/runtime';
 
 // Mock @grafana/runtime
@@ -70,10 +70,10 @@ describe('useInteractionTracker', () => {
   });
 
   describe('trackCheckInteraction', () => {
-    it('should track resolution clicked interaction', () => {
+    it('should track check interaction with resolution_clicked', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackCheckInteraction('resolution_clicked', 'performance', 'step_123');
+      result.current.trackCheckInteraction(CheckInteractionType.RESOLUTION_CLICKED, 'performance', 'step_123');
 
       expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_check_interaction', {
         interaction_type: 'resolution_clicked',
@@ -82,10 +82,10 @@ describe('useInteractionTracker', () => {
       });
     });
 
-    it('should track refresh clicked interaction', () => {
+    it('should track check interaction with refresh_clicked', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackCheckInteraction('refresh_clicked', 'security', 'step_456');
+      result.current.trackCheckInteraction(CheckInteractionType.REFRESH_CLICKED, 'security', 'step_456');
 
       expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_check_interaction', {
         interaction_type: 'refresh_clicked',
@@ -94,10 +94,10 @@ describe('useInteractionTracker', () => {
       });
     });
 
-    it('should track silence clicked interaction', () => {
+    it('should track check interaction with silence_clicked and additional properties', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackCheckInteraction('silence_clicked', 'config', 'step_789', {
+      result.current.trackCheckInteraction(CheckInteractionType.SILENCE_CLICKED, 'config', 'step_789', {
         silenced: true,
       });
 
@@ -109,10 +109,10 @@ describe('useInteractionTracker', () => {
       });
     });
 
-    it('should track aisuggestion clicked interaction', () => {
+    it('should track check interaction with aisuggestion_clicked', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackCheckInteraction('aisuggestion_clicked', 'monitoring', 'step_101');
+      result.current.trackCheckInteraction(CheckInteractionType.AI_SUGGESTION_CLICKED, 'monitoring', 'step_101');
 
       expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_check_interaction', {
         interaction_type: 'aisuggestion_clicked',
@@ -123,30 +123,30 @@ describe('useInteractionTracker', () => {
   });
 
   describe('trackGlobalAction', () => {
-    it('should track refresh clicked global action', () => {
+    it('should track global action with refresh_clicked', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackGlobalAction('refresh_clicked');
+      result.current.trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
 
       expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_global_actions_interaction', {
         action_type: 'refresh_clicked',
       });
     });
 
-    it('should track purge clicked global action', () => {
+    it('should track global action with purge_clicked', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackGlobalAction('purge_clicked');
+      result.current.trackGlobalAction(GlobalActionType.PURGE_CLICKED);
 
       expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_global_actions_interaction', {
         action_type: 'purge_clicked',
       });
     });
 
-    it('should track configure clicked global action', () => {
+    it('should track global action with configure_clicked', () => {
       const { result } = renderHook(() => useInteractionTracker());
 
-      result.current.trackGlobalAction('configure_clicked');
+      result.current.trackGlobalAction(GlobalActionType.CONFIGURE_CLICKED);
 
       expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_global_actions_interaction', {
         action_type: 'configure_clicked',
@@ -160,8 +160,8 @@ describe('useInteractionTracker', () => {
 
       // Make multiple calls
       result.current.trackGroupToggle('Group 1', true);
-      result.current.trackCheckInteraction('resolution_clicked', 'type1', 'step1');
-      result.current.trackGlobalAction('refresh_clicked');
+      result.current.trackCheckInteraction(CheckInteractionType.RESOLUTION_CLICKED, 'type1', 'step1');
+      result.current.trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
       result.current.trackGroupToggle('Group 2', false);
 
       expect(mockReport).toHaveBeenCalledTimes(4);

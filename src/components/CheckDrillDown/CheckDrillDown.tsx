@@ -71,6 +71,13 @@ export default function CheckDrillDown({
     navigate({ search: params.toString() }, { replace: true });
   };
 
+  const avoidLinkPropagation = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('a')) {
+      e.stopPropagation();
+    }
+  };
+
   return (
     <div className={styles.container}>
       {Object.values(checkSummary.checks).map((check) => {
@@ -94,13 +101,7 @@ export default function CheckDrillDown({
                       <div
                         className={styles.resolution}
                         dangerouslySetInnerHTML={{ __html: step.resolution }}
-                        onClick={(e) => {
-                          const target = e.target as HTMLElement;
-                          if (target.closest('a')) {
-                            // Avoid expanding/collapsing the section when clicking on a link
-                            e.stopPropagation();
-                          }
-                        }}
+                        onClick={avoidLinkPropagation}
                       ></div>
                     </div>
                   }

@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { useDeleteChecks, useCreateChecks } from 'api/api';
 import { CheckStatus } from 'types';
 import ChecksStatus from './ChecksStatus';
-import { useInteractionTracker } from '../../api/useInteractionTracker';
+import { useInteractionTracker, GlobalActionType } from '../../api/useInteractionTracker';
 
 interface ActionsProps {
   isCompleted: boolean;
@@ -23,25 +23,24 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
 
   const styles = useStyles2(getStyles);
 
-  const handleRefreshClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleRefreshClick = () => {
     createChecks();
-    trackGlobalAction('refresh_clicked');
+    trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
   };
 
   const handlePurgeClick = () => {
     deleteChecks();
     setConfirmDeleteModalOpen(false);
-    trackGlobalAction('purge_clicked');
+    trackGlobalAction(GlobalActionType.PURGE_CLICKED);
   };
 
   const handleConfigureClick = () => {
-    trackGlobalAction('configure_clicked');
+    trackGlobalAction(GlobalActionType.CONFIGURE_CLICKED);
   };
 
   const handleToggleHiddenIssues = () => {
     setShowHiddenIssues(!showHiddenIssues);
-    trackGlobalAction('toggle_hidden_issues', {
+    trackGlobalAction(GlobalActionType.TOGGLE_HIDDEN_ISSUES, {
       show_hidden_issues: showHiddenIssues,
     });
   };
