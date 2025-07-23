@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { css } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
@@ -7,6 +7,7 @@ import { testIds } from 'components/testIds';
 import { useLLMSuggestion } from 'api/api';
 import { usePluginContext } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
+import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
 interface IssueDescriptionProps {
   item: string;
@@ -14,6 +15,7 @@ interface IssueDescriptionProps {
   isRetrying?: boolean;
   canRetry?: boolean;
   isCompleted?: boolean;
+  checkType: string;
   checkName: string;
   itemID: string;
   stepID: string;
@@ -28,6 +30,7 @@ export function IssueDescription({
   isRetrying,
   canRetry,
   isCompleted,
+  checkType,
   checkName,
   itemID,
   stepID,
@@ -40,12 +43,41 @@ export function IssueDescription({
   const { isLLMEnabled } = usePluginContext();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
+  const { trackCheckInteraction } = useInteractionTracker();
 
-  const handleStepClick = (item: string) => {
-    const params = new URLSearchParams(location.search);
-    params.set('scrollToStep', item);
-    navigate({ search: params.toString() }, { replace: true });
+  const handleStepClick = useCallback(
+    (item: string) => {
+      const params = new URLSearchParams(location.search);
+      params.set('scrollToStep', item);
+      navigate({ search: params.toString() }, { replace: true });
+    },
+    [navigate]
+  );
+
+  const handleAISuggestionClick = useCallback(() => {
+    if (!llmSectionOpen) {
+      getSuggestion(checkName, stepID, itemID);
+    }
+    setLlmSectionOpen(!llmSectionOpen);
+    trackCheckInteraction(CheckInteractionType.AI_SUGGESTION_CLICKED, checkType, stepID);
+  }, [llmSectionOpen, getSuggestion, checkName, stepID, itemID, trackCheckInteraction, checkType]);
+
+  const handleSilenceClick = useCallback(() => {
+    onHideIssue(!isHidden);
+    trackCheckInteraction(CheckInteractionType.SILENCE_CLICKED, checkType, stepID, {
+      silenced: !isHidden,
+    });
+  }, [onHideIssue, isHidden, trackCheckInteraction, checkType, stepID]);
+
+  const handleRetryClick = () => {
+    onRetryCheck();
+    trackCheckInteraction(CheckInteractionType.REFRESH_CLICKED, checkType, stepID);
   };
+
+  const handleResolutionClick = useCallback(() => {
+    handleStepClick(item);
+    trackCheckInteraction(CheckInteractionType.RESOLUTION_CLICKED, checkType, stepID);
+  }, [handleStepClick, item, trackCheckInteraction, checkType, stepID]);
 
   return (
     <div className={isHidden ? styles.issueHidden : styles.issue}>
@@ -58,12 +90,7 @@ export function IssueDescription({
             icon="ai"
             variant={llmSectionOpen ? 'primary' : 'secondary'}
             title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
-            onClick={() => {
-              if (!llmSectionOpen) {
-                getSuggestion(checkName, stepID, itemID);
-              }
-              setLlmSectionOpen(!llmSectionOpen);
-            }}
+            onClick={handleAISuggestionClick}
           />
         )}
         <Button
@@ -73,7 +100,7 @@ export function IssueDescription({
           variant="secondary"
           title={isHidden ? 'Show issue' : 'Hide issue'}
           data-testid={testIds.CheckDrillDown.hideButton(item)}
-          onClick={() => onHideIssue(!isHidden)}
+          onClick={handleSilenceClick}
         />
         {canRetry && (
           <Button
@@ -84,13 +111,13 @@ export function IssueDescription({
             title="Retry check"
             disabled={!isCompleted}
             data-testid={testIds.CheckDrillDown.retryButton(item)}
-            onClick={onRetryCheck}
+            onClick={handleRetryClick}
           />
         )}
         {links.map((link) => {
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
-            <a key={link.url} href={link.url} onClick={() => handleStepClick(item)} {...extraProps}>
+            <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
               <Button
                 size="sm"
                 className={styles.issueLink}

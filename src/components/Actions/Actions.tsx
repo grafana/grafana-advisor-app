@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { useDeleteChecks, useCreateChecks } from 'api/api';
 import { CheckStatus } from 'types';
 import ChecksStatus from './ChecksStatus';
+import { useInteractionTracker, GlobalActionType } from '../../api/useInteractionTracker';
 
 interface ActionsProps {
   isCompleted: boolean;
@@ -16,8 +17,20 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
   const { createChecks, createCheckState } = useCreateChecks();
   const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
+  const { trackGlobalAction } = useInteractionTracker();
 
   const styles = useStyles2(getStyles);
+
+  const handleRefreshClick = () => {
+    createChecks();
+    trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
+  };
+
+  const handlePurgeClick = () => {
+    deleteChecks();
+    setConfirmDeleteModalOpen(false);
+    trackGlobalAction(GlobalActionType.PURGE_CLICKED);
+  };
 
   return (
     <div className={styles.actionsContainer}>
@@ -28,18 +41,12 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
             title="Delete reports?"
             body="Grafana keeps a history of reports, this action will delete all of them. It is not reversible."
             confirmText="Confirm"
-            onConfirm={() => {
-              deleteChecks();
-              setConfirmDeleteModalOpen(false);
-            }}
+            onConfirm={handlePurgeClick}
             onDismiss={() => setConfirmDeleteModalOpen(false)}
           />
 
           <Button
-            onClick={(e) => {
-              e.preventDefault();
-              createChecks();
-            }}
+            onClick={handleRefreshClick}
             disabled={!isCompleted}
             variant="secondary"
             icon={isCompleted ? 'sync' : 'spinner'}

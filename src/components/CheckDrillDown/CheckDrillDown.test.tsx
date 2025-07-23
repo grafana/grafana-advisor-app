@@ -142,4 +142,44 @@ describe('Components/CheckDrillDown', () => {
     renderWithRouter(<CheckDrillDown {...defaultProps} checkSummary={checkSummaries.high} showHiddenIssues={true} />);
     expect(screen.getByText(/Step 1 failed for 1 datasource/im)).toBeInTheDocument();
   });
+
+  test('should not trigger onToggle when clicking on a link in the resolution', async () => {
+    // Set up test data with a resolution containing an HTML link
+    checkSummaries.high.checks.datasource.steps.step1.resolution =
+      'Please check the <a href="https://example.com" target="_blank">documentation</a> for more information.';
+
+    // Render the component
+    await renderWithRouter(<CheckDrillDown {...defaultProps} />);
+
+    const user = userEvent.setup();
+
+    // Find the collapse component by its label text
+    const collapseHeader = screen.getByText(/Step 1 failed/i);
+    expect(collapseHeader).toBeInTheDocument();
+
+    // Find the link in the resolution
+    const resolutionLink = screen.getByRole('link', { name: 'documentation' });
+    expect(resolutionLink).toBeInTheDocument();
+
+    // Track initial state - collapse should be closed
+    expect(screen.queryByRole('button', { name: 'More info' })).not.toBeInTheDocument();
+
+    // Click on the resolution link
+    await user.click(resolutionLink);
+
+    // Verify that the collapse did not toggle (the content inside should still not be visible)
+    expect(screen.queryByRole('button', { name: 'More info' })).not.toBeInTheDocument();
+
+    // Additional verification: click on the collapse header to ensure it still works normally
+    await user.click(collapseHeader);
+
+    // Now the collapse should be open with content visible
+    expect(screen.getByRole('button', { name: 'More info' })).toBeInTheDocument();
+
+    // Click on the resolution link again when the collapse is open
+    await user.click(resolutionLink);
+
+    // The collapse should still remain open (not toggled by the link click)
+    expect(screen.getByRole('button', { name: 'More info' })).toBeInTheDocument();
+  });
 });

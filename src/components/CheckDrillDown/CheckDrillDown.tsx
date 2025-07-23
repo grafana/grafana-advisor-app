@@ -5,6 +5,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { type CheckSummary as CheckSummaryType } from 'types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IssueDescription } from './IssueDescription';
+import { useInteractionTracker } from '../../api/useInteractionTracker';
 
 export interface CheckDrillDownProps {
   checkSummary: CheckSummaryType;
@@ -27,6 +28,7 @@ export default function CheckDrillDown({
   const navigate = useNavigate();
   const scrollToRef = useRef<HTMLDivElement>(null);
   const [scrollToStep, setScrollToStep] = useState<string | null>(null);
+  const { trackGroupToggle } = useInteractionTracker();
 
   useEffect(() => {
     // Restore state from URL
@@ -52,6 +54,7 @@ export default function CheckDrillDown({
       [stepId]: !isOpen[stepId],
     };
     setIsOpen(newState);
+    trackGroupToggle(stepId, newState[stepId]);
 
     // Update URL with open steps
     const openSteps = Object.entries(newState)
@@ -66,6 +69,13 @@ export default function CheckDrillDown({
       params.delete('openSteps');
     }
     navigate({ search: params.toString() }, { replace: true });
+  };
+
+  const avoidLinkPropagation = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('a')) {
+      e.stopPropagation();
+    }
   };
 
   return (
@@ -88,7 +98,11 @@ export default function CheckDrillDown({
                         {step.name} failed for {issues.length} {check.typeName || check.type}
                         {issues.length > 1 ? 's' : ''}.
                       </div>
-                      <div className={styles.resolution} dangerouslySetInnerHTML={{ __html: step.resolution }}></div>
+                      <div
+                        className={styles.resolution}
+                        dangerouslySetInnerHTML={{ __html: step.resolution }}
+                        onClick={avoidLinkPropagation}
+                      ></div>
                     </div>
                   }
                   isOpen={isOpen[step.stepID] ?? false}
@@ -105,6 +119,7 @@ export default function CheckDrillDown({
                           canRetry={check.canRetry}
                           isCompleted={isCompleted}
                           checkName={check.name}
+                          checkType={check.type}
                           itemID={issue.itemID}
                           stepID={step.stepID}
                           links={issue.links}
