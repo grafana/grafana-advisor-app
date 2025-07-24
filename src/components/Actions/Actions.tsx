@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, ConfirmModal, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
@@ -13,24 +13,41 @@ interface ActionsProps {
   checkStatuses: CheckStatus[];
 }
 
+const enum LoadingState {
+  IDLE = 0,
+  ACTION_TRIGGERED = 1,
+  IS_COMPLETED_TRIGGERED = 2,
+}
+
 export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
   const { createChecks, createCheckState } = useCreateChecks();
   const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
   const { trackGlobalAction } = useInteractionTracker();
+  const [isLoading, setIsLoading] = useState(LoadingState.IDLE);
 
   const styles = useStyles2(getStyles);
 
   const handleRefreshClick = () => {
+    setIsLoading(LoadingState.ACTION_TRIGGERED);
     createChecks();
     trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
   };
 
   const handlePurgeClick = () => {
+    setIsLoading(LoadingState.ACTION_TRIGGERED);
     deleteChecks();
     setConfirmDeleteModalOpen(false);
     trackGlobalAction(GlobalActionType.PURGE_CLICKED);
   };
+
+  useEffect(() => {
+    if (!isCompleted && isLoading === LoadingState.ACTION_TRIGGERED) {
+      setIsLoading(LoadingState.IS_COMPLETED_TRIGGERED);
+    } else if (isCompleted && isLoading === LoadingState.IS_COMPLETED_TRIGGERED) {
+      setIsLoading(LoadingState.IDLE);
+    }
+  }, [isCompleted, isLoading]);
 
   return (
     <div className={styles.actionsContainer}>
@@ -47,11 +64,11 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
 
           <Button
             onClick={handleRefreshClick}
-            disabled={!isCompleted}
+            disabled={isLoading !== 0}
             variant="secondary"
-            icon={isCompleted ? 'sync' : 'spinner'}
+            icon={isLoading === 0 ? 'sync' : 'spinner'}
           >
-            {isCompleted ? 'Refresh' : 'Running checks...'}
+            {isLoading === 0 ? 'Refresh' : 'Running checks...'}
           </Button>
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}
