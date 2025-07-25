@@ -15,7 +15,7 @@ describe('Components/MoreInfo', () => {
     checkSummaries.high.checks.datasource.totalCheckCount = totalDatasourceCheckCount;
     checkSummaries.high.checks.plugin.totalCheckCount = totalPluginCheckCount;
 
-    render(<MoreInfo checkSummaries={checkSummaries} showHiddenIssues={false} setShowHiddenIssues={() => {}} />);
+    render(<MoreInfo checkSummaries={checkSummaries} />);
   });
 
   test('should visualise summaries of all the checks', async () => {

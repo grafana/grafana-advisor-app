@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, ConfirmModal, Stack, useStyles2 } from '@grafana/ui';
+import { Button, ConfirmModal, Stack, useStyles2, LinkButton } from '@grafana/ui';
 import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
@@ -11,9 +11,11 @@ import { useInteractionTracker, GlobalActionType } from '../../api/useInteractio
 interface ActionsProps {
   isCompleted: boolean;
   checkStatuses: CheckStatus[];
+  showHiddenIssues: boolean;
+  setShowHiddenIssues: (showHiddenIssues: boolean) => void;
 }
 
-export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
+export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, setShowHiddenIssues }: ActionsProps) {
   const { createChecks, createCheckState } = useCreateChecks();
   const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
@@ -30,6 +32,17 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
     deleteChecks();
     setConfirmDeleteModalOpen(false);
     trackGlobalAction(GlobalActionType.PURGE_CLICKED);
+  };
+
+  const handleConfigureClick = () => {
+    trackGlobalAction(GlobalActionType.CONFIGURE_CLICKED);
+  };
+
+  const handleToggleHiddenIssues = () => {
+    setShowHiddenIssues(!showHiddenIssues);
+    trackGlobalAction(GlobalActionType.TOGGLE_HIDDEN_ISSUES, {
+      show_hidden_issues: showHiddenIssues,
+    });
   };
 
   return (
@@ -53,13 +66,32 @@ export default function Actions({ isCompleted, checkStatuses }: ActionsProps) {
           >
             {isCompleted ? 'Refresh' : 'Running checks...'}
           </Button>
+
+          <LinkButton
+            icon="cog"
+            variant="secondary"
+            aria-label="Configuration"
+            tooltip="Configure advisor steps"
+            href="/plugins/grafana-advisor-app?page=configuration"
+            onClick={handleConfigureClick}
+          />
+
+          <Button
+            variant="secondary"
+            icon={showHiddenIssues ? 'eye' : 'eye-slash'}
+            aria-label={showHiddenIssues ? 'Hide silenced issues' : 'Show silenced issues'}
+            tooltip={showHiddenIssues ? 'Hide silenced issues' : 'Show silenced issues'}
+            onClick={handleToggleHiddenIssues}
+          />
+
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}
             disabled={deleteChecksState.isLoading}
             variant="secondary"
             icon="trash-alt"
             aria-label="Delete reports"
-          ></Button>
+            tooltip="Delete reports"
+          />
         </Stack>
 
         <ChecksStatus checkStatuses={checkStatuses} />

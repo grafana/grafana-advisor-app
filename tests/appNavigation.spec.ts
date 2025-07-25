@@ -128,7 +128,7 @@ test.describe('navigating app', () => {
 
     // Now enable hidden checks, the issue should be visible again
     await page.getByText('More Info').click();
-    await page.getByRole('switch').dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
+    await page.getByRole('button', { name: 'Show silenced issues' }).click();
     await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).toBeVisible();
   });
 });
