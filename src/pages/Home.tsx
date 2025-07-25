@@ -8,11 +8,20 @@ import { MoreInfo } from 'components/MoreInfo';
 import Actions from 'components/Actions/Actions';
 import { useCheckSummaries, useCompletedChecks, useRetryCheck } from 'api/api';
 import { formatDate } from 'utils';
+import { InfoNotification } from 'components/InfoNotification/InfoNotification';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
-  const { summaries, isLoading, isError, error, showHiddenIssues, setShowHiddenIssues, handleHideIssue } =
-    useCheckSummaries();
+  const {
+    summaries,
+    isLoading,
+    isError,
+    error,
+    showHiddenIssues,
+    setShowHiddenIssues,
+    handleHideIssue,
+    hasHiddenIssues,
+  } = useCheckSummaries();
   const [isEmpty, setIsEmpty] = useState(false);
   const [isHealthy, setIsHealthy] = useState(false);
   const { isCompleted, checkStatuses } = useCompletedChecks();
@@ -103,6 +112,14 @@ export default function Home() {
                 Report in progress -
                 <span className={styles.incompleteInfo}> results may change as checks complete</span>
               </div>
+            )}
+
+            {!showHiddenIssues && hasHiddenIssues && (
+              <InfoNotification
+                id="some-issues-silenced"
+                title="Some issues have been silenced"
+                text="Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility."
+              />
             )}
 
             {/* Check summaries */}

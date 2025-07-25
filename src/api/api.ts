@@ -25,7 +25,7 @@ export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
   const { checkTypes, ...listCheckTypesState } = useCheckTypes();
   const [showHiddenIssues, setShowHiddenIssues] = useState(false);
-  const { isIssueHidden, handleHideIssue } = useHiddenIssues();
+  const { isIssueHidden, handleHideIssue, hasHiddenIssues } = useHiddenIssues();
 
   const summaries = useMemo(() => {
     if (!checks || !checkTypes) {
@@ -121,6 +121,7 @@ export function useCheckSummaries() {
     showHiddenIssues,
     setShowHiddenIssues,
     handleHideIssue,
+    hasHiddenIssues,
   };
 }
 
@@ -395,11 +396,14 @@ export function useRetryCheck() {
 const useHiddenIssues = () => {
   const [hiddenIssues, setHiddenIssues] = useState<string[]>([]);
   const userStorage = usePluginUserStorage();
+  const [hasHiddenIssues, setHasHiddenIssues] = useState(false);
 
   useEffect(() => {
     userStorage.getItem('hiddenIssues').then((hiddenIssues) => {
       if (hiddenIssues) {
-        setHiddenIssues(hiddenIssues.split(','));
+        const hiddenIssuesArray = hiddenIssues.split(',');
+        setHiddenIssues(hiddenIssuesArray);
+        setHasHiddenIssues(hiddenIssuesArray.length > 0);
       }
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -415,6 +419,7 @@ const useHiddenIssues = () => {
           newHiddenIssues = prevHiddenIssues.filter((hiddenIssue) => hiddenIssue !== ID);
         }
         userStorage.setItem('hiddenIssues', newHiddenIssues.join(','));
+        setHasHiddenIssues(newHiddenIssues.length > 0);
         return newHiddenIssues;
       });
     },
@@ -428,7 +433,7 @@ const useHiddenIssues = () => {
     [hiddenIssues]
   );
 
-  return { handleHideIssue, isIssueHidden };
+  return { handleHideIssue, isIssueHidden, hasHiddenIssues };
 };
 
 async function llmRequest(failure: CheckReportFailure) {

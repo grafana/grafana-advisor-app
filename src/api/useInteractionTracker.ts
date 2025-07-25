@@ -46,7 +46,7 @@ export function useInteractionTracker() {
       interactionType: CheckInteractionType,
       checkType: string,
       stepID: string,
-      otherProperties?: Record<string, any>
+      otherProperties?: Record<string, unknown>
     ) => {
       report(`grafana_plugin_advisor_check_interaction`, {
         interaction_type: interactionType,
@@ -60,7 +60,7 @@ export function useInteractionTracker() {
 
   // Global actions tracking
   const trackGlobalAction = useCallback(
-    (actionType: GlobalActionType, otherProperties?: Record<string, any>) => {
+    (actionType: GlobalActionType, otherProperties?: Record<string, unknown>) => {
       report(`grafana_plugin_advisor_global_actions_interaction`, {
         action_type: actionType,
         ...otherProperties,
