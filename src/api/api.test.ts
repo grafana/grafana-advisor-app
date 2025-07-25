@@ -15,7 +15,6 @@ import {
   useLLMSuggestion,
 } from './api';
 import { config } from '@grafana/runtime';
-import { llm } from '@grafana/llm';
 
 // Unmock the api module for this test file so we can test the real implementations
 jest.unmock('api/api');
@@ -27,6 +26,7 @@ const mockCreateCheckMutation = jest.fn();
 const mockDeleteCheckMutation = jest.fn();
 const mockUpdateCheckMutation = jest.fn();
 const mockUpdateCheckTypeMutation = jest.fn();
+const mockLazyGetCheckQuery = jest.fn();
 
 jest.mock('generated', () => ({
   useListCheckQuery: (arg0: any, arg1: any) => mockListCheckQuery(arg0, arg1),
@@ -35,6 +35,7 @@ jest.mock('generated', () => ({
   useDeleteCheckMutation: () => mockDeleteCheckMutation(),
   useUpdateCheckMutation: () => mockUpdateCheckMutation(),
   useUpdateCheckTypeMutation: () => mockUpdateCheckTypeMutation(),
+  useLazyGetCheckQuery: () => mockLazyGetCheckQuery(),
 }));
 
 // Mock config
@@ -120,7 +121,7 @@ describe('API Hooks', () => {
       expect(result.current.checks).toEqual([]);
     });
 
-    it('returns unprocessed checks', () => {
+    it('returns all checks grouped by type, keeping the latest', () => {
       const mockChecks = {
         items: [
           {
@@ -590,7 +591,10 @@ describe('API Hooks', () => {
 
       await waitFor(() => {
         renderHook(() => useCompletedChecks());
-        expect(mockListCheckQuery).toHaveBeenCalledWith({}, { pollingInterval: 2000, refetchOnMountOrArgChange: true });
+        expect(mockListCheckQuery).toHaveBeenCalledWith(
+          { limit: 1000 },
+          { pollingInterval: 2000, refetchOnMountOrArgChange: true }
+        );
       });
     });
 
@@ -735,31 +739,29 @@ describe('API Hooks', () => {
   describe('useLLMSuggestion', () => {
     it('returns a suggestion', async () => {
       const mockUpdateCheck = jest.fn();
+      const mockGetCheck = jest.fn();
+
       mockUpdateCheckMutation.mockReturnValue([mockUpdateCheck, { isError: false }]);
-      mockListCheckQuery.mockReturnValue({
+      mockLazyGetCheckQuery.mockReturnValue([mockGetCheck, { isError: false }]);
+
+      mockGetCheck.mockResolvedValue({
         data: {
-          items: [
-            {
-              metadata: { name: 'check1' },
-              status: {
-                report: {
-                  failures: [
-                    {
-                      stepID: 'step1',
-                      itemID: 'item1',
-                      item: 'item1',
-                      severity: 'High',
-                      moreInfo: 'moreInfo',
-                      links: [],
-                    },
-                  ],
+          metadata: { name: 'check1', annotations: {} },
+          status: {
+            report: {
+              failures: [
+                {
+                  stepID: 'step1',
+                  itemID: 'item1',
+                  item: 'item1',
+                  severity: 'High',
+                  moreInfo: 'moreInfo',
+                  links: [],
                 },
-              },
+              ],
             },
-          ],
+          },
         },
-        isLoading: false,
-        isError: false,
       });
 
       const { result } = renderHook(() => useLLMSuggestion());
@@ -769,7 +771,7 @@ describe('API Hooks', () => {
 
       // Wait for the assertions to pass
       await waitFor(() => {
-        expect(llm.chatCompletions).toHaveBeenCalledTimes(1);
+        expect(mockGetCheck).toHaveBeenCalledWith({ name: 'check1' });
         expect(result.current.response).toBe('test');
       });
     });
