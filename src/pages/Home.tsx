@@ -11,8 +11,16 @@ import { formatDate } from 'utils';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
-  const { summaries, isLoading, isError, error, showHiddenIssues, setShowHiddenIssues, handleHideIssue } =
-    useCheckSummaries();
+  const {
+    summaries,
+    isLoading,
+    isError,
+    error,
+    showHiddenIssues,
+    setShowHiddenIssues,
+    handleHideIssue,
+    partialResults,
+  } = useCheckSummaries();
   const [isEmpty, setIsEmpty] = useState(false);
   const [isHealthy, setIsHealthy] = useState(false);
   const { isCompleted, checkStatuses } = useCompletedChecks();
@@ -67,6 +75,13 @@ export default function Home() {
           <div className={styles.loading}>
             <LoadingPlaceholder text="Loading..." />
           </div>
+        )}
+
+        {/* Partial results */}
+        {partialResults && (
+          <Alert title="Partial results" className={styles.error} severity="warning">
+            Found too many reports to process. Please delete them and refresh.
+          </Alert>
         )}
 
         {/* Error */}

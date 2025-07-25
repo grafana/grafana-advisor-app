@@ -7,6 +7,7 @@ import {
   useDeleteCheckMutation,
   useUpdateCheckMutation,
   useUpdateCheckTypeMutation,
+  useLazyGetCheckQuery,
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
@@ -20,6 +21,8 @@ export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
 export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
 export const LLM_RESPONSE_ANNOTATION_PREFIX = 'advisor.grafana.app/llm-response';
+
+const API_PAGE_SIZE = 1000;
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -121,6 +124,7 @@ export function useCheckSummaries() {
     showHiddenIssues,
     setShowHiddenIssues,
     handleHideIssue,
+    partialResults: !!listChecksState.data?.metadata?.continue,
   };
 }
 
@@ -230,7 +234,7 @@ export function useSkipCheckTypeStep() {
 }
 
 export function useLastChecks() {
-  const listChecksState = useListCheckQuery({});
+  const listChecksState = useListCheckQuery({ limit: API_PAGE_SIZE });
   const { data } = listChecksState;
 
   const checks = useMemo(() => {
@@ -298,7 +302,7 @@ export function useDeleteChecks() {
 function useIncompleteChecks(names?: string[]) {
   const [pollingInterval, setPollingInterval] = useState(2000);
   const listChecksState = useListCheckQuery(
-    {},
+    { limit: API_PAGE_SIZE },
     {
       refetchOnMountOrArgChange: true,
       pollingInterval,
@@ -461,7 +465,7 @@ async function llmRequest(failure: CheckReportFailure) {
 export function useLLMSuggestion() {
   const [response, setResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { data: checksData } = useListCheckQuery({});
+  const [getCheck, _] = useLazyGetCheckQuery();
   const [updateCheck] = useUpdateCheckMutation();
 
   const getSuggestion = useCallback(
@@ -470,7 +474,7 @@ export function useLLMSuggestion() {
 
       try {
         // Find the specific failure from the check data
-        const check = checksData?.items.find((c) => c.metadata.name === checkName);
+        const { data: check } = await getCheck({ name: checkName });
         if (!check?.status.report.failures) {
           console.error('No failures found for check:', checkName);
           setIsLoading(false);
@@ -520,7 +524,7 @@ export function useLLMSuggestion() {
         setIsLoading(false);
       }
     },
-    [checksData, updateCheck]
+    [getCheck, updateCheck]
   );
 
   return { getSuggestion, response, isLoading };
