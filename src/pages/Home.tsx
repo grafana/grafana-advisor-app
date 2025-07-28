@@ -114,13 +114,12 @@ export default function Home() {
               </div>
             )}
 
-            {!showHiddenIssues && hasHiddenIssues && (
-              <InfoNotification
-                id="some-issues-silenced"
-                title="Some issues have been silenced"
-                text="Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility."
-              />
-            )}
+            <InfoNotification
+              id="some-issues-silenced"
+              title="Some issues have been silenced"
+              text="Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility."
+              displayCondition={!showHiddenIssues && hasHiddenIssues}
+            />
 
             {/* Check summaries */}
             <div className={styles.checksSummaries}>

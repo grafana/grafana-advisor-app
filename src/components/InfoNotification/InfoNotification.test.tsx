@@ -21,6 +21,7 @@ describe('InfoNotification', () => {
     id: 'test-notification',
     title: 'Test Title',
     text: 'This is a test notification message',
+    displayCondition: true,
   };
 
   beforeEach(() => {
