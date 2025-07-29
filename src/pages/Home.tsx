@@ -8,6 +8,7 @@ import { MoreInfo } from 'components/MoreInfo';
 import Actions from 'components/Actions/Actions';
 import { useCheckSummaries, useCompletedChecks, useRetryCheck } from 'api/api';
 import { formatDate } from 'utils';
+import { InfoNotification } from 'components/InfoNotification/InfoNotification';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
@@ -19,6 +20,7 @@ export default function Home() {
     showHiddenIssues,
     setShowHiddenIssues,
     handleHideIssue,
+    hasHiddenIssues,
     partialResults,
   } = useCheckSummaries();
   const [isEmpty, setIsEmpty] = useState(false);
@@ -46,7 +48,14 @@ export default function Home() {
         text: 'Advisor',
         subTitle: 'Run checks and get suggested action items to fix identified issues',
       }}
-      actions={<Actions isCompleted={isCompleted} checkStatuses={checkStatuses} />}
+      actions={
+        <Actions
+          isCompleted={isCompleted}
+          checkStatuses={checkStatuses}
+          showHiddenIssues={showHiddenIssues}
+          setShowHiddenIssues={setShowHiddenIssues}
+        />
+      }
     >
       <Stack direction="row" gap={1} justifyContent="space-between" alignItems="center">
         <div className={styles.feedbackContainer}>
@@ -113,6 +122,13 @@ export default function Home() {
               </div>
             )}
 
+            <InfoNotification
+              id="some-issues-silenced"
+              title="Some issues have been silenced"
+              text="Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility."
+              displayCondition={!showHiddenIssues && hasHiddenIssues}
+            />
+
             {/* Check summaries */}
             <div className={styles.checksSummaries}>
               <Stack direction="column">
@@ -130,11 +146,7 @@ export default function Home() {
                   showHiddenIssues={showHiddenIssues}
                   handleHideIssue={handleHideIssue}
                 />
-                <MoreInfo
-                  checkSummaries={summaries}
-                  showHiddenIssues={showHiddenIssues}
-                  setShowHiddenIssues={setShowHiddenIssues}
-                />
+                <MoreInfo checkSummaries={summaries} />
               </Stack>
             </div>
           </>
