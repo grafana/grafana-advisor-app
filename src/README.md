@@ -2,8 +2,7 @@
 
 [![CI](https://github.com/grafana/grafana-advisor-app/actions/workflows/push.yaml/badge.svg)](https://github.com/grafana/grafana-advisor-app/actions/workflows/push.yaml)&nbsp;&nbsp;![Latest Version Badge](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.version&url=https://grafana.com/api/plugins/grafana-advisor-app&label=Version&prefix=v&color=F47A20)
 
-> [!NOTE]
-> Grafana Advisor is currently in [public preview](https://grafana.com/docs/release-life-cycle/#quick-reference-table)
+> **Note**: Grafana Advisor is currently in [public preview](https://grafana.com/docs/release-life-cycle/#quick-reference-table)
 
 A centralized view to help Grafana administrators keep their instances running smoothly. It includes a suite of checks which flag issues requiring action or further investigation.
 
