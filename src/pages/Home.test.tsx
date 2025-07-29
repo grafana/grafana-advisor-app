@@ -8,6 +8,10 @@ import { renderWithRouter } from 'components/test/utils';
 jest.mock('@grafana/runtime', () => ({
   ...jest.requireActual('@grafana/runtime'),
   usePluginInteractionReporter: jest.fn(() => jest.fn()),
+  usePluginUserStorage: () => ({
+    getItem: jest.fn().mockResolvedValue(null),
+    setItem: jest.fn(),
+  }),
   PluginPage: ({ actions, children }: { actions: React.ReactNode; children: React.ReactNode }) => (
     <div>
       <div data-testid="plugin-actions">{actions}</div>
