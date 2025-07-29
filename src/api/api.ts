@@ -1,17 +1,19 @@
 import { CheckSummaries, Severity, CheckStatus } from 'types';
 import {
   Check,
-  useListCheckQuery,
   useListCheckTypeQuery,
   useCreateCheckMutation,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
   useUpdateCheckTypeMutation,
+  useLazyListCheckQuery,
+  useLazyGetCheckQuery,
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
 import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
 import { llm } from '@grafana/llm';
+import { isEqual } from 'lodash';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
@@ -20,6 +22,8 @@ export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
 export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
 export const LLM_RESPONSE_ANNOTATION_PREFIX = 'advisor.grafana.app/llm-response';
+
+const API_PAGE_SIZE = 1000;
 
 export function useCheckSummaries() {
   const { checks, ...listChecksState } = useLastChecks();
@@ -229,9 +233,57 @@ export function useSkipCheckTypeStep() {
   return { updateIgnoreStepsAnnotation, updateCheckTypeState };
 }
 
+export function useListCheckQuery(inputArg?: any, options?: any) {
+  const [triggerQuery, listChecksState] = useLazyListCheckQuery(options);
+  const [data, setPaginatedData] = useState<typeof listChecksState.data>();
+  const [arg, setArg] = useState({
+    ...inputArg,
+    // Default properties
+    requestTime: new Date().getSeconds(), // Used to avoid infinite loops and memoization
+    limit: API_PAGE_SIZE,
+  });
+
+  useEffect(() => {
+    const newArg = {
+      ...inputArg,
+      // Default properties
+      requestTime: new Date().getSeconds(),
+      limit: API_PAGE_SIZE,
+    };
+    if (!isEqual(arg, newArg)) {
+      setArg(newArg);
+    }
+  }, [inputArg, arg]);
+
+  useEffect(() => {
+    const fetchChecks = async () => {
+      const response = await triggerQuery({ ...arg, limit: API_PAGE_SIZE });
+      while (response.data?.metadata?.continue) {
+        const nextResponse = await triggerQuery({
+          ...arg,
+          limit: API_PAGE_SIZE,
+          continue: response.data.metadata.continue,
+        });
+        response.data = {
+          ...response.data,
+          items: [...response.data.items, ...(nextResponse.data?.items ?? [])],
+          metadata: {
+            ...response.data.metadata,
+            continue: nextResponse.data?.metadata?.continue,
+          },
+        };
+      }
+      setPaginatedData(response.data);
+    };
+
+    fetchChecks();
+  }, [triggerQuery, arg]);
+
+  return { ...listChecksState, data };
+}
+
 export function useLastChecks() {
-  const listChecksState = useListCheckQuery({});
-  const { data } = listChecksState;
+  const { data, ...listChecksState } = useListCheckQuery();
 
   const checks = useMemo(() => {
     if (!data?.items) {
@@ -297,13 +349,7 @@ export function useDeleteChecks() {
 
 function useIncompleteChecks(names?: string[]) {
   const [pollingInterval, setPollingInterval] = useState(2000);
-  const listChecksState = useListCheckQuery(
-    {},
-    {
-      refetchOnMountOrArgChange: true,
-      pollingInterval,
-    }
-  );
+  const listChecksState = useListCheckQuery({}, { refetchOnMountOrArgChange: true, pollingInterval });
 
   const checkStatuses = useMemo((): CheckStatus[] => {
     if (!listChecksState.data?.items) {
@@ -461,7 +507,7 @@ async function llmRequest(failure: CheckReportFailure) {
 export function useLLMSuggestion() {
   const [response, setResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { data: checksData } = useListCheckQuery({});
+  const [getCheck, _] = useLazyGetCheckQuery();
   const [updateCheck] = useUpdateCheckMutation();
 
   const getSuggestion = useCallback(
@@ -470,14 +516,14 @@ export function useLLMSuggestion() {
 
       try {
         // Find the specific failure from the check data
-        const check = checksData?.items.find((c) => c.metadata.name === checkName);
-        if (!check?.status.report.failures) {
+        const check = await getCheck({ name: checkName });
+        if (!check.data?.status.report.failures) {
           console.error('No failures found for check:', checkName);
           setIsLoading(false);
           return;
         }
 
-        const failure = check.status.report.failures.find((f) => f.stepID === stepID && f.itemID === itemID);
+        const failure = check.data.status.report.failures.find((f) => f.stepID === stepID && f.itemID === itemID);
         if (!failure) {
           console.error('No failure found for stepID:', stepID, 'and itemID:', itemID);
           setIsLoading(false);
@@ -488,7 +534,7 @@ export function useLLMSuggestion() {
         const annotationKey = `${LLM_RESPONSE_ANNOTATION_PREFIX}-${stepID}-${itemID}`;
 
         // Check if we already have a cached response
-        const cachedResponse = check.metadata.annotations?.[annotationKey];
+        const cachedResponse = check.data.metadata.annotations?.[annotationKey];
         if (cachedResponse) {
           setResponse(cachedResponse);
           setIsLoading(false);
@@ -520,7 +566,7 @@ export function useLLMSuggestion() {
         setIsLoading(false);
       }
     },
-    [checksData, updateCheck]
+    [getCheck, updateCheck]
   );
 
   return { getSuggestion, response, isLoading };

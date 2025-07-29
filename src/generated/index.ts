@@ -30,8 +30,10 @@ export const advisorAPIv0alpha1 = generatedAPI.enhanceEndpoints({
   },
 });
 export const {
+  useLazyGetCheckQuery,
   useGetCheckQuery,
   useListCheckQuery,
+  useLazyListCheckQuery,
   useCreateCheckMutation,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
