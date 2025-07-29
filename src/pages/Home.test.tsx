@@ -299,4 +299,20 @@ describe('Home', () => {
       expect(screen.queryByText(/report in progress/i)).not.toBeInTheDocument();
     });
   });
+
+  it('shows partial results warning when there are too many reports', async () => {
+    mockUseCheckSummaries.mockReturnValue({
+      summaries: defaultSummaries,
+      isLoading: false,
+      isError: false,
+      error: undefined,
+      partialResults: true,
+    });
+
+    renderWithRouter(<Home />);
+    await waitFor(() => {
+      expect(screen.getByText(/partial results/i)).toBeInTheDocument();
+      expect(screen.getByText(/found too many reports to process/i)).toBeInTheDocument();
+    });
+  });
 });

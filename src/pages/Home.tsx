@@ -21,6 +21,7 @@ export default function Home() {
     setShowHiddenIssues,
     handleHideIssue,
     hasHiddenIssues,
+    partialResults,
   } = useCheckSummaries();
   const [isEmpty, setIsEmpty] = useState(false);
   const [isHealthy, setIsHealthy] = useState(false);
@@ -83,6 +84,13 @@ export default function Home() {
           <div className={styles.loading}>
             <LoadingPlaceholder text="Loading..." />
           </div>
+        )}
+
+        {/* Partial results */}
+        {partialResults && (
+          <Alert title="Partial results" className={styles.error} severity="warning">
+            Found too many reports to process. Please delete them and refresh.
+          </Alert>
         )}
 
         {/* Error */}
