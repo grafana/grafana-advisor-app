@@ -1,4 +1,4 @@
 {
   "extends": "./.config/.eslintrc",
-  "ignorePatterns": ["src/generated/endpoints.gen.ts"]
+  "ignorePatterns": ["src/generated/endpoints.gen.ts", ".gitignore", "playwright-report", "dist"]
 }
