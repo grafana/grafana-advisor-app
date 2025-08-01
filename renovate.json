@@ -2,74 +2,60 @@
     "ignorePresets": [
         "github>grafana/grafana-renovate-config//presets/automerge"
     ],
-    "schedule": [
-        "before 6am on the first day of the month"
-    ],
+    "schedule": ["before 6am on the first day of the month"],
     "packageRules": [
-        {
-            "groupName": "Grafana packages",
-            "matchPackagePatterns": [
-                "^@grafana/"
-            ]
-        },
-        {
-            "groupName": "React ecosystem",
-            "matchPackagePatterns": [
-                "^react$",
-                "^react-",
-                "^@types/react"
-            ],
-            "minimumReleaseAge": "14 days"
-        },
-        {
-            "groupName": "Testing tools",
-            "matchPackagePatterns": [
-                "^jest$",
-                "^jest-",
-                "^@jest/",
-                "^@testing-library/",
-                "^@playwright/",
-                "^playwright$",
-                "^@types/jest",
-                "^@types/testing-library"
-            ],
-            "minimumReleaseAge": "14 days"
-        },
-        {
-            "groupName": "Build tools",
-            "matchPackagePatterns": [
-                "^webpack$",
-                "^webpack-",
-                "-webpack-plugin$",
-                "-loader$",
-                "^@swc/",
-                "^swc-",
-                "^terser-",
-                "^copy-webpack-plugin$",
-                "^fork-ts-checker-webpack-plugin$",
-                "^replace-in-file-webpack-plugin$",
-                "^ts-node$"
-            ],
-            "minimumReleaseAge": "14 days"
-        },
-        {
-            "groupName": "TypeScript and linting",
-            "matchPackagePatterns": [
-                "^typescript$",
-                "^@typescript-eslint/",
-                "^eslint$",
-                "^eslint-",
-                "^@stylistic/",
-                "^prettier$",
-                "^@types/eslint"
-            ],
-            "minimumReleaseAge": "14 days"
-        }
+      {"groupName": "Grafana packages", "matchPackageNames": ["/^@grafana//"]},
+      {
+        "groupName": "React ecosystem",
+        "minimumReleaseAge": "14 days",
+        "matchPackageNames": ["/^react$/", "/^react-/", "/^@types/react/"]
+      },
+      {
+        "groupName": "Testing tools",
+        "minimumReleaseAge": "14 days",
+        "matchPackageNames": [
+          "/^jest$/",
+          "/^jest-/",
+          "/^@jest//",
+          "/^@testing-library//",
+          "/^@playwright//",
+          "/^playwright$/",
+          "/^@types/jest/",
+          "/^@types/testing-library/"
+        ]
+      },
+      {
+        "groupName": "Build tools",
+        "minimumReleaseAge": "14 days",
+        "matchPackageNames": [
+          "/^webpack$/",
+          "/^webpack-/",
+          "/-webpack-plugin$/",
+          "/-loader$/",
+          "/^@swc//",
+          "/^swc-/",
+          "/^terser-/",
+          "/^copy-webpack-plugin$/",
+          "/^fork-ts-checker-webpack-plugin$/",
+          "/^replace-in-file-webpack-plugin$/",
+          "/^ts-node$/"
+        ]
+      },
+      {
+        "groupName": "TypeScript and linting",
+        "minimumReleaseAge": "14 days",
+        "matchPackageNames": [
+          "/^typescript$/",
+          "/^@typescript-eslint//",
+          "/^eslint$/",
+          "/^eslint-/",
+          "/^@stylistic//",
+          "/^prettier$/",
+          "/^@types/eslint/"
+        ]
+      }
     ],
-    "github-actions": {
-        "enabled": true,
-        "groupName": "GitHub Actions"
-    },
+    "github-actions": {"enabled": true, "groupName": "GitHub Actions"},
     "commitMessagePrefix": "chore(deps): ",
     "branchPrefix": "renovate/"
 }
