@@ -7,12 +7,10 @@
       {"groupName": "Grafana packages", "matchPackageNames": ["/^@grafana//"], "matchDepTypes": ["dependencies"], "enabled": false},
       {
         "groupName": "React ecosystem",
-        "minimumReleaseAge": "14 days",
         "matchPackageNames": ["/^react$/", "/^react-/", "/^@types/react/"]
       },
       {
         "groupName": "Testing tools",
-        "minimumReleaseAge": "14 days",
         "matchPackageNames": [
           "/^jest$/",
           "/^jest-/",
@@ -26,7 +24,6 @@
       },
       {
         "groupName": "Build tools",
-        "minimumReleaseAge": "14 days",
         "matchPackageNames": [
           "/^webpack$/",
           "/^webpack-/",
@@ -43,7 +40,6 @@
       },
       {
         "groupName": "TypeScript and linting",
-        "minimumReleaseAge": "14 days",
         "matchPackageNames": [
           "/^typescript$/",
           "/^@typescript-eslint//",
@@ -57,5 +53,6 @@
     ],
     "github-actions": {"enabled": true, "groupName": "GitHub Actions"},
     "commitMessagePrefix": "chore(deps): ",
+    "minimumReleaseAge":"14 days",
     "branchPrefix": "renovate/"
 }
