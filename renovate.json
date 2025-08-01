@@ -18,7 +18,8 @@
                 "^react$",
                 "^react-",
                 "^@types/react"
-            ]
+            ],
+            "minimumReleaseAge": "14 days"
         },
         {
             "groupName": "Testing tools",
@@ -31,7 +32,8 @@
                 "^playwright$",
                 "^@types/jest",
                 "^@types/testing-library"
-            ]
+            ],
+            "minimumReleaseAge": "14 days"
         },
         {
             "groupName": "Build tools",
@@ -47,7 +49,8 @@
                 "^fork-ts-checker-webpack-plugin$",
                 "^replace-in-file-webpack-plugin$",
                 "^ts-node$"
-            ]
+            ],
+            "minimumReleaseAge": "14 days"
         },
         {
             "groupName": "TypeScript and linting",
@@ -59,7 +62,8 @@
                 "^@stylistic/",
                 "^prettier$",
                 "^@types/eslint"
-            ]
+            ],
+            "minimumReleaseAge": "14 days"
         }
     ],
     "github-actions": {
