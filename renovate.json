@@ -4,7 +4,7 @@
     ],
     "schedule": ["before 6am on the first day of the month"],
     "packageRules": [
-      {"groupName": "Grafana packages", "matchPackageNames": ["/^@grafana//"]},
+      {"groupName": "Grafana packages", "matchPackageNames": ["/^@grafana//"], "enabled": false},
       {
         "groupName": "React ecosystem",
         "minimumReleaseAge": "14 days",
