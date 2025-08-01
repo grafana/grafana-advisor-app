@@ -1,0 +1,71 @@
+{
+    "ignorePresets": [
+        "github>grafana/grafana-renovate-config//presets/automerge"
+    ],
+    "schedule": [
+        "before 6am on the first day of the month"
+    ],
+    "packageRules": [
+        {
+            "groupName": "Grafana packages",
+            "matchPackagePatterns": [
+                "^@grafana/"
+            ]
+        },
+        {
+            "groupName": "React ecosystem",
+            "matchPackagePatterns": [
+                "^react$",
+                "^react-",
+                "^@types/react"
+            ]
+        },
+        {
+            "groupName": "Testing tools",
+            "matchPackagePatterns": [
+                "^jest$",
+                "^jest-",
+                "^@jest/",
+                "^@testing-library/",
+                "^@playwright/",
+                "^playwright$",
+                "^@types/jest",
+                "^@types/testing-library"
+            ]
+        },
+        {
+            "groupName": "Build tools",
+            "matchPackagePatterns": [
+                "^webpack$",
+                "^webpack-",
+                "-webpack-plugin$",
+                "-loader$",
+                "^@swc/",
+                "^swc-",
+                "^terser-",
+                "^copy-webpack-plugin$",
+                "^fork-ts-checker-webpack-plugin$",
+                "^replace-in-file-webpack-plugin$",
+                "^ts-node$"
+            ]
+        },
+        {
+            "groupName": "TypeScript and linting",
+            "matchPackagePatterns": [
+                "^typescript$",
+                "^@typescript-eslint/",
+                "^eslint$",
+                "^eslint-",
+                "^@stylistic/",
+                "^prettier$",
+                "^@types/eslint"
+            ]
+        }
+    ],
+    "github-actions": {
+        "enabled": true,
+        "groupName": "GitHub Actions"
+    },
+    "commitMessagePrefix": "chore(deps): ",
+    "branchPrefix": "renovate/"
+}
