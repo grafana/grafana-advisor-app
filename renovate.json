@@ -54,6 +54,7 @@
       ]
     }
   ],
+  "ignorePaths": [".config/Dockerfile"],
   "github-actions": { "enabled": true, "groupName": "GitHub Actions" },
   "commitMessagePrefix": "chore(deps): ",
   "minimumReleaseAge": "14 days",
