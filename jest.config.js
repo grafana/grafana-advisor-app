@@ -3,6 +3,7 @@
 process.env.TZ = 'UTC';
 
 const path = require('path');
+const { grafanaESModules } = require('./.config/jest/utils');
 
 module.exports = {
   // Jest configuration provided by Grafana scaffolding
