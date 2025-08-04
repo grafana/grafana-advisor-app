@@ -1,4 +1,3 @@
 {
-  "extends": "./.config/tsconfig.json",
-  "exclude": ["src/generated/*"]
+  "extends": "./.config/tsconfig.json"
 }
