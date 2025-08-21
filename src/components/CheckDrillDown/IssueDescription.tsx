@@ -44,6 +44,7 @@ export function IssueDescription({
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
   const { trackCheckInteraction } = useInteractionTracker();
+  const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
 
   const handleStepClick = useCallback(
     (item: string) => {
@@ -106,12 +107,20 @@ export function IssueDescription({
           <Button
             size="sm"
             className={styles.issueLink}
-            icon={isRetrying ? 'spinner' : 'sync'}
+            icon={isRetrying || localIsRetrying ? 'spinner' : 'sync'}
             variant="secondary"
             title="Retry check"
-            disabled={!isCompleted}
+            disabled={isRetrying || localIsRetrying || !isCompleted}
             data-testid={testIds.CheckDrillDown.retryButton(item)}
-            onClick={handleRetryClick}
+            onClick={() => {
+              setLocalIsRetrying(true);
+              handleRetryClick();
+              setTimeout(() => {
+                // isRetrying and isCompleted can be either instantly true or take some time to change value
+                // so this ensures that the user is getting instant visual feedback that the check is being retried
+                setLocalIsRetrying(false);
+              }, 1000);
+            }}
           />
         )}
         {links.map((link) => {

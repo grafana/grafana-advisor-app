@@ -5,8 +5,8 @@ import CheckWarning from './CheckWarning';
 describe('CheckWarning', () => {
   it('renders warning message for checks older than 5 seconds', () => {
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
-    render(<CheckWarning checkCreated={twentyMinutesAgo} />);
+    render(<CheckWarning checkLastUpdate={twentyMinutesAgo} />);
 
-    expect(screen.getByText(/Check is taking longer than expected \(started 20 minutes ago\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Check is taking longer than expected \(updated 20 minutes ago\)/)).toBeInTheDocument();
   });
 });

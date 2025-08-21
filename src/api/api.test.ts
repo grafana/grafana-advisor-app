@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import {
   useCheckSummaries,
   useCheckTypes,
@@ -714,9 +714,36 @@ describe('API Hooks', () => {
 
       const { result } = renderHook(() => useCompletedChecks());
       expect(result.current.checkStatuses).toEqual([
-        { name: 'type1', creationTimestamp, incomplete: false, hasError: false },
-        { name: 'type2', creationTimestamp, incomplete: false, hasError: true },
-        { name: 'type3', creationTimestamp, incomplete: true, hasError: false },
+        { name: 'type1', lastUpdate: new Date(creationTimestamp), incomplete: false, hasError: false },
+        { name: 'type2', lastUpdate: new Date(creationTimestamp), incomplete: false, hasError: true },
+        { name: 'type3', lastUpdate: new Date(creationTimestamp), incomplete: true, hasError: false },
+      ]);
+    });
+
+    it('returns a list of check statuses with a lastUpdate date', () => {
+      const creationTimestamp = new Date(Date.now() - 11 * 60 * 1000).toISOString();
+      const updateTimestamp = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                creationTimestamp,
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+                managedFields: [{ time: updateTimestamp }],
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks());
+      expect(result.current.checkStatuses).toEqual([
+        { name: 'type1', lastUpdate: new Date(updateTimestamp), incomplete: false, hasError: false },
       ]);
     });
   });
@@ -765,7 +792,8 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useLLMSuggestion());
-      await waitFor(() => {
+
+      await act(async () => {
         result.current.getSuggestion('check1', 'step1', 'item1');
       });
 
