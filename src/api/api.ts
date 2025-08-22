@@ -338,6 +338,7 @@ function useIncompleteChecks(names?: string[]) {
     return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
       .map((check): CheckStatus => {
+        // Use the creation timestamp or the last managed field timestamp
         let lastUpdate = check.metadata.creationTimestamp ? new Date(check.metadata.creationTimestamp) : new Date(0);
         for (const field of check.metadata.managedFields ?? []) {
           if (field.time && new Date(field.time) > lastUpdate) {
