@@ -15,5 +15,5 @@ export function formatDate(date: Date): string {
 
 export const isOld = (check: CheckStatus) => {
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-  return new Date(check.creationTimestamp).getTime() < tenMinutesAgo.getTime();
+  return tenMinutesAgo > check.lastUpdate;
 };

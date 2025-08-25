@@ -7,17 +7,17 @@ import { CheckStatus } from 'types';
 describe('RunningChecksStatus', () => {
   const user = userEvent.setup();
 
-  const oldDate = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+  const oldDate = new Date(Date.now() - 20 * 60 * 1000);
   const mockCheckStatuses: CheckStatus[] = [
     {
       name: 'datasource',
-      creationTimestamp: oldDate,
+      lastUpdate: oldDate,
       incomplete: true,
       hasError: false,
     },
     {
       name: 'plugin',
-      creationTimestamp: oldDate,
+      lastUpdate: oldDate,
       incomplete: false,
       hasError: false,
     },
@@ -29,7 +29,7 @@ describe('RunningChecksStatus', () => {
         checkStatuses={[
           {
             name: 'datasource',
-            creationTimestamp: new Date().toISOString(),
+            lastUpdate: new Date(),
             incomplete: false,
             hasError: false,
           },
@@ -50,7 +50,7 @@ describe('RunningChecksStatus', () => {
     const checkStatusesWithError: CheckStatus[] = [
       {
         name: 'datasource',
-        creationTimestamp: new Date().toISOString(),
+        lastUpdate: new Date(),
         incomplete: false,
         hasError: true,
       },
@@ -89,7 +89,7 @@ describe('RunningChecksStatus', () => {
     const checkStatusesWithError: CheckStatus[] = [
       {
         name: 'datasource',
-        creationTimestamp: new Date().toISOString(),
+        lastUpdate: new Date(),
         incomplete: false,
         hasError: true,
       },

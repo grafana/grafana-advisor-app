@@ -337,17 +337,24 @@ function useIncompleteChecks(names?: string[]) {
     // Filter incomplete checks from the most recent ones
     return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
-      .map(
-        (check): CheckStatus => ({
+      .map((check): CheckStatus => {
+        // Use the creation timestamp or the last managed field timestamp
+        let lastUpdate = check.metadata.creationTimestamp ? new Date(check.metadata.creationTimestamp) : new Date(0);
+        for (const field of check.metadata.managedFields ?? []) {
+          if (field.time && new Date(field.time) > lastUpdate) {
+            lastUpdate = new Date(field.time);
+          }
+        }
+        return {
           name: check.metadata.labels?.[CHECK_TYPE_LABEL] ?? '',
-          creationTimestamp: check.metadata.creationTimestamp ?? '',
+          lastUpdate: lastUpdate,
           incomplete:
             !check.metadata.annotations?.[STATUS_ANNOTATION] ||
             (check.metadata.annotations?.[RETRY_ANNOTATION] !== undefined &&
               check.metadata.annotations?.[STATUS_ANNOTATION] !== 'error'),
           hasError: check.metadata.annotations?.[STATUS_ANNOTATION] === 'error',
-        })
-      );
+        };
+      });
   }, [listChecksState.data, names]);
 
   // Update polling interval based on incomplete checks

@@ -5,18 +5,18 @@ import { css } from '@emotion/css';
 import { formatDistanceToNow } from 'date-fns';
 
 interface CheckWarningProps {
-  checkCreated: Date;
+  checkLastUpdate: Date;
 }
 
-export default function CheckWarning({ checkCreated }: CheckWarningProps) {
+export default function CheckWarning({ checkLastUpdate }: CheckWarningProps) {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.warningContainer}>
       <Icon name="exclamation-triangle" className={styles.warningIcon} />
       <span className={styles.warningText}>
-        Check is taking longer than expected (started {formatDistanceToNow(checkCreated)} ago). Inspect server logs for
-        errors or delete and re-create the report to retry.
+        Check is taking longer than expected (updated {formatDistanceToNow(checkLastUpdate)} ago). Inspect server logs
+        for errors or delete and re-create the report to retry.
       </span>
     </div>
   );

@@ -15,7 +15,7 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
   const [isStatusExpanded, setIsStatusExpanded] = useState(false);
   const styles = useStyles2(getStyles);
   const hasError = checkStatuses.some((check) => check.hasError);
-  const hasOldChecks = checkStatuses.some(isOld);
+  const hasOldChecks = checkStatuses.some((check) => isOld(check) && check.incomplete);
   const allChecksCompleted = checkStatuses.every((check) => !check.incomplete);
 
   return (
@@ -38,8 +38,6 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
             <div className={styles.checksHeader}>Check types</div>
             <div className={styles.checksContainer}>
               {checkStatuses.map((check, index) => {
-                const checkCreated = new Date(check.creationTimestamp);
-
                 return (
                   <div key={`${check.name}-${index}`} className={styles.checkItemWrapper}>
                     <div className={styles.checkItem}>
@@ -48,7 +46,7 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
                       {!check.incomplete && !check.hasError && <Icon name="check" className={styles.completedIcon} />}
                       <span className={styles.checkName}>{check.name}</span>
                     </div>
-                    {check.incomplete && isOld(check) && <CheckWarning checkCreated={checkCreated} />}
+                    {check.incomplete && isOld(check) && <CheckWarning checkLastUpdate={check.lastUpdate} />}
                     {check.hasError && <CheckError />}
                   </div>
                 );

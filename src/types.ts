@@ -47,7 +47,7 @@ export type CheckReportFailureExtended = CheckReportFailure & {
 
 export interface CheckStatus {
   name: string;
-  creationTimestamp: string;
   incomplete: boolean;
   hasError: boolean;
+  lastUpdate: Date;
 }
