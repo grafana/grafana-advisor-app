@@ -41,6 +41,5 @@ jobs:
       argo-workflow-slack-channel: "#grafana-plugins-platform-ci"
 
       # Other CI inputs
-      # Disable playwright tests for now
-      run-playwright: false
+      run-playwright: true
       node-version: 22
