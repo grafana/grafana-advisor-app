@@ -1,6 +1,9 @@
 {
   "ignorePresets": ["github>grafana/grafana-renovate-config//presets/automerge"],
   "schedule": ["before 6am on the first day of the month"],
+  "extends": [
+    "github>grafana/grafana-renovate-config//presets/plugin-ci-workflows"
+  ],
   "packageRules": [
     {
       "groupName": "Grafana packages",
