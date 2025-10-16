@@ -9,6 +9,7 @@ import Actions from 'components/Actions/Actions';
 import { useCheckSummaries, useCompletedChecks, useRetryCheck } from 'api/api';
 import { formatDate } from 'utils';
 import { InfoNotification } from 'components/InfoNotification/InfoNotification';
+import { NoChecksEmptyState } from 'components/NoChecksEmptyState';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
@@ -49,12 +50,14 @@ export default function Home() {
         subTitle: 'Run checks and get suggested action items to fix identified issues',
       }}
       actions={
-        <Actions
-          isCompleted={isCompleted}
-          checkStatuses={checkStatuses}
-          showHiddenIssues={showHiddenIssues}
-          setShowHiddenIssues={setShowHiddenIssues}
-        />
+        !isEmpty ? (
+          <Actions
+            isCompleted={isCompleted}
+            checkStatuses={checkStatuses}
+            showHiddenIssues={showHiddenIssues}
+            setShowHiddenIssues={setShowHiddenIssues}
+          />
+        ) : null
       }
     >
       <Stack direction="row" gap={1} justifyContent="space-between" alignItems="center">
@@ -103,9 +106,7 @@ export default function Home() {
         )}
 
         {/* Empty state */}
-        {isEmpty && (
-          <EmptyState variant="not-found" message="No report found. Click the Refresh button to run analysis." />
-        )}
+        {isEmpty && <NoChecksEmptyState isCompleted={isCompleted} />}
 
         {/* All issues resolved */}
         {isHealthy && <EmptyState variant="completed" message="No issues found." />}
@@ -182,13 +183,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
     '&:hover': {
       textDecoration: 'underline',
-    },
-  }),
-  link: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    ':hover': {
-      color: theme.colors.text.link,
     },
   }),
   error: css({
