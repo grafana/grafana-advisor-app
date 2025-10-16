@@ -161,7 +161,7 @@ describe('Home', () => {
     });
 
     renderWithRouter(<Home />);
-    expect(await screen.findByText(/No report found/)).toBeInTheDocument();
+    expect(await screen.findByText(/No checks run yet/)).toBeInTheDocument();
   });
 
   it('shows completed state when no issues found', async () => {
