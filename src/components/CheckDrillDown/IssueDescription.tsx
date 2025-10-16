@@ -92,6 +92,7 @@ export function IssueDescription({
             variant={llmSectionOpen ? 'primary' : 'secondary'}
             title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
             onClick={handleAISuggestionClick}
+            aria-label={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
           />
         )}
         <Button
@@ -102,6 +103,7 @@ export function IssueDescription({
           title={isHidden ? 'Show issue' : 'Hide issue'}
           data-testid={testIds.CheckDrillDown.hideButton(item)}
           onClick={handleSilenceClick}
+          aria-label={isHidden ? 'Show issue' : 'Hide issue'}
         />
         {canRetry && (
           <Button
@@ -121,6 +123,7 @@ export function IssueDescription({
                 setLocalIsRetrying(false);
               }, 1000);
             }}
+            aria-label="Retry check"
           />
         )}
         {links.map((link) => {
