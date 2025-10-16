@@ -10,19 +10,12 @@ import { useInteractionTracker, GlobalActionType } from '../../api/useInteractio
 
 interface ActionsProps {
   isCompleted: boolean;
-  checkStatuses?: CheckStatus[];
-  showHiddenIssues?: boolean;
-  setShowHiddenIssues?: (showHiddenIssues: boolean) => void;
-  emptyState?: boolean;
+  checkStatuses: CheckStatus[];
+  showHiddenIssues: boolean;
+  setShowHiddenIssues: (showHiddenIssues: boolean) => void;
 }
 
-export default function Actions({
-  isCompleted,
-  checkStatuses,
-  showHiddenIssues,
-  setShowHiddenIssues,
-  emptyState,
-}: ActionsProps) {
+export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, setShowHiddenIssues }: ActionsProps) {
   const { createChecks, createCheckState } = useCreateChecks();
   const { deleteChecks, deleteChecksState } = useDeleteChecks();
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
@@ -46,26 +39,11 @@ export default function Actions({
   };
 
   const handleToggleHiddenIssues = () => {
-    setShowHiddenIssues?.(!showHiddenIssues);
+    setShowHiddenIssues(!showHiddenIssues);
     trackGlobalAction(GlobalActionType.TOGGLE_HIDDEN_ISSUES, {
       show_hidden_issues: showHiddenIssues,
     });
   };
-
-  if (emptyState) {
-    return (
-      <div>
-        <Button
-          onClick={handleRefreshClick}
-          disabled={!isCompleted}
-          variant="primary"
-          icon={isCompleted ? 'sync' : 'spinner'}
-        >
-          {isCompleted ? 'Generate report' : 'Running checks...'}
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.actionsContainer}>
@@ -80,16 +58,14 @@ export default function Actions({
             onDismiss={() => setConfirmDeleteModalOpen(false)}
           />
 
-          {!emptyState && (
-            <Button
-              onClick={handleRefreshClick}
-              disabled={!isCompleted}
-              variant="secondary"
-              icon={isCompleted ? 'sync' : 'spinner'}
-            >
-              {isCompleted ? 'Refresh' : 'Running checks...'}
-            </Button>
-          )}
+          <Button
+            onClick={handleRefreshClick}
+            disabled={!isCompleted}
+            variant="secondary"
+            icon={isCompleted ? 'sync' : 'spinner'}
+          >
+            {isCompleted ? 'Refresh' : 'Running checks...'}
+          </Button>
 
           <LinkButton
             icon="cog"
@@ -118,7 +94,7 @@ export default function Actions({
           />
         </Stack>
 
-        <ChecksStatus checkStatuses={checkStatuses ?? []} />
+        <ChecksStatus checkStatuses={checkStatuses} />
 
         <div className={styles.rightColumn}>
           {createCheckState.isError && isFetchError(createCheckState.error) && (
