@@ -6,9 +6,16 @@ import { testIds } from '../src/components/testIds';
 async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
   await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
-  // It should delete the report
-  await page.getByRole('button', { name: 'Delete reports' }).click();
-  await page.getByRole('button', { name: 'Confirm' }).click();
+
+  // Check if page is already empty
+  const isAlreadyEmpty = await page.getByText('No report found').isVisible();
+
+  if (!isAlreadyEmpty) {
+    // Delete the report if it exists
+    await page.getByRole('button', { name: 'Delete reports' }).click();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+  }
+
   // Page should be empty
   await expect(page.getByText('No report found')).toBeVisible();
 }
