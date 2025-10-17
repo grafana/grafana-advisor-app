@@ -3,12 +3,16 @@ import { test, expect } from './fixtures';
 import { Page } from '@playwright/test';
 import { testIds } from '../src/components/testIds';
 
+async function isEmptyReport(page: Page) {
+  return await page.getByText('No checks run yet').isVisible();
+}
+
 async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
   await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
 
   // Check if page is already empty
-  const isAlreadyEmpty = await page.getByText('No report found').isVisible();
+  const isAlreadyEmpty = await isEmptyReport(page);
 
   if (!isAlreadyEmpty) {
     // Delete the report if it exists
@@ -17,13 +21,18 @@ async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, 
   }
 
   // Page should be empty
-  await expect(page.getByText('No report found')).toBeVisible();
+  await expect(page.getByText('No checks run yet')).toBeVisible();
 }
 
 async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
-  // Click on the "Refresh" button
-  await page.getByRole('button', { name: 'Refresh' }).click();
+  await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
+  const isEmpty = await isEmptyReport(page);
+  if (isEmpty) {
+    await page.getByRole('button', { name: 'Generate report' }).click();
+  } else {
+    await page.getByRole('button', { name: 'Refresh' }).click();
+  }
   await expect(page.getByText('Running checks...')).toBeVisible();
   await expect(page.getByText('Running checks...')).not.toBeVisible();
 }
