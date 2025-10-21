@@ -1,6 +1,6 @@
 {
   "name": "advisor",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
