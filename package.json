@@ -16,9 +16,9 @@
   "author": "Grafana",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@grafana/eslint-config": "^8.2.0",
-    "@grafana/plugin-e2e": "^2.1.13",
-    "@grafana/tsconfig": "^2.0.0",
+    "@grafana/eslint-config": "8.2.0",
+    "@grafana/plugin-e2e": "2.2.2",
+    "@grafana/tsconfig": "2.0.0",
     "@playwright/test": "1.54.2",
     "@stylistic/eslint-plugin-ts": "4.4.1",
     "@swc/core": "1.13.5",
