@@ -1,7 +1,10 @@
 {
   "ignorePresets": ["github>grafana/grafana-renovate-config//presets/automerge"],
-  "schedule": ["before 6am on the first day of the month"],
+  "schedule": ["before 6am on the first day of the week"],
   "extends": [
+    "config:best-practices",
+    ":disableDependencyDashboard",
+    ":preserveSemverRanges",
     "github>grafana/grafana-renovate-config//presets/plugin-ci-workflows"
   ],
   "packageRules": [
@@ -57,10 +60,11 @@
       ]
     }
   ],
-  "ignorePaths": [".config/Dockerfile"],
+  "ignorePaths": [".config/**"],
   "github-actions": { "enabled": true, "groupName": "GitHub Actions" },
   "commitMessagePrefix": "chore(deps): ",
   "minimumReleaseAge": "14 days",
+  "rebaseWhen": "behind-base-branch",
   "rangeStrategy": "bump",
   "branchPrefix": "renovate/"
 }
