@@ -27,12 +27,23 @@ export const advisorAPIv0alpha1 = generatedAPI.enhanceEndpoints({
         });
       }
     },
+    // Disable success notification for register endpoint
+    createRegister: (endpointDefinition) => {
+      const originalQuery = endpointDefinition.query;
+      if (originalQuery) {
+        endpointDefinition.query = (requestOptions) => ({
+          ...originalQuery(requestOptions),
+          showSuccessAlert: false,
+        });
+      }
+    },
   },
 });
 export const {
   useLazyGetCheckQuery,
   useGetCheckQuery,
   useListCheckQuery,
+  useCreateRegisterMutation,
   useCreateCheckMutation,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
