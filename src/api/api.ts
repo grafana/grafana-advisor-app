@@ -8,6 +8,7 @@ import {
   useUpdateCheckMutation,
   useUpdateCheckTypeMutation,
   useLazyGetCheckQuery,
+  useCreateRegisterMutation,
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
@@ -57,7 +58,7 @@ export function useCheckSummaries() {
 
       const checkTypeDefinition = checkTypes.find((ct) => ct.metadata.name === checkType);
 
-      checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status.report.count;
+      checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status?.report?.count ?? 0;
       checkSummary[Severity.High].checks[checkType].typeName =
         checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType;
       checkSummary[Severity.High].checks[checkType].name = check.metadata.name ?? '';
@@ -91,7 +92,7 @@ export function useCheckSummaries() {
       }
 
       const retryAnnotation = check.metadata.annotations?.[RETRY_ANNOTATION];
-      if (check.status.report.failures) {
+      if (check.status?.report?.failures) {
         for (const failure of check.status.report.failures) {
           const severity = failure.severity.toLowerCase() as Severity;
           const persistedCheck = checkSummary[severity].checks[checkType];
@@ -205,10 +206,27 @@ export function getEmptyCheckTypes(): Record<string, CheckTypeSpec> {
 }
 
 export function useCheckTypes() {
-  const listCheckTypesState = useListCheckTypeQuery({});
-  const { data } = listCheckTypesState;
+  const { isRegistered, isRegistering } = useRegister();
+  const listCheckTypesState = useListCheckTypeQuery(
+    {},
+    {
+      skip: !isRegistered,
+    }
+  );
+  const { data, refetch } = listCheckTypesState;
 
-  return { checkTypes: data?.items, ...listCheckTypesState };
+  // Refetch check types after successful registration
+  useEffect(() => {
+    if (isRegistered && !isRegistering && refetch) {
+      refetch();
+    }
+  }, [isRegistered, isRegistering, refetch]);
+
+  return {
+    checkTypes: data?.items,
+    ...listCheckTypesState,
+    isLoading: listCheckTypesState.isLoading || isRegistering,
+  };
 }
 
 export function useSkipCheckTypeStep() {
@@ -487,7 +505,7 @@ export function useLLMSuggestion() {
       try {
         // Find the specific failure from the check data
         const { data: check } = await getCheck({ name: checkName });
-        if (!check?.status.report.failures) {
+        if (!check?.status?.report?.failures) {
           console.error('No failures found for check:', checkName);
           setIsLoading(false);
           return;
@@ -540,4 +558,35 @@ export function useLLMSuggestion() {
   );
 
   return { getSuggestion, response, isLoading };
+}
+
+// Shared registration promise to prevent duplicate calls
+let registrationPromise: Promise<void> | null = null;
+
+function useRegister() {
+  const [createRegister, createRegisterState] = useCreateRegisterMutation();
+  const [isRegistered, setIsRegistered] = useState(false);
+
+  useEffect(() => {
+    // If registration already in progress, wait for it
+    if (registrationPromise) {
+      registrationPromise.then(() => setIsRegistered(true)).catch(() => setIsRegistered(true)); // Allow check types to load even on error
+      return;
+    }
+
+    // Start new registration
+    registrationPromise = createRegister()
+      .unwrap()
+      .then(() => setIsRegistered(true))
+      .catch((error: unknown) => {
+        console.error('Failed to register check types:', error);
+        setIsRegistered(true); // Still allow check types to load
+      });
+  }, [createRegister]);
+
+  return {
+    isRegistered: isRegistered || createRegisterState.isSuccess,
+    isRegistering: createRegisterState.isLoading,
+    registrationError: createRegisterState.error,
+  };
 }

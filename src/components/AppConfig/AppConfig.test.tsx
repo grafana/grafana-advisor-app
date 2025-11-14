@@ -23,6 +23,8 @@ jest.mock('api/api', () => ({
 describe('AppConfig', () => {
   const mockCheckTypes: CheckType[] = [
     {
+      apiVersion: 'advisor.grafana.app/v0alpha1',
+      kind: 'CheckType',
       metadata: {
         name: 'check-type-1',
         annotations: {
@@ -49,6 +51,8 @@ describe('AppConfig', () => {
       status: {},
     },
     {
+      apiVersion: 'advisor.grafana.app/v0alpha1',
+      kind: 'CheckType',
       metadata: {
         name: 'check-type-2',
         annotations: {

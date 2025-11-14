@@ -24,6 +24,7 @@ export function createBaseQuery({ baseURL }: CreateBaseQueryOptions): BaseQueryF
           ...requestOptions,
           url: baseURL + requestOptions.url,
           showErrorAlert: requestOptions.showErrorAlert ?? false,
+          showSuccessAlert: requestOptions.showSuccessAlert ?? false,
           data: requestOptions.body,
         })
       );

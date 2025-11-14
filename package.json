@@ -21,7 +21,7 @@
     "@grafana/tsconfig": "^2.0.0",
     "@playwright/test": "1.54.2",
     "@stylistic/eslint-plugin-ts": "4.4.1",
-    "@swc/core": "1.13.21",
+    "@swc/core": "^1.15.1",
     "@swc/helpers": "0.5.17",
     "@swc/jest": "0.2.39",
     "@testing-library/jest-dom": "6.7.0",
@@ -68,6 +68,7 @@
   "dependencies": {
     "@emotion/css": "11.13.5",
     "@grafana/data": "^12.2.0",
+    "@grafana/i18n": "^12.2.0",
     "@grafana/llm": "0.22.1",
     "@grafana/runtime": "^12.2.0",
     "@grafana/schema": "^12.2.0",
@@ -79,8 +80,7 @@
     "react-markdown": "10.1.0",
     "react-router-dom": "6.28.2",
     "react-use": "17.6.0",
-    "rxjs": "7.8.2",
-    "@grafana/i18n": "^12.2.0"
+    "rxjs": "7.8.2"
   },
   "packageManager": "npm@10.5.0"
 }
