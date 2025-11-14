@@ -57,20 +57,8 @@ jest.mock('@grafana/runtime', () => ({
 }));
 
 describe('API Hooks', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    // Reset the default mock to ensure each test starts fresh
-    mockCreateRegisterMutation.mockReturnValue([
-      jest.fn().mockReturnValue({
-        unwrap: jest.fn().mockResolvedValue({}),
-      }),
-      { isLoading: false, isSuccess: false, error: undefined },
-    ]);
-    // Wait longer to ensure any pending promises from previous tests resolve
-    // This gives time for the module-level registrationPromise to resolve
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
   });
 
   describe('useCheckTypes', () => {
