@@ -563,6 +563,11 @@ export function useLLMSuggestion() {
 // Shared registration promise to prevent duplicate calls
 let registrationPromise: Promise<void> | null = null;
 
+// Helper function to reset registration state, exported for testing
+export function _resetRegistration() {
+  registrationPromise = null;
+}
+
 function useRegister() {
   const [createRegister, createRegisterState] = useCreateRegisterMutation();
   const [isRegistered, setIsRegistered] = useState(false);

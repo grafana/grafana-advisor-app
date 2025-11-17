@@ -13,6 +13,7 @@ import {
   useSkipCheckTypeStep,
   IGNORE_STEPS_ANNOTATION_LIST,
   useLLMSuggestion,
+  _resetRegistration,
 } from './api';
 import { config } from '@grafana/runtime';
 
@@ -62,6 +63,14 @@ describe('API Hooks', () => {
   });
 
   describe('useCheckTypes', () => {
+    beforeEach(() => {
+      _resetRegistration();
+      // mock console.error
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      jest.spyOn(console, 'error').mockRestore();
+    });
     it('returns empty array when no data', async () => {
       mockListCheckTypeQuery.mockReturnValue({
         data: undefined,
@@ -112,45 +121,7 @@ describe('API Hooks', () => {
       const { result } = renderHook(() => useCheckTypes());
       await waitFor(() => {
         expect(result.current.isLoading).toBe(true);
-      });
-    });
-
-    it('calls createRegister on mount when not already registered', async () => {
-      // This test verifies that registration is attempted when the hook mounts
-      // Note: Due to module-level registrationPromise persistence, this test may
-      // not call createRegister if a previous test already registered
-      const resolvedPromise = Promise.resolve({});
-      const mockUnwrap = jest.fn().mockReturnValue(resolvedPromise);
-      const mockCreateRegister = jest.fn(() => ({
-        unwrap: mockUnwrap,
-      }));
-      const mockRegisterState = { isLoading: false, isSuccess: false, error: undefined };
-      mockCreateRegisterMutation.mockReturnValue([mockCreateRegister, mockRegisterState]);
-
-      mockListCheckTypeQuery.mockReturnValue({
-        data: undefined,
-        isLoading: false,
-        isError: false,
-        refetch: jest.fn(),
-      });
-
-      renderHook(() => useCheckTypes());
-
-      // Registration may or may not be called depending on previous test state
-      // The important thing is that the hook works correctly either way
-      await waitFor(
-        () => {
-          // If registration was called, wait for it; otherwise just verify hook works
-          if (mockCreateRegister.mock.calls.length > 0) {
-            expect(mockCreateRegister).toHaveBeenCalled();
-          }
-        },
-        { timeout: 1000 }
-      );
-
-      // Wait for any pending promises
-      await act(async () => {
-        await resolvedPromise;
+        expect(mockCreateRegister).toHaveBeenCalled();
       });
     });
 
