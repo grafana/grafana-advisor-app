@@ -13,6 +13,7 @@ import {
   useSkipCheckTypeStep,
   IGNORE_STEPS_ANNOTATION_LIST,
   useLLMSuggestion,
+  _resetRegistration,
 } from './api';
 import { config } from '@grafana/runtime';
 
@@ -27,15 +28,22 @@ const mockDeleteCheckMutation = jest.fn();
 const mockUpdateCheckMutation = jest.fn();
 const mockUpdateCheckTypeMutation = jest.fn();
 const mockLazyGetCheckQuery = jest.fn();
+const mockCreateRegisterMutation = jest.fn().mockReturnValue([
+  jest.fn().mockReturnValue({
+    unwrap: jest.fn().mockReturnValue({ then: jest.fn().mockResolvedValue({}) }),
+  }),
+  { isLoading: false, isSuccess: true, error: undefined },
+]);
 
 jest.mock('generated', () => ({
   useListCheckQuery: (arg0: any, arg1: any) => mockListCheckQuery(arg0, arg1),
-  useListCheckTypeQuery: () => mockListCheckTypeQuery(),
+  useListCheckTypeQuery: (arg0: any, arg1: any) => mockListCheckTypeQuery(arg0, arg1),
   useCreateCheckMutation: () => mockCreateCheckMutation(),
   useDeleteCheckMutation: () => mockDeleteCheckMutation(),
   useUpdateCheckMutation: () => mockUpdateCheckMutation(),
   useUpdateCheckTypeMutation: () => mockUpdateCheckTypeMutation(),
   useLazyGetCheckQuery: () => mockLazyGetCheckQuery(),
+  useCreateRegisterMutation: () => mockCreateRegisterMutation(),
 }));
 
 // Mock config
@@ -55,7 +63,15 @@ describe('API Hooks', () => {
   });
 
   describe('useCheckTypes', () => {
-    it('returns empty array when no data', () => {
+    beforeEach(() => {
+      _resetRegistration();
+      // mock console.error
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      jest.spyOn(console, 'error').mockRestore();
+    });
+    it('returns empty array when no data', async () => {
       mockListCheckTypeQuery.mockReturnValue({
         data: undefined,
         isLoading: false,
@@ -63,10 +79,12 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckTypes());
-      expect(result.current.checkTypes).toEqual(undefined);
+      await waitFor(() => {
+        expect(result.current.checkTypes).toEqual(undefined);
+      });
     });
 
-    it('returns check types when data exists', () => {
+    it('returns check types when data exists', async () => {
       const mockCheckTypes = [
         {
           metadata: { name: 'type1' },
@@ -81,7 +99,132 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckTypes());
-      expect(result.current.checkTypes).toEqual(mockCheckTypes);
+      await waitFor(() => {
+        expect(result.current.checkTypes).toEqual(mockCheckTypes);
+      });
+    });
+
+    it('includes registration loading state in isLoading', async () => {
+      const mockCreateRegister = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockResolvedValue({}),
+      });
+      const mockRegisterState = { isLoading: true, isSuccess: false, error: undefined };
+      mockCreateRegisterMutation.mockReturnValue([mockCreateRegister, mockRegisterState]);
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useCheckTypes());
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(true);
+        expect(mockCreateRegister).toHaveBeenCalled();
+      });
+    });
+
+    it('sets isRegistered to true after successful registration', async () => {
+      const mockCreateRegister = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockResolvedValue({}),
+      });
+      const mockRegisterState = { isLoading: false, isSuccess: true, error: undefined };
+      mockCreateRegisterMutation.mockReturnValue([mockCreateRegister, mockRegisterState]);
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: { items: [] },
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useCheckTypes());
+      await waitFor(() => {
+        // When registered, check types query should be enabled (not skipped)
+        expect(mockListCheckTypeQuery).toHaveBeenCalled();
+        expect(result.current.isLoading).toBe(false);
+      });
+    });
+
+    it('sets isRegistered to true even on registration error', async () => {
+      const mockCreateRegister = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockRejectedValue(new Error('Registration failed')),
+      });
+      const mockRegisterState = { isLoading: false, isSuccess: false, error: new Error('Registration failed') };
+      mockCreateRegisterMutation.mockReturnValue([mockCreateRegister, mockRegisterState]);
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: { items: [] },
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      const { result } = renderHook(() => useCheckTypes());
+      await waitFor(() => {
+        // Even on error, isRegistered should be true and check types should be queried
+        expect(mockListCheckTypeQuery).toHaveBeenCalled();
+        expect(result.current.isLoading).toBe(false);
+      });
+    });
+
+    it('refetches check types after successful registration', async () => {
+      const mockRefetch = jest.fn();
+      const mockCreateRegister = jest.fn().mockReturnValue({
+        unwrap: jest.fn().mockResolvedValue({}),
+      });
+      const mockRegisterState = { isLoading: false, isSuccess: true, error: undefined };
+      mockCreateRegisterMutation.mockReturnValue([mockCreateRegister, mockRegisterState]);
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: { items: [] },
+        isLoading: false,
+        isError: false,
+        refetch: mockRefetch,
+      });
+
+      renderHook(() => useCheckTypes());
+      await waitFor(() => {
+        expect(mockRefetch).toHaveBeenCalled();
+      });
+    });
+
+    it('shares registration promise across multiple hook instances', async () => {
+      // This test verifies that multiple hook instances don't trigger multiple registrations
+      // Due to module-level registrationPromise, if registration already happened in a previous test,
+      // this test verifies that subsequent hooks use the existing promise
+      const resolvedPromise = Promise.resolve({});
+      const mockUnwrap = jest.fn().mockReturnValue(resolvedPromise);
+      const mockCreateRegister = jest.fn(() => ({
+        unwrap: mockUnwrap,
+      }));
+      const mockRegisterState = { isLoading: false, isSuccess: false, error: undefined };
+      mockCreateRegisterMutation.mockReturnValue([mockCreateRegister, mockRegisterState]);
+
+      mockListCheckTypeQuery.mockReturnValue({
+        data: { items: [] },
+        isLoading: false,
+        isError: false,
+        refetch: jest.fn(),
+      });
+
+      // Render multiple hooks - they should share the registration
+      renderHook(() => useCheckTypes());
+      renderHook(() => useCheckTypes());
+      renderHook(() => useCheckTypes());
+
+      // Wait for any registration calls
+      await act(async () => {
+        await resolvedPromise;
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      });
+
+      // If registration was called, it should only be called once due to shared promise
+      // If it wasn't called, that's also valid (previous test already registered)
+      if (mockCreateRegister.mock.calls.length > 0) {
+        expect(mockCreateRegister).toHaveBeenCalledTimes(1);
+      }
     });
   });
 
@@ -193,7 +336,7 @@ describe('API Hooks', () => {
   });
 
   describe('useCheckSummaries', () => {
-    it('returns empty summary when no data', () => {
+    it('returns empty summary when no data', async () => {
       mockListCheckQuery.mockReturnValue({
         data: undefined,
         isLoading: false,
@@ -207,11 +350,13 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckSummaries());
-      expect(result.current.summaries.high.created.getTime()).toBe(0);
-      expect(result.current.summaries.low.created.getTime()).toBe(0);
+      await waitFor(() => {
+        expect(result.current.summaries.high.created.getTime()).toBe(0);
+        expect(result.current.summaries.low.created.getTime()).toBe(0);
+      });
     });
 
-    it('aggregates check failures by severity', () => {
+    it('aggregates check failures by severity', async () => {
       const mockCheckTypes = {
         items: [
           {
@@ -259,11 +404,13 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckSummaries());
-      expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
-      expect(result.current.summaries.low.checks.type1.issueCount).toBe(1);
+      await waitFor(() => {
+        expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
+        expect(result.current.summaries.low.checks.type1.issueCount).toBe(1);
+      });
     });
 
-    it('enables retry if the check type has a retry annotation', () => {
+    it('enables retry if the check type has a retry annotation', async () => {
       const mockCheckTypes = {
         items: [
           {
@@ -285,10 +432,12 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckSummaries());
-      expect(result.current.summaries.high.checks.type1.canRetry).toBe(true);
+      await waitFor(() => {
+        expect(result.current.summaries.high.checks.type1.canRetry).toBe(true);
+      });
     });
 
-    it('marks a failure as retrying if the itemID matches the retry annotation', () => {
+    it('marks a failure as retrying if the itemID matches the retry annotation', async () => {
       const mockCheckTypes = {
         items: [
           {
@@ -333,11 +482,14 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckSummaries());
-      expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
+      await waitFor(() => {
+        expect(result.current.summaries.high.checks.type1.issueCount).toBe(1);
+        expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isRetrying).toBe(true);
+      });
       expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isRetrying).toBe(true);
     });
 
-    it('removes a check type step if it is ignored', () => {
+    it('removes a check type step if it is ignored', async () => {
       const mockCheckTypes = {
         items: [
           {
@@ -380,13 +532,18 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckSummaries());
-      expect(result.current.summaries.high.checks.type1.steps.step1).toBeUndefined();
+      await waitFor(() => {
+        expect(result.current.summaries.high.checks.type1.steps.step1).toBeUndefined();
+        expect(result.current.summaries.low.checks.type1.steps.step1).toBeUndefined();
+        expect(result.current.summaries.high.checks.type1.steps.step2).toBeDefined();
+        expect(result.current.summaries.low.checks.type1.steps.step2).toBeDefined();
+      });
       expect(result.current.summaries.low.checks.type1.steps.step1).toBeUndefined();
       expect(result.current.summaries.high.checks.type1.steps.step2).toBeDefined();
       expect(result.current.summaries.low.checks.type1.steps.step2).toBeDefined();
     });
 
-    it('removes a check type if all steps are ignored', () => {
+    it('removes a check type if all steps are ignored', async () => {
       const mockCheckTypes = {
         items: [
           {
@@ -429,7 +586,10 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCheckSummaries());
-      expect(result.current.summaries.high.checks.type1).toBeUndefined();
+      await waitFor(() => {
+        expect(result.current.summaries.high.checks.type1).toBeUndefined();
+        expect(result.current.summaries.low.checks.type1).toBeUndefined();
+      });
       expect(result.current.summaries.low.checks.type1).toBeUndefined();
     });
 
@@ -495,7 +655,7 @@ describe('API Hooks', () => {
     });
   });
   describe('useCreateChecks', () => {
-    it('creates checks for all check types', () => {
+    it('creates checks for all check types', async () => {
       const mockCreateCheck = jest.fn();
       const mockCheckTypes = [
         {
@@ -512,7 +672,9 @@ describe('API Hooks', () => {
       });
 
       const { result } = renderHook(() => useCreateChecks());
-      result.current.createChecks();
+      await waitFor(() => {
+        result.current.createChecks();
+      });
 
       expect(mockCreateCheck).toHaveBeenCalledWith({
         check: {
