@@ -465,14 +465,8 @@ const useHiddenIssues = () => {
   return { handleHideIssue, isIssueHidden, hasHiddenIssues };
 };
 
-async function llmRequest(failure: CheckReportFailure) {
-  // Construct messages for the LLM
-  const messages: llm.Message[] = [
-    { role: 'system', content: 'You are an experienced, competent SRE with knowledge of Grafana.' },
-    {
-      role: 'user',
-      content:
-        `I have received an error message from the Grafana Advisor with the following details:\n\n` +
+function llmRequest(failure: CheckReportFailure) {
+  return `I have received an error message from the Grafana Advisor with the following details:\n\n` +
         `Step ID: ${failure.stepID}\n` +
         `Item ID: ${failure.itemID}\n` +
         `Item: ${failure.item}\n` +
@@ -480,16 +474,7 @@ async function llmRequest(failure: CheckReportFailure) {
         `More info: ${failure.moreInfo}\n` +
         `Links: ${failure.links.map((link) => `${link.message} (${link.url})`).join(', ') || 'N/A'}\n\n` +
         `Provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
-        `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`,
-    },
-  ];
-
-  const result = await llm.chatCompletions({
-    model: llm.Model.BASE,
-    messages,
-  });
-
-  return result?.choices[0]?.message?.content || '';
+        `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`;
 }
 
 export function useLLMSuggestion() {
@@ -530,7 +515,17 @@ export function useLLMSuggestion() {
         }
 
         // Get the LLM response
-        const content = await llmRequest(failure);
+        const result = await llm.chatCompletions({
+          model: llm.Model.BASE,
+          messages: [
+            { role: 'system', content: 'You are an experienced, competent SRE with knowledge of Grafana.' },
+            {
+              role: 'user',
+              content: llmRequest(failure),
+            },
+          ]
+        });
+        const content = result?.choices[0]?.message?.content || '';
         setResponse(content);
 
         // Store the response content as an annotation in the check
