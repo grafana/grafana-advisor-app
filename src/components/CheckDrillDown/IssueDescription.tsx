@@ -88,7 +88,7 @@ export function IssueDescription({
     <div className={isHidden ? styles.issueHidden : styles.issue}>
       <div className={styles.issueReason}>
         {item}
-        {isLLMAvailable && (
+        {isLLMAvailable && !isAssistantAvailable && (
           <Button
             size="sm"
             className={styles.issueLink}
