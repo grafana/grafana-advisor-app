@@ -16,6 +16,11 @@ import {
   _resetRegistration,
 } from './api';
 import { config } from '@grafana/runtime';
+import { usePluginContext } from 'contexts/Context';
+
+jest.mock('contexts/Context');
+
+const mockUsePluginContext = usePluginContext as jest.MockedFunction<typeof usePluginContext>;
 
 // Unmock the api module for this test file so we can test the real implementations
 jest.unmock('api/api');
@@ -926,6 +931,13 @@ describe('API Hooks', () => {
   });
 
   describe('useLLMSuggestion', () => {
+    beforeEach(() => {
+      mockUsePluginContext.mockReturnValue({
+        isLLMEnabled: true,
+        isLoading: false,
+      });
+    });
+    
     it('returns a suggestion', async () => {
       const mockUpdateCheck = jest.fn();
       const mockGetCheck = jest.fn();

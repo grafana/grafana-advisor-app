@@ -5,7 +5,6 @@ import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useAssistantHelp, useLLMSuggestion } from 'api/api';
-import { usePluginContext } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
@@ -40,9 +39,8 @@ export function IssueDescription({
 }: IssueDescriptionProps) {
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
-  const { isLLMEnabled } = usePluginContext();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
-  const { getSuggestion, response, isLoading } = useLLMSuggestion();
+  const { getSuggestion, response, isAvailable: isLLMAvailable, isLoading: isLLMLoading } = useLLMSuggestion();
   const { askAssistant, isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistantHelp();
   const { trackCheckInteraction } = useInteractionTracker();
   const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
@@ -90,7 +88,7 @@ export function IssueDescription({
     <div className={isHidden ? styles.issueHidden : styles.issue}>
       <div className={styles.issueReason}>
         {item}
-        {isLLMEnabled && (
+        {isLLMAvailable && (
           <Button
             size="sm"
             className={styles.issueLink}
@@ -160,7 +158,7 @@ export function IssueDescription({
             </a>
           );
         })}
-        {llmSectionOpen && <LLMSuggestionContent isLoading={isLoading} response={response} />}
+        {llmSectionOpen && <LLMSuggestionContent isLoading={isLLMLoading} response={response} />}
       </div>
     </div>
   );

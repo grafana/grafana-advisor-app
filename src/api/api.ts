@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
 import { useAssistant } from '@grafana/assistant';
 import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
+import { usePluginContext } from 'contexts/Context';
 import { llm } from '@grafana/llm';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
@@ -479,6 +480,7 @@ function llmRequest(failure: CheckReportFailure) {
 }
 
 export function useLLMSuggestion() {
+  const { isLLMEnabled } = usePluginContext();
   const [response, setResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [getCheck, _] = useLazyGetCheckQuery();
@@ -553,7 +555,7 @@ export function useLLMSuggestion() {
     [getCheck, updateCheck]
   );
 
-  return { getSuggestion, response, isLoading };
+  return { getSuggestion, response, isAvailable: isLLMEnabled, isLoading };
 }
 
 export function useAssistantHelp() {

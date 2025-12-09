@@ -3,12 +3,12 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { IssueDescription } from './IssueDescription';
-import { usePluginContext } from 'contexts/Context';
+import { useLLMSuggestion } from 'api/api';
 
 // Mock dependencies
-jest.mock('contexts/Context');
+jest.mock('api/api');
 
-const mockUsePluginContext = usePluginContext as jest.MockedFunction<typeof usePluginContext>;
+const mockUseLLMSuggestion = useLLMSuggestion as jest.MockedFunction<typeof useLLMSuggestion>;
 
 const defaultProps = {
   item: 'Dashboard "Test Dashboard" has performance issues',
@@ -39,8 +39,10 @@ describe('IssueDescription', () => {
     jest.clearAllMocks();
     jest.useRealTimers(); // Ensure real timers are used by default
 
-    mockUsePluginContext.mockReturnValue({
-      isLLMEnabled: true,
+    mockUseLLMSuggestion.mockReturnValue({
+      getSuggestion: jest.fn(),
+      response: null,
+      isAvailable: true,
       isLoading: false,
     });
   });
