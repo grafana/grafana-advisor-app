@@ -12,6 +12,7 @@ import {
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
+import { useAssistant } from '@grafana/assistant';
 import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
 import { llm } from '@grafana/llm';
 
@@ -553,6 +554,48 @@ export function useLLMSuggestion() {
   );
 
   return { getSuggestion, response, isLoading };
+}
+
+export function useAssistantHelp() {
+  const { isAvailable, openAssistant } = useAssistant();
+  const [isLoading, setIsLoading] = useState(false);
+  const [getCheck, _] = useLazyGetCheckQuery();
+
+  const askAssistant = useCallback(
+    async (checkName: string, stepID: string, itemID: string) => {
+      setIsLoading(true);
+
+      try {
+        // Find the specific failure from the check data
+        const { data: check } = await getCheck({ name: checkName });
+        if (!check?.status?.report?.failures) {
+          console.error('No failures found for check:', checkName);
+          setIsLoading(false);
+          return;
+        }
+
+        const failure = check.status.report.failures.find((f) => f.stepID === stepID && f.itemID === itemID);
+        if (!failure) {
+          console.error('No failure found for stepID:', stepID, 'and itemID:', itemID);
+          setIsLoading(false);
+          return;
+        }
+
+        // Trigger Grafana Assistant
+        openAssistant?.({
+          origin: 'grafana-advisor-app',
+          prompt: llmRequest(failure),
+        });
+      } catch (error) {
+        console.error('Error getting LLM suggestion:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getCheck, openAssistant]
+  );
+
+  return { askAssistant, isAvailable, isLoading };
 }
 
 // Shared registration promise to prevent duplicate calls

@@ -4,7 +4,7 @@ import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
-import { useLLMSuggestion } from 'api/api';
+import { useAssistantHelp, useLLMSuggestion } from 'api/api';
 import { usePluginContext } from 'contexts/Context';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
@@ -43,6 +43,7 @@ export function IssueDescription({
   const { isLLMEnabled } = usePluginContext();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isLoading } = useLLMSuggestion();
+  const { askAssistant, isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistantHelp();
   const { trackCheckInteraction } = useInteractionTracker();
   const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
 
@@ -62,6 +63,11 @@ export function IssueDescription({
     setLlmSectionOpen(!llmSectionOpen);
     trackCheckInteraction(CheckInteractionType.AI_SUGGESTION_CLICKED, checkType, stepID);
   }, [llmSectionOpen, getSuggestion, checkName, stepID, itemID, trackCheckInteraction, checkType]);
+
+  const handleAskAssistantClick = useCallback(() => {
+    askAssistant(checkName, stepID, itemID);
+    trackCheckInteraction(CheckInteractionType.ASSISTANT_CLICKED, checkType, stepID);
+  }, [askAssistant, checkName, stepID, itemID, trackCheckInteraction, checkType]);
 
   const handleSilenceClick = useCallback(() => {
     onHideIssue(!isHidden);
@@ -125,6 +131,18 @@ export function IssueDescription({
             }}
             aria-label="Retry check"
           />
+        )}
+        {isAssistantAvailable && (
+          <Button
+            size="sm"
+            className={styles.issueLink}
+            icon={isAssistantLoading ? 'spinner' : 'ai'}
+            variant="secondary"
+            disabled={isAssistantLoading}
+            onClick={handleAskAssistantClick}
+          >
+            Debug with Assistant
+          </Button>
         )}
         {links.map((link) => {
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
