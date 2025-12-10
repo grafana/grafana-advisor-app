@@ -65,10 +65,10 @@ describe('IssueDescription', () => {
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
     expect(screen.getByTitle('Generate AI suggestion')).toBeInTheDocument();
-    expect(screen.queryByText('Debug with Assistant')).toBeNull();
+    expect(screen.queryByText('Ask Assistant')).toBeNull();
   });
 
-  it('renders the Debug with Assistant button when the Assistant plugin is available', () => {
+  it('renders the Ask Assistant button when the Assistant plugin is available', () => {
     mockUseAssistantHelp.mockReturnValue({
       askAssistant: jest.fn(),
       isAvailable: true,
@@ -77,7 +77,7 @@ describe('IssueDescription', () => {
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
     expect(screen.queryByTitle('Generate AI suggestion')).toBeNull();
-    expect(screen.getByText('Debug with Assistant')).toBeInTheDocument();
+    expect(screen.getByText('Ask Assistant')).toBeInTheDocument();
   });
 
   it('prefers Assistant when both the LLM and Assistant plugins are available', () => {
@@ -96,7 +96,7 @@ describe('IssueDescription', () => {
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
     expect(screen.queryByTitle('Generate AI suggestion')).toBeNull();
-    expect(screen.getByText('Debug with Assistant')).toBeInTheDocument();
+    expect(screen.getByText('Ask Assistant')).toBeInTheDocument();
   });
 
   it('handles retry button click with local loading state', async () => {

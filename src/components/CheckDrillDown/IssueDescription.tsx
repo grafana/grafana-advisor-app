@@ -139,7 +139,7 @@ export function IssueDescription({
             disabled={isAssistantLoading}
             onClick={handleAskAssistantClick}
           >
-            Debug with Assistant
+            Ask Assistant
           </Button>
         )}
         {links.map((link) => {
