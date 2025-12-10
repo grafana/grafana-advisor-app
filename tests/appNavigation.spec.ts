@@ -7,9 +7,14 @@ async function isEmptyReport(page: Page) {
   return await page.getByText('No checks run yet').isVisible();
 }
 
-async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
+async function loadAndWait(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
   await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
+  await expect(page.getByText('Loading')).not.toBeVisible();
+}
+
+async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
+  await loadAndWait(gotoPage, page);
 
   // Check if page is already empty
   const isAlreadyEmpty = await isEmptyReport(page);
@@ -25,16 +30,25 @@ async function expectEmptyReport(gotoPage: (path?: string) => Promise<AppPage>, 
 }
 
 async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
-  await gotoPage(`/`);
-  await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
+  await loadAndWait(gotoPage, page);
   const isEmpty = await isEmptyReport(page);
   if (isEmpty) {
     await page.getByRole('button', { name: 'Generate report' }).click();
   } else {
     await page.getByRole('button', { name: 'Refresh' }).click();
   }
-  await expect(page.getByText('Running checks...')).toBeVisible();
-  await expect(page.getByText('Running checks...')).not.toBeVisible();
+
+  // Sometimes the checks complete so quickly that "Running checks..." doesn't render.
+  // In that case, we verify completion by checking for "Last checked" text.
+  const isRunningVisible = await page
+    .getByText('Running checks...')
+    .isVisible({ timeout: 1000 })
+    .catch(() => false);
+  if (isRunningVisible) {
+    await expect(page.getByText('Running checks...')).not.toBeVisible();
+  } else {
+    await expect(page.getByText('Last checked')).toBeVisible();
+  }
 }
 
 async function createEmptyDatasource(page: Page): Promise<string> {
@@ -79,7 +93,7 @@ test.describe('navigating app', () => {
     await page.getByTestId('data-testid Confirm Modal Danger Button').click();
 
     // Now retrigger the report only for the prometheus datasource
-    await gotoPage(`/`);
+    await loadAndWait(gotoPage, page);
     await page.getByText('Action needed').click();
     await page.getByText('Health check failed').click();
     if (grafanaVersion.startsWith('12.0')) {
