@@ -12,7 +12,9 @@ import {
 } from 'generated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
+import { useAssistant } from '@grafana/assistant';
 import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
+import { usePluginContext } from 'contexts/Context';
 import { llm } from '@grafana/llm';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
@@ -465,14 +467,8 @@ const useHiddenIssues = () => {
   return { handleHideIssue, isIssueHidden, hasHiddenIssues };
 };
 
-async function llmRequest(failure: CheckReportFailure) {
-  // Construct messages for the LLM
-  const messages: llm.Message[] = [
-    { role: 'system', content: 'You are an experienced, competent SRE with knowledge of Grafana.' },
-    {
-      role: 'user',
-      content:
-        `I have received an error message from the Grafana Advisor with the following details:\n\n` +
+function llmRequest(failure: CheckReportFailure) {
+  return `I have received an error message from the Grafana Advisor with the following details:\n\n` +
         `Step ID: ${failure.stepID}\n` +
         `Item ID: ${failure.itemID}\n` +
         `Item: ${failure.item}\n` +
@@ -480,19 +476,11 @@ async function llmRequest(failure: CheckReportFailure) {
         `More info: ${failure.moreInfo}\n` +
         `Links: ${failure.links.map((link) => `${link.message} (${link.url})`).join(', ') || 'N/A'}\n\n` +
         `Provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
-        `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`,
-    },
-  ];
-
-  const result = await llm.chatCompletions({
-    model: llm.Model.BASE,
-    messages,
-  });
-
-  return result?.choices[0]?.message?.content || '';
+        `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`;
 }
 
 export function useLLMSuggestion() {
+  const { isLLMEnabled } = usePluginContext();
   const [response, setResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [getCheck, _] = useLazyGetCheckQuery();
@@ -530,7 +518,17 @@ export function useLLMSuggestion() {
         }
 
         // Get the LLM response
-        const content = await llmRequest(failure);
+        const result = await llm.chatCompletions({
+          model: llm.Model.BASE,
+          messages: [
+            { role: 'system', content: 'You are an experienced, competent SRE with knowledge of Grafana.' },
+            {
+              role: 'user',
+              content: llmRequest(failure),
+            },
+          ]
+        });
+        const content = result?.choices[0]?.message?.content || '';
         setResponse(content);
 
         // Store the response content as an annotation in the check
@@ -557,7 +555,49 @@ export function useLLMSuggestion() {
     [getCheck, updateCheck]
   );
 
-  return { getSuggestion, response, isLoading };
+  return { getSuggestion, response, isAvailable: isLLMEnabled, isLoading };
+}
+
+export function useAssistantHelp() {
+  const { isAvailable, openAssistant } = useAssistant();
+  const [isLoading, setIsLoading] = useState(false);
+  const [getCheck, _] = useLazyGetCheckQuery();
+
+  const askAssistant = useCallback(
+    async (checkName: string, stepID: string, itemID: string) => {
+      setIsLoading(true);
+
+      try {
+        // Find the specific failure from the check data
+        const { data: check } = await getCheck({ name: checkName });
+        if (!check?.status?.report?.failures) {
+          console.error('No failures found for check:', checkName);
+          setIsLoading(false);
+          return;
+        }
+
+        const failure = check.status.report.failures.find((f) => f.stepID === stepID && f.itemID === itemID);
+        if (!failure) {
+          console.error('No failure found for stepID:', stepID, 'and itemID:', itemID);
+          setIsLoading(false);
+          return;
+        }
+
+        // Trigger Grafana Assistant
+        openAssistant?.({
+          origin: 'grafana-advisor-app',
+          prompt: llmRequest(failure),
+        });
+      } catch (error) {
+        console.error('Error getting LLM suggestion:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getCheck, openAssistant]
+  );
+
+  return { askAssistant, isAvailable, isLoading };
 }
 
 // Shared registration promise to prevent duplicate calls

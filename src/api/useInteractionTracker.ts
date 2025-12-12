@@ -7,6 +7,7 @@ export enum CheckInteractionType {
   REFRESH_CLICKED = 'refresh_clicked',
   SILENCE_CLICKED = 'silence_clicked',
   AI_SUGGESTION_CLICKED = 'aisuggestion_clicked',
+  ASSISTANT_CLICKED = 'assistant_clicked',
 }
 
 export enum GlobalActionType {

@@ -13,7 +13,12 @@ jest.mock('api/api', () => ({
   useLLMSuggestion: jest.fn().mockReturnValue({
     getSuggestion: jest.fn(),
     response: null,
+    isAvailable: false,
     isLoading: false,
-    isLLMEnabled: false,
+  }),
+  useAssistantHelp: jest.fn().mockReturnValue({
+    askAssistant: jest.fn(),
+    isAvailable: false,
+    isLoading: false,
   }),
 }));

@@ -4,8 +4,7 @@ import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
-import { useLLMSuggestion } from 'api/api';
-import { usePluginContext } from 'contexts/Context';
+import { useAssistantHelp, useLLMSuggestion } from 'api/api';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
@@ -40,9 +39,9 @@ export function IssueDescription({
 }: IssueDescriptionProps) {
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
-  const { isLLMEnabled } = usePluginContext();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
-  const { getSuggestion, response, isLoading } = useLLMSuggestion();
+  const { getSuggestion, response, isAvailable: isLLMAvailable, isLoading: isLLMLoading } = useLLMSuggestion();
+  const { askAssistant, isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistantHelp();
   const { trackCheckInteraction } = useInteractionTracker();
   const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
 
@@ -62,6 +61,11 @@ export function IssueDescription({
     setLlmSectionOpen(!llmSectionOpen);
     trackCheckInteraction(CheckInteractionType.AI_SUGGESTION_CLICKED, checkType, stepID);
   }, [llmSectionOpen, getSuggestion, checkName, stepID, itemID, trackCheckInteraction, checkType]);
+
+  const handleAskAssistantClick = useCallback(() => {
+    askAssistant(checkName, stepID, itemID);
+    trackCheckInteraction(CheckInteractionType.ASSISTANT_CLICKED, checkType, stepID);
+  }, [askAssistant, checkName, stepID, itemID, trackCheckInteraction, checkType]);
 
   const handleSilenceClick = useCallback(() => {
     onHideIssue(!isHidden);
@@ -84,7 +88,7 @@ export function IssueDescription({
     <div className={isHidden ? styles.issueHidden : styles.issue}>
       <div className={styles.issueReason}>
         {item}
-        {isLLMEnabled && (
+        {isLLMAvailable && !isAssistantAvailable && (
           <Button
             size="sm"
             className={styles.issueLink}
@@ -126,6 +130,18 @@ export function IssueDescription({
             aria-label="Retry check"
           />
         )}
+        {isAssistantAvailable && (
+          <Button
+            size="sm"
+            className={styles.issueLink}
+            icon={isAssistantLoading ? 'spinner' : 'ai'}
+            variant="secondary"
+            disabled={isAssistantLoading}
+            onClick={handleAskAssistantClick}
+          >
+            Ask Assistant
+          </Button>
+        )}
         {links.map((link) => {
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
@@ -142,7 +158,7 @@ export function IssueDescription({
             </a>
           );
         })}
-        {llmSectionOpen && <LLMSuggestionContent isLoading={isLoading} response={response} />}
+        {llmSectionOpen && <LLMSuggestionContent isLoading={isLLMLoading} response={response} />}
       </div>
     </div>
   );
