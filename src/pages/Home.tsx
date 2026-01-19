@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { css } from '@emotion/css';
 import { Alert, EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
@@ -24,24 +24,24 @@ export default function Home() {
     hasHiddenIssues,
     partialResults,
   } = useCheckSummaries();
-  const [isEmpty, setIsEmpty] = useState(false);
-  const [isHealthy, setIsHealthy] = useState(false);
   const { isCompleted, checkStatuses } = useCompletedChecks();
   const { retryCheck } = useRetryCheck();
 
-  useEffect(() => {
-    if (!isLoading && !isError) {
-      const isEmptyTemp = summaries.high.created.getTime() === 0;
-      setIsEmpty(isEmptyTemp);
-      if (!isEmptyTemp && isCompleted) {
-        const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
-        const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
-        setIsHealthy(highIssueCount + lowIssueCount === 0);
-      } else {
-        setIsHealthy(false);
-      }
+  const isEmpty = useMemo(() => {
+    if (isLoading || isError) {
+      return false;
     }
-  }, [isLoading, isError, summaries, isCompleted]);
+    return summaries.high.created.getTime() === 0;
+  }, [isLoading, isError, summaries.high.created]);
+
+  const isHealthy = useMemo(() => {
+    if (isLoading || isError || isEmpty || !isCompleted) {
+      return false;
+    }
+    const highIssueCount = Object.values(summaries.high.checks).reduce((acc, check) => acc + check.issueCount, 0);
+    const lowIssueCount = Object.values(summaries.low.checks).reduce((acc, check) => acc + check.issueCount, 0);
+    return highIssueCount + lowIssueCount === 0;
+  }, [isLoading, isError, isEmpty, isCompleted, summaries.high.checks, summaries.low.checks]);
 
   return (
     <PluginPage

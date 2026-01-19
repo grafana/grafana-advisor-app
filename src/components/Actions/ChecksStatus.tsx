@@ -23,7 +23,6 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
       {(!allChecksCompleted || hasError) && (
         <div className={styles.statusSection}>
           <Collapse
-            collapsible
             isOpen={isStatusExpanded}
             onToggle={() => setIsStatusExpanded(!isStatusExpanded)}
             label={

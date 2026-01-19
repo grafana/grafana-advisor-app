@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, FieldSet, LoadingPlaceholder } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
@@ -9,15 +9,14 @@ export const AppConfig = () => {
   const s = useStyles2(getStyles);
   const { checkTypes, isLoading, isError, refetch } = useCheckTypes();
   const { updateIgnoreStepsAnnotation, updateCheckTypeState } = useSkipCheckTypeStep();
-  const [isUpdating, setIsUpdating] = useState(false);
+  const prevIsLoadingRef = React.useRef(updateCheckTypeState.isLoading);
+
   useEffect(() => {
-    if (updateCheckTypeState.isLoading) {
-      setIsUpdating(true);
-    } else if (!updateCheckTypeState.isLoading && isUpdating) {
-      setIsUpdating(false);
+    if (prevIsLoadingRef.current && !updateCheckTypeState.isLoading) {
       refetch(); // Refetch to get the updated check types
     }
-  }, [refetch, updateCheckTypeState.isLoading, isUpdating]);
+    prevIsLoadingRef.current = updateCheckTypeState.isLoading;
+  }, [refetch, updateCheckTypeState.isLoading]);
 
   return (
     <FieldSet label="Available Check Types">
