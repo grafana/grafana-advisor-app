@@ -746,6 +746,7 @@ describe('API Hooks', () => {
     });
 
     it('polls when there are incomplete checks', async () => {
+      const mockRefetch = jest.fn();
       mockListCheckQuery.mockReturnValue({
         data: {
           items: [
@@ -760,15 +761,31 @@ describe('API Hooks', () => {
         },
         isLoading: false,
         isError: false,
+        refetch: mockRefetch,
       });
 
+      renderHook(() => useCompletedChecks());
+
       await waitFor(() => {
-        renderHook(() => useCompletedChecks());
-        expect(mockListCheckQuery).toHaveBeenCalledWith(
-          { limit: 1000 },
-          { pollingInterval: 2000, refetchOnMountOrArgChange: true }
-        );
+        expect(mockListCheckQuery).toHaveBeenCalled();
       });
+
+      // Verify that refetch is called periodically when there are incomplete checks
+      expect(mockRefetch).not.toHaveBeenCalled();
+
+      // Advance time by 2 seconds
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+
+      // Advance time by another 2 seconds
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(mockRefetch).toHaveBeenCalledTimes(2);
     });
 
     it('filters by provided names', () => {
