@@ -20,7 +20,7 @@ export const CheckTypeList: React.FC<CheckTypeListProps> = ({
 
   return (
     <div className={s.checkTypesList}>
-      {checkTypes.map((checkType) => (
+      {checkTypes.filter((checkType) => checkType.spec.steps.length > 0).map((checkType) => (
         <CheckTypeItem
           key={checkType.metadata.name}
           checkType={checkType}
