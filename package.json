@@ -2,8 +2,8 @@
   "name": "advisor",
   "version": "0.0.15",
   "scripts": {
-    "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "build": "webpack -c ./webpack.config.ts --env production",
+    "dev": "webpack -w -c ./webpack.config.ts --env development",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",
@@ -58,6 +58,7 @@
     "webpack": "5.104.1",
     "webpack-cli": "6.0.1",
     "webpack-livereload-plugin": "^3.0.2",
+    "webpack-merge": "^6.0.1",
     "webpack-subresource-integrity": "^5.1.0",
     "webpack-virtual-modules": "^0.6.2"
   },
