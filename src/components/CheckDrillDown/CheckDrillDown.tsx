@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { css } from '@emotion/css';
 import { Collapse, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
@@ -23,23 +23,20 @@ export default function CheckDrillDown({
   handleHideIssue,
 }: CheckDrillDownProps) {
   const styles = useStyles2(getStyles());
-  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const navigate = useNavigate();
   const scrollToRef = useRef<HTMLDivElement>(null);
-  const [scrollToStep, setScrollToStep] = useState<string | null>(null);
   const { trackGroupToggle } = useInteractionTracker();
 
-  useEffect(() => {
-    // Restore state from URL
+  const isOpen = useMemo<Record<string, boolean>>(() => {
     const params = new URLSearchParams(location.search);
     const openSteps = params.get('openSteps')?.split(',') || [];
-    const initialState = openSteps.reduce((acc, stepId) => ({ ...acc, [stepId]: true }), {});
-    setIsOpen(initialState);
-    const scrollToStep = params.get('scrollToStep');
-    if (scrollToStep) {
-      setScrollToStep(scrollToStep);
-    }
+    return openSteps.reduce((acc, stepId) => ({ ...acc, [stepId]: true }), {});
+  }, [location.search]);
+
+  const scrollToStep = useMemo<string | null>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('scrollToStep');
   }, [location.search]);
 
   useEffect(() => {
@@ -53,7 +50,6 @@ export default function CheckDrillDown({
       ...isOpen,
       [stepId]: !isOpen[stepId],
     };
-    setIsOpen(newState);
     trackGroupToggle(stepId, newState[stepId]);
 
     // Update URL with open steps
@@ -106,7 +102,6 @@ export default function CheckDrillDown({
                     </div>
                   }
                   isOpen={isOpen[step.stepID] ?? false}
-                  collapsible={true}
                   onToggle={() => handleToggle(step.stepID)}
                 >
                   {issues.map((issue) => {

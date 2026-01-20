@@ -10,7 +10,7 @@ import {
   useLazyGetCheckQuery,
   useCreateRegisterMutation,
 } from 'generated';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { config, usePluginUserStorage } from '@grafana/runtime';
 import { useAssistant } from '@grafana/assistant';
 import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
@@ -321,12 +321,10 @@ export function useDeleteChecks() {
 }
 
 function useIncompleteChecks(names?: string[]) {
-  const [pollingInterval, setPollingInterval] = useState(2000);
   const listChecksState = useListCheckQuery(
     { limit: API_PAGE_SIZE },
     {
       refetchOnMountOrArgChange: true,
-      pollingInterval,
     }
   );
 
@@ -377,10 +375,38 @@ function useIncompleteChecks(names?: string[]) {
       });
   }, [listChecksState.data, names]);
 
+  const hasIncompleteChecks = useMemo(() => {
+    return checkStatuses.filter((check) => check.incomplete).length > 0;
+  }, [checkStatuses]);
+
+  const pollingIntervalRef = useRef<number | null>(null);
+  const refetchRef = useRef(listChecksState.refetch);
+
+  // Keep refetch ref up to date
+  useEffect(() => {
+    refetchRef.current = listChecksState.refetch;
+  }, [listChecksState.refetch]);
+
   // Update polling interval based on incomplete checks
   useEffect(() => {
-    setPollingInterval(checkStatuses.filter((check) => check.incomplete).length > 0 ? 2000 : 0);
-  }, [checkStatuses]);
+    if (pollingIntervalRef.current !== null) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+
+    if (hasIncompleteChecks && refetchRef.current) {
+      pollingIntervalRef.current = window.setInterval(() => {
+        refetchRef.current?.();
+      }, 2000);
+    }
+
+    return () => {
+      if (pollingIntervalRef.current !== null) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [hasIncompleteChecks]);
 
   return {
     checkStatuses,
@@ -454,7 +480,7 @@ const useHiddenIssues = () => {
         return newHiddenIssues;
       });
     },
-    [] // eslint-disable-line react-hooks/exhaustive-deps
+    [userStorage]
   );
 
   const isIssueHidden = useCallback(

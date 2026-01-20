@@ -20,7 +20,7 @@ export function MoreInfo({ checkSummaries }: Props) {
   };
 
   return (
-    <Collapse isOpen={isOpen} onToggle={handleToggle} collapsible={true} label="More Info">
+    <Collapse isOpen={isOpen} onToggle={handleToggle} label="More Info">
       <div className={styles.container}>
         <div>Summary: </div>
         {Object.values(checkSummaries.high.checks).map((check) => (

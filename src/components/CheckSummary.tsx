@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, Collapse } from '@grafana/ui';
@@ -17,7 +17,6 @@ interface Props {
 }
 
 export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHiddenIssues, handleHideIssue }: Props) {
-  const [isOpen, setIsOpen] = React.useState(false);
   const styles = useStyles2(getStyles(checkSummary.severity));
   const issueCount = Object.values(checkSummary.checks).reduce((acc, check) => acc + check.issueCount, 0);
   const location = useLocation();
@@ -25,26 +24,32 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
   const isSummaryOpenParam = 'summaryOpen' + checkSummary.severity;
   const { trackGroupToggle } = useInteractionTracker();
 
-  useEffect(() => {
-    // Restore state from URL
+  // Derive state from URL using useMemo
+  const isOpen = React.useMemo(() => {
     const params = new URLSearchParams(location.search);
-    const isSummaryOpen = params.get(isSummaryOpenParam) === 'true';
-    setIsOpen(isSummaryOpen);
+    return params.get(isSummaryOpenParam) === 'true';
   }, [location.search, isSummaryOpenParam]);
 
-  const handleToggle = (isOpen: boolean) => {
-    setIsOpen(isOpen);
-    trackGroupToggle(checkSummary.severity, isOpen);
+  const setIsOpen = React.useCallback(
+    (open: boolean) => {
+      const params = new URLSearchParams(location.search);
+      if (open) {
+        params.set(isSummaryOpenParam, 'true');
+      } else {
+        params.delete(isSummaryOpenParam);
+      }
+      navigate({ search: params.toString() }, { replace: true });
+    },
+    [isSummaryOpenParam, navigate, location.search]
+  );
 
-    // Update URL with summary state
-    const params = new URLSearchParams(location.search);
-    if (isOpen) {
-      params.set(isSummaryOpenParam, 'true');
-    } else {
-      params.delete(isSummaryOpenParam);
-    }
-    navigate({ search: params.toString() }, { replace: true });
-  };
+  const handleToggle = React.useCallback(
+    (open: boolean) => {
+      setIsOpen(open);
+      trackGroupToggle(checkSummary.severity, open);
+    },
+    [setIsOpen, trackGroupToggle, checkSummary.severity]
+  );
 
   if (issueCount === 0) {
     return null;
@@ -54,7 +59,6 @@ export function CheckSummary({ checkSummary, retryCheck, isCompleted, showHidden
     <Collapse
       label={<CheckSummaryTitle checkSummary={checkSummary} />}
       isOpen={isOpen}
-      collapsible={true}
       onToggle={() => handleToggle(!isOpen)}
     >
       {/* Issues */}
