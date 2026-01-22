@@ -9,7 +9,7 @@ async function isEmptyReport(page: Page) {
 
 async function loadAndWait(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
-  await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
+  await expect(page.getByText('Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues')).toBeVisible();
   await expect(page.getByText('Loading')).not.toBeVisible();
 }
 
@@ -69,8 +69,8 @@ test.describe('navigating app', () => {
     await expectEmptyReport(gotoPage, page);
     // Click on the "Refresh" button
     await runChecks(gotoPage, page);
-    // Click on the "More Info"
-    await page.getByText('More Info').click();
+    // Click on the "No action needed"
+    await page.getByText('No action needed').click();
     // Page should now show a report
     await expect(page.getByText(/(datasource|data source|Data Source)\(s\) analyzed/)).toBeVisible();
     await expect(page.getByText(/(plugin|Plugin)\(s\) analyzed/)).toBeVisible();
@@ -157,7 +157,7 @@ test.describe('navigating app', () => {
     await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).not.toBeVisible();
 
     // Now enable hidden checks, the issue should be visible again
-    await page.getByText('More Info').click();
+    await page.getByText('No action needed').click();
     await page.getByRole('button', { name: 'Show silenced issues' }).click();
     await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).toBeVisible();
   });
