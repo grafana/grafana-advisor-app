@@ -23,7 +23,7 @@ export function MoreInfo({ checkSummaries }: Props) {
     <Collapse isOpen={isOpen} onToggle={handleToggle} label="No action needed">
       <div className={styles.container}>
         <div className={styles.description}>
-          Below you can find the summary of checks we ran that were passing or not applicable to your instance. Good news - you are doing great in those areas:
+          Below you can find the summary of the checks we ran that either passed or aren't applicable to your instance. Good news - you're doing great in these areas:
         </div>
         {Object.values(checkSummaries.high.checks).map((check) => (
           <div key={check.type} className={styles.check}>
