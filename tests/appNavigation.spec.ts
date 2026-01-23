@@ -9,7 +9,11 @@ async function isEmptyReport(page: Page) {
 
 async function loadAndWait(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
-  await expect(page.getByText('Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues')).toBeVisible();
+  await expect(
+    page.getByText(
+      'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues'
+    )
+  ).toBeVisible();
   await expect(page.getByText('Loading')).not.toBeVisible();
 }
 
@@ -37,6 +41,9 @@ async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Pa
   } else {
     await page.getByRole('button', { name: 'Refresh' }).click();
   }
+
+  // wait a second to make sure the checks are running
+  await page.waitForTimeout(1000);
 
   // Sometimes the checks complete so quickly that "Running checks..." doesn't render.
   // In that case, we verify completion by checking for "Last checked" text.
