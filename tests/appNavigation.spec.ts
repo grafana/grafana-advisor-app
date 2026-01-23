@@ -9,7 +9,11 @@ async function isEmptyReport(page: Page) {
 
 async function loadAndWait(gotoPage: (path?: string) => Promise<AppPage>, page: Page) {
   await gotoPage(`/`);
-  await expect(page.getByText('Run checks and get suggested action items to fix identified issues')).toBeVisible();
+  await expect(
+    page.getByText(
+      'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues'
+    )
+  ).toBeVisible();
   await expect(page.getByText('Loading')).not.toBeVisible();
 }
 
@@ -38,17 +42,17 @@ async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Pa
     await page.getByRole('button', { name: 'Refresh' }).click();
   }
 
+  // wait a second to make sure the checks are running
+  await page.waitForTimeout(1000);
+
   // Sometimes the checks complete so quickly that "Running checks..." doesn't render.
   // In that case, we verify completion by checking for "Last checked" text.
-  const isRunningVisible = await page
+  await page
     .getByText('Running checks...')
-    .isVisible({ timeout: 1000 })
+    .isVisible({ timeout: 2000 })
     .catch(() => false);
-  if (isRunningVisible) {
-    await expect(page.getByText('Running checks...')).not.toBeVisible();
-  } else {
-    await expect(page.getByText('Last checked')).toBeVisible();
-  }
+  await expect(page.getByText('Running checks...')).not.toBeVisible();
+  await expect(page.getByText('Last checked')).toBeVisible();
 }
 
 async function createEmptyDatasource(page: Page): Promise<string> {
@@ -69,8 +73,8 @@ test.describe('navigating app', () => {
     await expectEmptyReport(gotoPage, page);
     // Click on the "Refresh" button
     await runChecks(gotoPage, page);
-    // Click on the "More Info"
-    await page.getByText('More Info').click();
+    // Click on the "No action needed"
+    await page.getByText('No action needed').click();
     // Page should now show a report
     await expect(page.getByText(/(datasource|data source|Data Source)\(s\) analyzed/)).toBeVisible();
     await expect(page.getByText(/(plugin|Plugin)\(s\) analyzed/)).toBeVisible();
@@ -83,7 +87,7 @@ test.describe('navigating app', () => {
     await runChecks(gotoPage, page);
 
     // Page should now show a report
-    await page.getByText('Action needed').click();
+    await page.getByText('Action needed').first().click();
     await page.getByText('Health check failed').click();
     // Click on the "Fix me" button
     await page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me')).click();
@@ -94,7 +98,7 @@ test.describe('navigating app', () => {
 
     // Now retrigger the report only for the prometheus datasource
     await loadAndWait(gotoPage, page);
-    await page.getByText('Action needed').click();
+    await page.getByText('Action needed').first().click();
     await page.getByText('Health check failed').click();
     if (grafanaVersion.startsWith('12.0')) {
       // "Retry" button is not available in Grafana 12.0
@@ -119,7 +123,7 @@ test.describe('navigating app', () => {
     await runChecks(gotoPage, page);
 
     // Page should now show a report
-    await page.getByText('Action needed').click();
+    await page.getByText('Action needed').first().click();
     await expect(page.getByText('Health check failed')).toBeVisible();
 
     // Click on the "Configuration" button
@@ -131,7 +135,7 @@ test.describe('navigating app', () => {
     // After ignoring the health check, either we see "No issues found" or we need to click through to verify the health check is hidden
     const noIssues = await page.getByText('No issues found').isVisible();
     if (!noIssues) {
-      await page.getByText('Action needed').click();
+      await page.getByText('Action needed').first().click();
       await expect(page.getByText('Health check failed')).not.toBeVisible();
     }
 
@@ -139,7 +143,7 @@ test.describe('navigating app', () => {
     await page.getByRole('link', { name: 'Configuration' }).click();
     await page.getByTestId(testIds.AppConfig.ignoreSwitch('health-check')).dispatchEvent('click'); // using .click() fails with <label…>…</label> intercepts pointer events
     await runChecks(gotoPage, page);
-    await page.getByText('Action needed').click();
+    await page.getByText('Action needed').first().click();
     await expect(page.getByText('Health check failed')).toBeVisible();
   });
 
@@ -149,7 +153,7 @@ test.describe('navigating app', () => {
     await runChecks(gotoPage, page);
 
     // Page should now show a report
-    await page.getByText('Action needed').click();
+    await page.getByText('Action needed').first().click();
     await page.getByText('Health check failed').click();
     await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).toBeVisible();
     // Click on the hide button
@@ -157,7 +161,7 @@ test.describe('navigating app', () => {
     await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).not.toBeVisible();
 
     // Now enable hidden checks, the issue should be visible again
-    await page.getByText('More Info').click();
+    await page.getByText('No action needed').click();
     await page.getByRole('button', { name: 'Show silenced issues' }).click();
     await expect(page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me'))).toBeVisible();
   });

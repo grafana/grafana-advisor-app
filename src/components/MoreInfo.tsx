@@ -20,9 +20,11 @@ export function MoreInfo({ checkSummaries }: Props) {
   };
 
   return (
-    <Collapse isOpen={isOpen} onToggle={handleToggle} label="More Info">
+    <Collapse isOpen={isOpen} onToggle={handleToggle} label="No action needed">
       <div className={styles.container}>
-        <div>Summary: </div>
+        <div className={styles.description}>
+          Below you can find the summary of checks we ran that were passing or not applicable to your instance. Good news, you&apos;re doing great in those areas:
+        </div>
         {Object.values(checkSummaries.high.checks).map((check) => (
           <div key={check.type} className={styles.check}>
             <div className={styles.checkTitle}>
@@ -66,6 +68,9 @@ const getStyles = (theme: GrafanaTheme2) => {
     }),
     stepDescription: css({
       paddingLeft: theme.spacing(1),
+    }),
+    description: css({
+      marginBottom: theme.spacing(2),
     }),
   };
 };
