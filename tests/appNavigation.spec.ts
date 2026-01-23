@@ -47,15 +47,12 @@ async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Pa
 
   // Sometimes the checks complete so quickly that "Running checks..." doesn't render.
   // In that case, we verify completion by checking for "Last checked" text.
-  const isRunningVisible = await page
+  await page
     .getByText('Running checks...')
-    .isVisible({ timeout: 1000 })
+    .isVisible({ timeout: 2000 })
     .catch(() => false);
-  if (isRunningVisible) {
-    await expect(page.getByText('Running checks...')).not.toBeVisible();
-  } else {
-    await expect(page.getByText('Last checked')).toBeVisible();
-  }
+  await expect(page.getByText('Running checks...')).not.toBeVisible();
+  await expect(page.getByText('Last checked')).toBeVisible();
 }
 
 async function createEmptyDatasource(page: Page): Promise<string> {
