@@ -48,10 +48,10 @@ async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Pa
   // Sometimes the checks complete so quickly that "Running checks..." doesn't render.
   // In that case, we verify completion by checking for "Last checked" text.
   await page
-    .getByText('Running checks...')
+    .getByRole('button', { name: 'Running checks...' })
     .isVisible({ timeout: 2000 })
     .catch(() => false);
-  await expect(page.getByText('Running checks...')).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Running checks...' })).not.toBeVisible();
   await expect(page.getByText('Last checked')).toBeVisible();
 }
 
@@ -103,8 +103,8 @@ test.describe('navigating app', () => {
     if (grafanaVersion.startsWith('12.0')) {
       // "Retry" button is not available in Grafana 12.0
       await page.getByRole('button', { name: 'Refresh' }).click();
-      await expect(page.getByText('Running checks...')).toBeVisible();
-      await expect(page.getByText('Running checks...')).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'Running checks...' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Running checks...' })).not.toBeVisible();
     } else {
       await page.getByTestId(testIds.CheckDrillDown.retryButton(dsName)).click();
     }
