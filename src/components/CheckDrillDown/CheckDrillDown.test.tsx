@@ -117,7 +117,8 @@ describe('Components/CheckDrillDown', () => {
     const user = userEvent.setup();
     await user.click(screen.getByText(/Step 1 failed/i));
 
-    expect(screen.getByRole('button', { name: 'Retry check' })).toBeDisabled();
+    const retryButton = screen.getByRole('button', { name: 'Retry check' });
+    expect(retryButton).toHaveAttribute('aria-disabled', 'true');
   });
 
   test('should call the handleHideIssue function when the hide button is clicked', async () => {

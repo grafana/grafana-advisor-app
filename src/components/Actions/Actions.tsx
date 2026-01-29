@@ -62,6 +62,7 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
             disabled={!isCompleted}
             variant="secondary"
             icon={isCompleted ? 'sync' : 'spinner'}
+            aria-label={isCompleted ? 'Refresh' : 'Running checks...'}
             tooltip={isCompleted ? 'Refresh' : 'Running checks...'}
           >
           </Button>
