@@ -57,25 +57,22 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
             onConfirm={handlePurgeClick}
             onDismiss={() => setConfirmDeleteModalOpen(false)}
           />
-
           <Button
             onClick={handleRefreshClick}
             disabled={!isCompleted}
             variant="secondary"
             icon={isCompleted ? 'sync' : 'spinner'}
+            tooltip={isCompleted ? 'Refresh' : 'Running checks...'}
           >
-            {isCompleted ? 'Refresh' : 'Running checks...'}
           </Button>
-
           <LinkButton
             icon="cog"
             variant="secondary"
             aria-label="Configuration"
-            tooltip="Configure advisor steps"
+            tooltip="Configure application"
             href="/plugins/grafana-advisor-app?page=configuration"
             onClick={handleConfigureClick}
           />
-
           <Button
             variant="secondary"
             icon={showHiddenIssues ? 'eye' : 'eye-slash'}
@@ -83,7 +80,6 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
             tooltip={showHiddenIssues ? 'Hide silenced issues' : 'Show silenced issues'}
             onClick={handleToggleHiddenIssues}
           />
-
           <Button
             onClick={() => setConfirmDeleteModalOpen(true)}
             disabled={deleteChecksState.isLoading}
