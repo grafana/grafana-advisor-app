@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { useNavigate } from 'react-router-dom';
@@ -90,32 +90,29 @@ export function IssueDescription({
         {item}
         {isLLMAvailable && !isAssistantAvailable && (
           <Button
-            size="sm"
             className={styles.issueLink}
             icon="ai"
             variant={llmSectionOpen ? 'primary' : 'secondary'}
             title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
             onClick={handleAISuggestionClick}
             aria-label={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            tooltip={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
           />
         )}
         <Button
-          size="sm"
           className={styles.issueLink}
           icon={isHidden ? 'bell' : 'bell-slash'}
           variant="secondary"
-          title={isHidden ? 'Show issue' : 'Hide issue'}
           data-testid={testIds.CheckDrillDown.hideButton(item)}
           onClick={handleSilenceClick}
           aria-label={isHidden ? 'Show issue' : 'Hide issue'}
+          tooltip={isHidden ? 'Show issue' : 'Hide issue'}
         />
         {canRetry && (
           <Button
-            size="sm"
             className={styles.issueLink}
             icon={isRetrying || localIsRetrying ? 'spinner' : 'sync'}
             variant="secondary"
-            title="Retry check"
             disabled={isRetrying || localIsRetrying || !isCompleted}
             data-testid={testIds.CheckDrillDown.retryButton(item)}
             onClick={() => {
@@ -128,33 +125,30 @@ export function IssueDescription({
               }, 1000);
             }}
             aria-label="Retry check"
+            tooltip="Retry check"
           />
         )}
         {isAssistantAvailable && (
           <Button
-            size="sm"
-            className={styles.issueLink}
+            className={cx(styles.issueLink, styles.assistantButton)}
             icon={isAssistantLoading ? 'spinner' : 'ai'}
             variant="secondary"
             disabled={isAssistantLoading}
             onClick={handleAskAssistantClick}
-          >
-            Ask Assistant
-          </Button>
+            tooltip="Ask Assistant"
+          />
         )}
         {links.map((link) => {
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
               <Button
-                size="sm"
                 className={styles.issueLink}
                 icon={getIcon(link.message)}
-                variant="secondary"
+                variant="primary"
                 data-testid={testIds.CheckDrillDown.actionLink(item, link.message)}
-              >
-                {link.message}
-              </Button>
+                tooltip={link.message}
+              />
             </a>
           );
         })}
@@ -197,6 +191,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
   issueLink: css({
     float: 'right',
     marginLeft: theme.spacing(1),
+  }),
+  // Rainbow-style gradient for Assistant integration (matches Grafana Assistant button branding)
+  assistantButton: css({
+    border: '1px solid transparent',
+    background: `linear-gradient(rgb(55 57 64), rgb(55 57 64)) padding-box,
+      linear-gradient(135deg, #F97316 0%, #A855F7 100%) border-box`,
+    '&:hover:not(:disabled)': {
+      background: `linear-gradient(rgb(55 57 64), rgb(55 57 64)) padding-box,
+        linear-gradient(135deg, #fb923c 0%, #c084fc 100%) border-box`,
+    },
   }),
 });
 

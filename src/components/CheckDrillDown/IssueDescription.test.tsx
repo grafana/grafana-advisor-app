@@ -49,10 +49,10 @@ describe('IssueDescription', () => {
     renderWithRouter(<IssueDescription {...defaultProps} />);
 
     expect(screen.getByText(defaultProps.item)).toBeInTheDocument();
-    expect(screen.getByTitle('Hide issue')).toBeInTheDocument();
-    expect(screen.getByTitle('Retry check')).toBeInTheDocument();
-    expect(screen.getByText('Fix this issue')).toBeInTheDocument();
-    expect(screen.getByText('More info')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hide issue' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry check' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fix this issue' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More info' })).toBeInTheDocument();
   });
 
   it('renders the AI suggestion button when the LLM plugin is available', () => {
@@ -64,8 +64,8 @@ describe('IssueDescription', () => {
     });
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
-    expect(screen.getByTitle('Generate AI suggestion')).toBeInTheDocument();
-    expect(screen.queryByText('Ask Assistant')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Generate AI suggestion' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ask Assistant' })).toBeNull();
   });
 
   it('renders the Ask Assistant button when the Assistant plugin is available', () => {
@@ -76,8 +76,8 @@ describe('IssueDescription', () => {
     });
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
-    expect(screen.queryByTitle('Generate AI suggestion')).toBeNull();
-    expect(screen.getByText('Ask Assistant')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Generate AI suggestion' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ask Assistant' })).toBeInTheDocument();
   });
 
   it('prefers Assistant when both the LLM and Assistant plugins are available', () => {
@@ -95,8 +95,8 @@ describe('IssueDescription', () => {
     });
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
-    expect(screen.queryByTitle('Generate AI suggestion')).toBeNull();
-    expect(screen.getByText('Ask Assistant')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Generate AI suggestion' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ask Assistant' })).toBeInTheDocument();
   });
 
   it('handles retry button click with local loading state', async () => {
@@ -106,15 +106,15 @@ describe('IssueDescription', () => {
 
     renderWithRouter(<IssueDescription {...defaultProps} onRetryCheck={mockOnRetryCheck} />);
 
-    const retryButton = screen.getByTitle('Retry check');
+    const retryButton = screen.getByRole('button', { name: 'Retry check' });
 
-    // Initially button should be enabled
-    expect(retryButton).toBeEnabled();
+    // Initially button should be enabled (Grafana Button uses aria-disabled, not disabled)
+    expect(retryButton).toHaveAttribute('aria-disabled', 'false');
 
     await user.click(retryButton);
 
     // After click, button should be disabled
-    expect(retryButton).toBeDisabled();
+    expect(retryButton).toHaveAttribute('aria-disabled', 'true');
     expect(mockOnRetryCheck).toHaveBeenCalledTimes(1);
 
     // After timeout, button should be enabled again
@@ -123,7 +123,7 @@ describe('IssueDescription', () => {
     });
 
     await waitFor(() => {
-      expect(retryButton).toBeEnabled();
+      expect(retryButton).toHaveAttribute('aria-disabled', 'false');
     });
 
     jest.useRealTimers();

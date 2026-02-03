@@ -47,7 +47,7 @@ describe('Actions', () => {
   it('shows loading state when running checks', async () => {
     render(<Actions {...defaultProps} isCompleted={false} />);
     await waitFor(() => {
-      expect(screen.getByText('Running checks...')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Running checks...' })).toBeInTheDocument();
     });
   });
 
