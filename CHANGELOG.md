@@ -2,8 +2,9 @@
 
 ## 1.0.0 (Unreleased)
 
-### Bug Fixes
+## 0.0.16
 
+- Use consistent button style
 - AppConfig: Avoid rendering empty checks
 - Update dependencies
 
