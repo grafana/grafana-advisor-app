@@ -15,8 +15,8 @@
       "enabled": false
     },
     {
-      "groupName": "React",
-      "matchPackageNames": ["/^react$/", "/^@types/react/"],
+      "groupName": "React and React DOM",
+      "matchPackageNames": ["/^react$/", "/^@types/react/", "/^react-dom$/", "/^@types/react-dom/"],
       "updateTypes": ["major"],
       "enabled": false
     },
