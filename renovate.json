@@ -15,8 +15,10 @@
       "enabled": false
     },
     {
-      "groupName": "React ecosystem",
-      "matchPackageNames": ["/^react$/", "/^react-/", "/^@types/react/"]
+      "groupName": "React and React DOM",
+      "matchPackageNames": ["/^react$/", "/^@types/react/", "/^react-dom$/", "/^@types/react-dom/"],
+      "updateTypes": ["major"],
+      "enabled": false
     },
     {
       "groupName": "Testing tools",
