@@ -1,5 +1,7 @@
 {
-  "ignorePresets": ["github>grafana/grafana-renovate-config//presets/automerge"],
+  "ignorePresets": [
+    "github>grafana/grafana-renovate-config//presets/automerge"
+  ],
   "schedule": ["before 6am on the first day of the week"],
   "extends": [
     "config:best-practices",
@@ -16,8 +18,13 @@
     },
     {
       "groupName": "React and React DOM",
-      "matchPackageNames": ["/^react$/", "/^@types/react/", "/^react-dom$/", "/^@types/react-dom/"],
-      "updateTypes": ["major"],
+      "matchPackageNames": [
+        "/^react$/",
+        "/^@types/react/",
+        "/^react-dom$/",
+        "/^@types/react-dom/"
+      ],
+      "matchUpdateTypes": ["major"],
       "enabled": false
     },
     {
@@ -63,7 +70,10 @@
     }
   ],
   "ignorePaths": [".config/**"],
-  "github-actions": { "enabled": true, "groupName": "GitHub Actions" },
+  "github-actions": {
+    "enabled": true,
+    "groupName": "GitHub Actions"
+  },
   "commitMessagePrefix": "chore(deps): ",
   "minimumReleaseAge": "14 days",
   "rebaseWhen": "behind-base-branch",
