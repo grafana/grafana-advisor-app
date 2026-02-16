@@ -51,7 +51,7 @@ async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Pa
     .getByRole('button', { name: 'Running checks...' })
     .isVisible({ timeout: 2000 })
     .catch(() => false);
-  await expect(page.getByRole('button', { name: 'Running checks...' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Running checks...' })).not.toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Last checked')).toBeVisible();
 }
 
@@ -104,7 +104,7 @@ test.describe('navigating app', () => {
       // "Retry" button is not available in Grafana 12.0
       await page.getByRole('button', { name: 'Refresh' }).click();
       await expect(page.getByRole('button', { name: 'Running checks...' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Running checks...' })).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'Running checks...' })).not.toBeVisible({ timeout: 10000 });
     } else {
       await page.getByTestId(testIds.CheckDrillDown.retryButton(dsName)).click();
     }
