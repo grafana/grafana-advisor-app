@@ -22,7 +22,8 @@
         "/^react$/",
         "/^@types/react/",
         "/^react-dom$/",
-        "/^@types/react-dom/"
+        "/^@types/react-dom/",
+        "/^react-router-dom$/"
       ],
       "matchUpdateTypes": ["major"],
       "enabled": false
