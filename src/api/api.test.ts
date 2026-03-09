@@ -960,7 +960,7 @@ describe('API Hooks', () => {
         isLoading: false,
       });
     });
-    
+
     it('returns a suggestion', async () => {
       const mockUpdateCheck = jest.fn();
       const mockGetCheck = jest.fn();
@@ -1007,6 +1007,7 @@ describe('API Hooks', () => {
       const mockOpenAssistant = jest.fn();
       mockUseAssistant.mockReturnValue({
         isAvailable: true,
+        isLoading: false,
         openAssistant: mockOpenAssistant,
         closeAssistant: jest.fn(),
         toggleAssistant: jest.fn(),
