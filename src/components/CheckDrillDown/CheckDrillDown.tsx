@@ -83,7 +83,9 @@ export default function CheckDrillDown({
         }
 
         return Object.values(check.steps).map((step) => {
-          const issues = step.issues.filter((issue) => showHiddenIssues || !issue.isHidden);
+          const issues = step.issues
+            .filter((issue) => showHiddenIssues || !issue.isHidden)
+            .sort((a, b) => a.item.localeCompare(b.item));
           return (
             <div key={step.stepID} className={styles.spacingTopMd}>
               {issues.length > 0 && (
