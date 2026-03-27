@@ -10,6 +10,12 @@ jest.mock('api/api', () => ({
   useCreateChecks: () => ({
     createChecks: mockCreateChecks,
   }),
+  useCheckTypes: () => ({
+    isLoading: false,
+  }),
+  useCompletedChecks: () => ({
+    isCompleted: true,
+  }),
 }));
 
 jest.mock('api/useInteractionTracker', () => ({

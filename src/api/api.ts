@@ -207,27 +207,28 @@ export function getEmptyCheckTypes(): Record<string, CheckTypeSpec> {
   };
 }
 
-export function useCheckTypes() {
-  const { isRegistered, isRegistering } = useRegister();
+export function useCheckTypes(options?: { skip?: boolean }) {
+  const skip = options?.skip ?? false;
+  const { isRegistered, isRegistering } = useRegister({ skip });
   const listCheckTypesState = useListCheckTypeQuery(
     {},
     {
-      skip: !isRegistered,
+      skip: skip || !isRegistered,
     }
   );
   const { data, refetch } = listCheckTypesState;
 
   // Refetch check types after successful registration
   useEffect(() => {
-    if (isRegistered && !isRegistering && refetch) {
+    if (!skip && isRegistered && !isRegistering && refetch) {
       refetch();
     }
-  }, [isRegistered, isRegistering, refetch]);
+  }, [skip, isRegistered, isRegistering, refetch]);
 
   return {
     checkTypes: data?.items,
     ...listCheckTypesState,
-    isLoading: listCheckTypesState.isLoading || isRegistering,
+    isLoading: !skip && (listCheckTypesState.isLoading || isRegistering),
   };
 }
 
@@ -634,11 +635,16 @@ export function _resetRegistration() {
   registrationPromise = null;
 }
 
-function useRegister() {
+function useRegister(options?: { skip?: boolean }) {
+  const skip = options?.skip ?? false;
   const [createRegister, createRegisterState] = useCreateRegisterMutation();
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(skip);
 
   useEffect(() => {
+    if (skip) {
+      return;
+    }
+
     // If registration already in progress, wait for it
     if (registrationPromise) {
       registrationPromise.then(() => setIsRegistered(true)).catch(() => setIsRegistered(true)); // Allow check types to load even on error
@@ -653,11 +659,11 @@ function useRegister() {
         console.error('Failed to register check types:', error);
         setIsRegistered(true); // Still allow check types to load
       });
-  }, [createRegister]);
+  }, [createRegister, skip]);
 
   return {
     isRegistered: isRegistered || createRegisterState.isSuccess,
-    isRegistering: createRegisterState.isLoading,
+    isRegistering: !skip && createRegisterState.isLoading,
     registrationError: createRegisterState.error,
   };
 }
