@@ -352,9 +352,10 @@ function useIncompleteChecks(names?: string[], checkType?: string) {
       }
     }
 
-    // Filter incomplete checks from the most recent ones
+    // Filter checks from the most recent ones
     return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
+      .filter((check) => (checkType ? check.metadata.labels?.[CHECK_TYPE_LABEL] === checkType : true))
       .map((check): CheckStatus => {
         // Use the creation timestamp or the last managed field timestamp
         let lastUpdate = check.metadata.creationTimestamp ? new Date(check.metadata.creationTimestamp) : new Date(0);
@@ -373,7 +374,7 @@ function useIncompleteChecks(names?: string[], checkType?: string) {
           hasError: check.metadata.annotations?.[STATUS_ANNOTATION] === 'error',
         };
       });
-  }, [listChecksState.data, names]);
+  }, [listChecksState.data, names, checkType]);
 
   const hasIncompleteChecks = useMemo(() => {
     return checkStatuses.filter((check) => check.incomplete).length > 0;
