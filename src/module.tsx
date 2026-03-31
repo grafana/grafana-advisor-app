@@ -12,6 +12,14 @@ const App = (props: AppRootProps) => (
   </Suspense>
 );
 
+function useCompletedChecksExposed(context?: { names?: string[]; checkType?: string }) {
+  return useCompletedChecks(context?.names, context?.checkType);
+}
+
+function useRetryCheckExposed() {
+  return useRetryCheck();
+}
+
 export const plugin = new AppPlugin<{}>()
   .setRootPage(App)
   .addConfigPage({
@@ -24,15 +32,11 @@ export const plugin = new AppPlugin<{}>()
     title: 'useCompletedChecks',
     description: 'Hook to check if all advisor checks are completed',
     targets: ['grafana-advisor-app/completed-checks/v1'],
-    fn: (context?: { names?: string[]; checkType?: string }) => {
-      return useCompletedChecks(context?.names, context?.checkType);
-    },
+    fn: useCompletedChecksExposed,
   })
   .addFunction({
     title: 'useRetryCheck',
     description: 'Hook to retry a specific advisor check',
     targets: ['grafana-advisor-app/retry-check/v1'],
-    fn: () => {
-      return useRetryCheck();
-    },
+    fn: useRetryCheckExposed,
   });

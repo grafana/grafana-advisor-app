@@ -373,7 +373,7 @@ function useIncompleteChecks(names?: string[], checkType?: string) {
           hasError: check.metadata.annotations?.[STATUS_ANNOTATION] === 'error',
         };
       });
-  }, [listChecksState.data, names, checkType]);
+  }, [listChecksState.data, names]);
 
   const hasIncompleteChecks = useMemo(() => {
     return checkStatuses.filter((check) => check.incomplete).length > 0;
