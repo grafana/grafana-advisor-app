@@ -28,6 +28,15 @@
       "role": "Admin"
     }
   ],
+  "extensions": {
+    "exposedComponents": [
+      {
+        "id": "grafana-advisor-app/generate-report-button/v1",
+        "title": "Generate report button",
+        "description": "A button that triggers the generation of an Advisor report."
+      }
+    ]
+  },
   "dependencies": {
     "grafanaDependency": ">=12.3.0 <12.4.0 || >=12.4.1",
     "plugins": []

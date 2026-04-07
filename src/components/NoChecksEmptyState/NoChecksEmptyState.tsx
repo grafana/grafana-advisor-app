@@ -1,9 +1,8 @@
 import React from 'react';
 import { css } from '@emotion/css';
-import { Button, EmptyState, useStyles2 } from '@grafana/ui';
+import { EmptyState, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { GlobalActionType, useInteractionTracker } from 'api/useInteractionTracker';
-import { useCreateChecks } from 'api/api';
+import { GenerateReportButton } from 'components/GenerateReportButton';
 
 interface NoChecksEmptyStateProps {
   isCompleted: boolean;
@@ -11,13 +10,6 @@ interface NoChecksEmptyStateProps {
 
 export function NoChecksEmptyState({ isCompleted }: NoChecksEmptyStateProps) {
   const styles = useStyles2(getStyles);
-  const { createChecks } = useCreateChecks();
-  const { trackGlobalAction } = useInteractionTracker();
-
-  const handleCreateChecksClick = () => {
-    createChecks();
-    trackGlobalAction(GlobalActionType.REFRESH_CLICKED);
-  };
 
   return (
     <EmptyState variant="call-to-action" message="No checks run yet">
@@ -36,14 +28,7 @@ export function NoChecksEmptyState({ isCompleted }: NoChecksEmptyStateProps) {
       </a>{' '}
       for more information.
       <div className={styles.createChecksButton}>
-        <Button
-          onClick={handleCreateChecksClick}
-          disabled={!isCompleted}
-          variant="primary"
-          icon={isCompleted ? 'plus' : 'spinner'}
-        >
-          {isCompleted ? 'Generate report' : 'Running checks...'}
-        </Button>
+        <GenerateReportButton isCompleted={isCompleted} />
       </div>
     </EmptyState>
   );
