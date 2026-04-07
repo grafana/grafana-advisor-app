@@ -31,12 +31,12 @@ export const plugin = new AppPlugin<{}>()
   .addFunction({
     title: 'useCompletedChecks',
     description: 'Hook to check if all advisor checks are completed',
-    targets: ['grafana-advisor-app/completed-checks/v1'],
+    targets: ['grafana/advisor/completed-checks/v1'],
     fn: useCompletedChecksExposed,
   })
   .addFunction({
     title: 'useRetryCheck',
     description: 'Hook to retry a specific advisor check',
-    targets: ['grafana-advisor-app/retry-check/v1'],
+    targets: ['grafana/advisor/retry-check/v1'],
     fn: useRetryCheckExposed,
   });
