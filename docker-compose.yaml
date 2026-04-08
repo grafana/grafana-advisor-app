@@ -12,4 +12,3 @@ services:
       - GF_PLUGINS_PREINSTALL_DISABLED=true # Avoid installing the plugin from catalog
     volumes:
       - ./custom.ini:/etc/grafana/grafana.ini
-    
