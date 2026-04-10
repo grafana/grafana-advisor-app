@@ -30,7 +30,8 @@ jobs:
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
       argo-workflow-slack-channel: "#grafana-plugins-platform-ci"
-      argo-workflow-slack-silent: ${{ inputs.environment == 'dev' }}
+      # Silence notifications when deploying from main branch to dev
+      argo-workflow-slack-silent: true
       auto-merge-environments: dev
 
       # Add the git head ref sha to the plugin version as suffix (`+abcdef`). This is required for CD builds.
