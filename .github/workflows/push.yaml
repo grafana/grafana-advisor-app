@@ -11,7 +11,7 @@ permissions: {}
 jobs:
   cd:
     name: CI / CD
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v7.0.0
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v7.1.0
     permissions:
       contents: write
       id-token: write
@@ -30,6 +30,7 @@ jobs:
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
       argo-workflow-slack-channel: "#grafana-plugins-platform-ci"
+      argo-workflow-slack-silent: ${{ inputs.environment == 'dev' }}
       auto-merge-environments: dev
 
       # Add the git head ref sha to the plugin version as suffix (`+abcdef`). This is required for CD builds.
