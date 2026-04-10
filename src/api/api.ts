@@ -320,9 +320,9 @@ export function useDeleteChecks() {
   return { deleteChecks, deleteChecksState };
 }
 
-function useIncompleteChecks(names?: string[]) {
+function useIncompleteChecks(names?: string[], checkType?: string) {
   const listChecksState = useListCheckQuery(
-    { limit: API_PAGE_SIZE },
+    { limit: API_PAGE_SIZE, labelSelector: checkType ? `${CHECK_TYPE_LABEL}=${checkType}` : undefined },
     {
       refetchOnMountOrArgChange: true,
     }
@@ -352,9 +352,10 @@ function useIncompleteChecks(names?: string[]) {
       }
     }
 
-    // Filter incomplete checks from the most recent ones
+    // Filter checks from the most recent ones
     return Array.from(checksByType.values())
       .filter((check) => (names ? names.includes(check.metadata.name ?? '') : true))
+      .filter((check) => (checkType ? check.metadata.labels?.[CHECK_TYPE_LABEL] === checkType : true))
       .map((check): CheckStatus => {
         // Use the creation timestamp or the last managed field timestamp
         let lastUpdate = check.metadata.creationTimestamp ? new Date(check.metadata.creationTimestamp) : new Date(0);
@@ -373,7 +374,7 @@ function useIncompleteChecks(names?: string[]) {
           hasError: check.metadata.annotations?.[STATUS_ANNOTATION] === 'error',
         };
       });
-  }, [listChecksState.data, names]);
+  }, [listChecksState.data, names, checkType]);
 
   const hasIncompleteChecks = useMemo(() => {
     return checkStatuses.filter((check) => check.incomplete).length > 0;
@@ -414,8 +415,8 @@ function useIncompleteChecks(names?: string[]) {
   };
 }
 
-export function useCompletedChecks(names?: string[]) {
-  const { checkStatuses, isLoading, ...incompleteChecksState } = useIncompleteChecks(names);
+export function useCompletedChecks(names?: string[], checkType?: string) {
+  const { checkStatuses, isLoading, ...incompleteChecksState } = useIncompleteChecks(names, checkType);
 
   return {
     isCompleted: checkStatuses.filter((check) => check.incomplete).length === 0,
@@ -494,15 +495,17 @@ const useHiddenIssues = () => {
 };
 
 function llmRequest(failure: CheckReportFailure) {
-  return `I have received an error message from the Grafana Advisor with the following details:\n\n` +
-        `Step ID: ${failure.stepID}\n` +
-        `Item ID: ${failure.itemID}\n` +
-        `Item: ${failure.item}\n` +
-        `Severity: ${failure.severity}\n` +
-        `More info: ${failure.moreInfo}\n` +
-        `Links: ${failure.links.map((link) => `${link.message} (${link.url})`).join(', ') || 'N/A'}\n\n` +
-        `Provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
-        `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`;
+  return (
+    `I have received an error message from the Grafana Advisor with the following details:\n\n` +
+    `Step ID: ${failure.stepID}\n` +
+    `Item ID: ${failure.itemID}\n` +
+    `Item: ${failure.item}\n` +
+    `Severity: ${failure.severity}\n` +
+    `More info: ${failure.moreInfo}\n` +
+    `Links: ${failure.links.map((link) => `${link.message} (${link.url})`).join(', ') || 'N/A'}\n\n` +
+    `Provide a more detailed explanation of this issue and if there is a known solution, provide next steps to resolve it.\n\n` +
+    `Be as concise as possible. Avoid using internal terminology like the IDs and use human readable language instead.`
+  );
 }
 
 export function useLLMSuggestion() {
@@ -552,7 +555,7 @@ export function useLLMSuggestion() {
               role: 'user',
               content: llmRequest(failure),
             },
-          ]
+          ],
         });
         const content = result?.choices[0]?.message?.content || '';
         setResponse(content);

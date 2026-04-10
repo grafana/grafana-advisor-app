@@ -910,6 +910,157 @@ describe('API Hooks', () => {
       ]);
     });
 
+    it('filters by checkType', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: {},
+              },
+            },
+            {
+              metadata: {
+                name: 'check2',
+                labels: { [CHECK_TYPE_LABEL]: 'type2' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks(undefined, 'type2'));
+      expect(result.current.checkStatuses).toHaveLength(1);
+      expect(result.current.checkStatuses[0].name).toBe('type2');
+      expect(result.current.isCompleted).toBe(true);
+    });
+
+    it('returns incomplete when filtered checkType has no status annotation', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+            {
+              metadata: {
+                name: 'check2',
+                labels: { [CHECK_TYPE_LABEL]: 'type2' },
+                annotations: {},
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks(undefined, 'type2'));
+      expect(result.current.checkStatuses).toHaveLength(1);
+      expect(result.current.checkStatuses[0].name).toBe('type2');
+      expect(result.current.isCompleted).toBe(false);
+    });
+
+    it('returns all checks when checkType is not provided', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+            {
+              metadata: {
+                name: 'check2',
+                labels: { [CHECK_TYPE_LABEL]: 'type2' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks());
+      expect(result.current.checkStatuses).toHaveLength(2);
+      expect(result.current.isCompleted).toBe(true);
+    });
+
+    it('filters by both names and checkType simultaneously', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                creationTimestamp: '2024-01-01T00:00:00Z',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+            {
+              metadata: {
+                name: 'check2',
+                creationTimestamp: '2024-01-02T00:00:00Z',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+            {
+              metadata: {
+                name: 'check3',
+                creationTimestamp: '2024-01-01T00:00:00Z',
+                labels: { [CHECK_TYPE_LABEL]: 'type2' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks(['check2'], 'type1'));
+      expect(result.current.checkStatuses).toHaveLength(1);
+      expect(result.current.checkStatuses[0].name).toBe('type1');
+      expect(result.current.isCompleted).toBe(true);
+    });
+
+    it('returns empty when checkType matches no checks', () => {
+      mockListCheckQuery.mockReturnValue({
+        data: {
+          items: [
+            {
+              metadata: {
+                name: 'check1',
+                labels: { [CHECK_TYPE_LABEL]: 'type1' },
+                annotations: { [STATUS_ANNOTATION]: 'processed' },
+              },
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() => useCompletedChecks(undefined, 'nonexistent'));
+      expect(result.current.checkStatuses).toHaveLength(0);
+      expect(result.current.isCompleted).toBe(true);
+    });
+
     it('returns a list of check statuses with a lastUpdate date', () => {
       const creationTimestamp = new Date(Date.now() - 11 * 60 * 1000).toISOString();
       const updateTimestamp = new Date(Date.now() - 10 * 60 * 1000).toISOString();

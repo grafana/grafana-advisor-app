@@ -62,7 +62,7 @@ async function createEmptyDatasource(page: Page): Promise<string> {
   await expect(page.getByText(/Add( new)? data source/)).toBeVisible();
   await page.getByText(/Add( new)? data source/).click();
   // Select the "Prometheus" option
-  await page.getByRole('button', { name: 'Add new data source Prometheus' }).click();
+  await page.getByRole('button', { name: 'Prometheus' }).click();
   // Get the name of the datasource
   const dsName = await page.locator('#basic-settings-name').inputValue();
   return dsName;
@@ -92,7 +92,9 @@ test.describe('navigating app', () => {
     // Click on the "Fix me" button
     await page.getByTestId(testIds.CheckDrillDown.actionLink(dsName, 'fix me')).click();
     // Now delete the datasource
+    await page.waitForURL(/\/connections\/datasources/);
     await expect(page.getByText('Loading')).not.toBeVisible();
+    await expect(page.getByText('Delete').first()).toBeVisible();
     await page.getByText('Delete').click();
     await page.getByTestId('data-testid Confirm Modal Danger Button').click();
 
