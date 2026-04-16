@@ -1,6 +1,15 @@
 # Changelog
 
-## 1.0.0 (Unreleased)
+## 1.0.0
+
+### Features
+
+- Expose createChecks function (#278)
+- Expose first batch of functions (#265)
+
+### Dependencies
+
+- Update dependencies
 
 ## 0.0.16
 
