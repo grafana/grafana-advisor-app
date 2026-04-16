@@ -68,11 +68,11 @@
   "dependencies": {
     "@emotion/css": "11.13.5",
     "@grafana/assistant": "^0.1.7",
-    "@grafana/data": "^12.4.0",
-    "@grafana/i18n": "^12.4.0",
+    "@grafana/data": "^13.0.0",
+    "@grafana/i18n": "^13.0.0",
     "@grafana/llm": "0.22.1",
     "@grafana/runtime": "^12.4.0",
-    "@grafana/schema": "^12.4.0",
+    "@grafana/schema": "^13.0.0",
     "@grafana/ui": "^12.4.0",
     "@reduxjs/toolkit": "2.11.2",
     "date-fns": "4.1.0",
@@ -83,5 +83,11 @@
     "react-use": "17.6.0",
     "rxjs": "7.8.2"
   },
-  "packageManager": "npm@11.12.1"
+  "packageManager": "npm@11.12.1",
+  "overrides": {
+    "@grafana/llm": {
+      "@grafana/data": "$@grafana/data",
+      "@grafana/runtime": "$@grafana/runtime"
+    }
+  }
 }

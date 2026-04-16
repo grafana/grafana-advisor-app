@@ -36,6 +36,11 @@
         "targets": ["grafana/advisor/completed-checks/v1"]
       },
       {
+        "title": "useCreateChecks",
+        "description": "Hook to create advisor checks",
+        "targets": ["grafana/advisor/create-checks/v1"]
+      },
+      {
         "title": "useRetryCheck",
         "description": "Hook to retry a specific advisor check",
         "targets": ["grafana/advisor/retry-check/v1"]

@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { AppPlugin, type AppRootProps } from '@grafana/data';
 import { LoadingPlaceholder } from '@grafana/ui';
 import { AppConfig } from './components/AppConfig/AppConfig';
-import { useCompletedChecks, useRetryCheck } from './api/api';
+import { useCompletedChecks, useCreateChecks, useRetryCheck } from './api/api';
 
 const LazyApp = lazy(() => import('./components/App/App'));
 
@@ -14,6 +14,10 @@ const App = (props: AppRootProps) => (
 
 function useCompletedChecksExposed(context?: { names?: string[]; checkType?: string }) {
   return useCompletedChecks(context?.names, context?.checkType);
+}
+
+function useCreateChecksExposed() {
+  return useCreateChecks();
 }
 
 function useRetryCheckExposed() {
@@ -33,6 +37,12 @@ export const plugin = new AppPlugin<{}>()
     description: 'Hook to check if all advisor checks are completed',
     targets: ['grafana/advisor/completed-checks/v1'],
     fn: useCompletedChecksExposed,
+  })
+  .addFunction({
+    title: 'useCreateChecks',
+    description: 'Hook to create advisor checks',
+    targets: ['grafana/advisor/create-checks/v1'],
+    fn: useCreateChecksExposed,
   })
   .addFunction({
     title: 'useRetryCheck',
