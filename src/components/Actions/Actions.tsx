@@ -3,6 +3,7 @@ import { Button, ConfirmModal, Stack, useStyles2, LinkButton } from '@grafana/ui
 import { isFetchError } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
+import { t } from '@grafana/i18n';
 import { useDeleteChecks, useCreateChecks } from 'api/api';
 import { CheckStatus } from 'types';
 import ChecksStatus from './ChecksStatus';
@@ -51,9 +52,9 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
         <Stack direction="row" gap={1}>
           <ConfirmModal
             isOpen={confirmDeleteModalOpen}
-            title="Delete reports?"
-            body="Grafana keeps a history of reports, this action will delete all of them. It is not reversible."
-            confirmText="Confirm"
+            title={t('actions.delete-title', 'Delete reports?')}
+            body={t('actions.delete-body', 'Grafana keeps a history of reports, this action will delete all of them. It is not reversible.')}
+            confirmText={t('actions.confirm', 'Confirm')}
             onConfirm={handlePurgeClick}
             onDismiss={() => setConfirmDeleteModalOpen(false)}
           />
@@ -62,23 +63,23 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
             disabled={!isCompleted}
             variant="secondary"
             icon={isCompleted ? 'sync' : 'spinner'}
-            aria-label={isCompleted ? 'Refresh' : 'Running checks...'}
-            tooltip={isCompleted ? 'Refresh' : 'Running checks...'}
+            aria-label={isCompleted ? t('actions.refresh', 'Refresh') : t('actions.running-checks', 'Running checks...')}
+            tooltip={isCompleted ? t('actions.refresh', 'Refresh') : t('actions.running-checks', 'Running checks...')}
           >
           </Button>
           <LinkButton
             icon="cog"
             variant="secondary"
-            aria-label="Configuration"
-            tooltip="Configure application"
+            aria-label={t('actions.configuration', 'Configuration')}
+            tooltip={t('actions.configure-application', 'Configure application')}
             href="/plugins/grafana-advisor-app?page=configuration"
             onClick={handleConfigureClick}
           />
           <Button
             variant="secondary"
             icon={showHiddenIssues ? 'eye' : 'eye-slash'}
-            aria-label={showHiddenIssues ? 'Hide silenced issues' : 'Show silenced issues'}
-            tooltip={showHiddenIssues ? 'Hide silenced issues' : 'Show silenced issues'}
+            aria-label={showHiddenIssues ? t('actions.hide-silenced', 'Hide silenced issues') : t('actions.show-silenced', 'Show silenced issues')}
+            tooltip={showHiddenIssues ? t('actions.hide-silenced', 'Hide silenced issues') : t('actions.show-silenced', 'Show silenced issues')}
             onClick={handleToggleHiddenIssues}
           />
           <Button
@@ -86,8 +87,8 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
             disabled={deleteChecksState.isLoading}
             variant="secondary"
             icon="trash-alt"
-            aria-label="Delete reports"
-            tooltip="Delete reports"
+            aria-label={t('actions.delete-reports', 'Delete reports')}
+            tooltip={t('actions.delete-reports', 'Delete reports')}
           />
         </Stack>
 
@@ -96,12 +97,12 @@ export default function Actions({ isCompleted, checkStatuses, showHiddenIssues, 
         <div className={styles.rightColumn}>
           {createCheckState.isError && isFetchError(createCheckState.error) && (
             <div className={styles.apiErrorMessage}>
-              Error while running checks: {createCheckState.error.status} {createCheckState.error.statusText}
+              {t('actions.error-running-checks', 'Error while running checks: {{status}} {{statusText}}', { status: createCheckState.error.status, statusText: createCheckState.error.statusText })}
             </div>
           )}
           {deleteChecksState.isError && isFetchError(deleteChecksState.error) && (
             <div className={styles.apiErrorMessage}>
-              Error deleting checks: {deleteChecksState.error.status} {deleteChecksState.error.statusText}
+              {t('actions.error-deleting-checks', 'Error deleting checks: {{status}} {{statusText}}', { status: deleteChecksState.error.status, statusText: deleteChecksState.error.statusText })}
             </div>
           )}
         </div>

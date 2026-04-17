@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { css, cx } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useAssistantHelp, useLLMSuggestion } from 'api/api';
@@ -93,10 +94,10 @@ export function IssueDescription({
             className={styles.issueLink}
             icon="ai"
             variant={llmSectionOpen ? 'primary' : 'secondary'}
-            title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            title={llmSectionOpen ? t('issue-description.hide-ai-suggestion', 'Hide AI suggestion') : t('issue-description.generate-ai-suggestion', 'Generate AI suggestion')}
             onClick={handleAISuggestionClick}
-            aria-label={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
-            tooltip={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            aria-label={llmSectionOpen ? t('issue-description.hide-ai-suggestion', 'Hide AI suggestion') : t('issue-description.generate-ai-suggestion', 'Generate AI suggestion')}
+            tooltip={llmSectionOpen ? t('issue-description.hide-ai-suggestion', 'Hide AI suggestion') : t('issue-description.generate-ai-suggestion', 'Generate AI suggestion')}
           />
         )}
         <Button
@@ -105,8 +106,8 @@ export function IssueDescription({
           variant="secondary"
           data-testid={testIds.CheckDrillDown.hideButton(item)}
           onClick={handleSilenceClick}
-          aria-label={isHidden ? 'Show issue' : 'Hide issue'}
-          tooltip={isHidden ? 'Show issue' : 'Hide issue'}
+          aria-label={isHidden ? t('issue-description.show-issue', 'Show issue') : t('issue-description.hide-issue', 'Hide issue')}
+          tooltip={isHidden ? t('issue-description.show-issue', 'Show issue') : t('issue-description.hide-issue', 'Hide issue')}
         />
         {canRetry && (
           <Button
@@ -124,8 +125,8 @@ export function IssueDescription({
                 setLocalIsRetrying(false);
               }, 1000);
             }}
-            aria-label="Retry check"
-            tooltip="Retry check"
+            aria-label={t('issue-description.retry-check', 'Retry check')}
+            tooltip={t('issue-description.retry-check', 'Retry check')}
           />
         )}
         {isAssistantAvailable && (
@@ -135,7 +136,7 @@ export function IssueDescription({
             variant="secondary"
             disabled={isAssistantLoading}
             onClick={handleAskAssistantClick}
-            tooltip="Ask Assistant"
+            tooltip={t('issue-description.ask-assistant', 'Ask Assistant')}
           />
         )}
         {links.map((link) => {

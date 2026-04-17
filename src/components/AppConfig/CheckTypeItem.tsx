@@ -2,6 +2,7 @@ import React from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, Card, Switch, Stack } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t, Trans } from '@grafana/i18n';
 import { IGNORE_STEPS_ANNOTATION, IGNORE_STEPS_ANNOTATION_LIST } from 'api/api';
 import { CheckType } from 'generated';
 import { testIds } from 'components/testIds';
@@ -24,9 +25,9 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
 
   return (
     <Card className={s.checkTypeCard}>
-      <Card.Heading>Check type: {checkType.spec.name}</Card.Heading>
+      <Card.Heading>{t('check-type-item.heading', 'Check type: {{name}}', { name: checkType.spec.name })}</Card.Heading>
       <Card.Description>
-        <div>Steps:</div>
+        <div><Trans i18nKey="check-type-item.steps-label">Steps:</Trans></div>
         <ul className={s.stepsList}>
           {checkType.spec.steps.map((step) => (
             <li key={step.stepID} className={s.stepItem}>
@@ -55,7 +56,9 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
           ))}
         </ul>
         {!canIgnoreSteps && (
-          <div className={s.missingAnnotationNote}>Your current version of Grafana does not support ignoring steps</div>
+          <div className={s.missingAnnotationNote}>
+            {t('check-type-item.no-ignore-support', 'Your current version of Grafana does not support ignoring steps')}
+          </div>
         )}
       </Card.Description>
     </Card>

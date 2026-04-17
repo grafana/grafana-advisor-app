@@ -1,0 +1,96 @@
+{
+  "actions": {
+    "configuration": "Konfiguration",
+    "configure-application": "Anwendung konfigurieren",
+    "confirm": "Bestätigen",
+    "delete-body": "Grafana speichert einen Verlauf der Berichte. Diese Aktion löscht alle Berichte. Dies kann nicht rückgängig gemacht werden.",
+    "delete-reports": "Berichte löschen",
+    "delete-title": "Berichte löschen?",
+    "error-deleting-checks": "Fehler beim Löschen der Prüfungen: {{status}} {{statusText}}",
+    "error-running-checks": "Fehler beim Ausführen der Prüfungen: {{status}} {{statusText}}",
+    "hide-silenced": "Stummgeschaltete Probleme ausblenden",
+    "refresh": "Aktualisieren",
+    "running-checks": "Prüfungen werden ausgeführt...",
+    "show-silenced": "Stummgeschaltete Probleme anzeigen"
+  },
+  "app-config": {
+    "description": "Aktivieren oder deaktivieren Sie die Schritte für jeden Prüfungstyp.",
+    "empty": "Keine Prüfungstypen verfügbar",
+    "error": "Fehler beim Laden der Prüfungstypen",
+    "loading": "Prüfungstypen werden geladen...",
+    "title": "Verfügbare Prüfungstypen"
+  },
+  "check-drill-down": {
+    "step-failed_one": "{{stepName}} ist für {{count}} {{typeName}}{{plural}} fehlgeschlagen.",
+    "step-failed_other": "{{stepName}} ist für {{count}} {{typeName}}{{plural}} fehlgeschlagen."
+  },
+  "check-error": {
+    "message": "Prüfung konnte nicht abgeschlossen werden. Überprüfen Sie die Serverprotokolle für Details oder versuchen Sie es erneut."
+  },
+  "check-summary-title": {
+    "high_one": "{{count}} Element muss behoben werden",
+    "high_other": "{{count}} Elemente müssen behoben werden",
+    "low_one": "{{count}} Element erfordert möglicherweise Ihre Aufmerksamkeit",
+    "low_other": "{{count}} Elemente erfordern möglicherweise Ihre Aufmerksamkeit"
+  },
+  "check-type-item": {
+    "heading": "Prüfungstyp: {{name}}",
+    "no-ignore-support": "Ihre aktuelle Version von Grafana unterstützt das Ignorieren von Schritten nicht",
+    "steps-label": "Schritte:"
+  },
+  "check-warning": {
+    "message": "Die Prüfung dauert länger als erwartet (aktualisiert vor {{time}}). Überprüfen Sie die Serverprotokolle auf Fehler oder löschen Sie den Bericht und erstellen Sie ihn neu."
+  },
+  "checks-status": {
+    "check-types": "Prüfungstypen",
+    "show-status": "Prüfungsstatus anzeigen"
+  },
+  "feature-flag-missing": {
+    "description": "Grafana Advisor erfordert, dass der Feature-Toggle <1>grafanaAdvisor</1> aktiviert ist.",
+    "instructions-link": "Anleitung zum Aktivieren des Feature-Toggles:",
+    "title": "Feature-Flag fehlt."
+  },
+  "home": {
+    "error-body": "Überprüfen Sie die Serverprotokolle für weitere Details, aktualisieren Sie den Bericht oder eröffnen Sie ein Support-Ticket, wenn das Problem weiterhin besteht.",
+    "error-title": "Prüfungen konnten nicht geladen werden",
+    "feedback-title": "Teilen Sie Ihre Meinung über Grafana Advisor.",
+    "give-feedback": "Feedback geben",
+    "last-checked": "Zuletzt geprüft:",
+    "loading": "Wird geladen...",
+    "no-issues": "Keine Probleme gefunden.",
+    "partial-results-body": "Es wurden zu viele Berichte zum Verarbeiten gefunden. Bitte löschen Sie diese und aktualisieren Sie.",
+    "partial-results-title": "Teilergebnisse",
+    "report-in-progress": "Bericht wird erstellt –",
+    "results-may-change": "Ergebnisse können sich ändern, während die Prüfungen abgeschlossen werden",
+    "silenced-text": "Stummgeschaltete Probleme erscheinen nicht in diesem Bericht. Verwenden Sie das Augensymbol in der oberen rechten Ecke, um die Sichtbarkeit zu verwalten.",
+    "silenced-title": "Einige Probleme wurden stummgeschaltet",
+    "subtitle": "Hilft Ihnen, Ihre Grafana-Instanzen reibungslos und sicher zu betreiben, indem Prüfungen durchgeführt und Maßnahmen zur Behebung identifizierter Probleme vorgeschlagen werden.",
+    "title": "Advisor"
+  },
+  "issue-description": {
+    "ask-assistant": "Assistent fragen",
+    "generate-ai-suggestion": "KI-Vorschlag generieren",
+    "hide-ai-suggestion": "KI-Vorschlag ausblenden",
+    "hide-issue": "Problem ausblenden",
+    "retry-check": "Prüfung wiederholen",
+    "show-issue": "Problem anzeigen"
+  },
+  "llm-suggestion": {
+    "ai-generated": "KI-generiert",
+    "generating": "KI-Vorschlag wird generiert..."
+  },
+  "more-info": {
+    "analyzed-count_one": "{{count}} {{typeName}} analysiert",
+    "analyzed-count_other": "{{count}} {{typeName}} analysiert",
+    "description": "Nachfolgend finden Sie eine Zusammenfassung der Prüfungen, die bestanden wurden oder nicht auf Ihre Instanz anwendbar waren. Gute Nachrichten, Sie machen es in diesen Bereichen sehr gut:",
+    "label": "Keine Aktion erforderlich"
+  },
+  "no-checks": {
+    "description-line1": "Advisor kann Ihre Grafana-Konfiguration analysieren und nach möglichen Problemen suchen.",
+    "description-line2": "Sobald ein Bericht erstellt wurde, wird er automatisch regelmäßig aktualisiert.",
+    "documentation-link": "Weitere Informationen finden Sie in der <2>Dokumentation</2>.",
+    "generate-report": "Bericht erstellen",
+    "running-checks": "Prüfungen werden ausgeführt...",
+    "title": "Noch keine Prüfungen durchgeführt"
+  }
+}

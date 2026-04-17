@@ -1,0 +1,96 @@
+{
+  "actions": {
+    "configuration": "Configuration",
+    "configure-application": "Configure application",
+    "confirm": "Confirm",
+    "delete-body": "Grafana keeps a history of reports, this action will delete all of them. It is not reversible.",
+    "delete-reports": "Delete reports",
+    "delete-title": "Delete reports?",
+    "error-deleting-checks": "Error deleting checks: {{status}} {{statusText}}",
+    "error-running-checks": "Error while running checks: {{status}} {{statusText}}",
+    "hide-silenced": "Hide silenced issues",
+    "refresh": "Refresh",
+    "running-checks": "Running checks...",
+    "show-silenced": "Show silenced issues"
+  },
+  "app-config": {
+    "description": "Enable or disable the steps for each check type.",
+    "empty": "No check types available",
+    "error": "Error loading check types",
+    "loading": "Loading check types...",
+    "title": "Available Check Types"
+  },
+  "check-drill-down": {
+    "step-failed_one": "{{stepName}} failed for {{count}} {{typeName}}{{plural}}.",
+    "step-failed_other": "{{stepName}} failed for {{count}} {{typeName}}{{plural}}."
+  },
+  "check-error": {
+    "message": "Check failed to complete. See server logs for details or try again."
+  },
+  "check-summary-title": {
+    "high_one": "{{count}} items needs to be fixed",
+    "high_other": "{{count}} items needs to be fixed",
+    "low_one": "{{count}} items may need your attention",
+    "low_other": "{{count}} items may need your attention"
+  },
+  "check-type-item": {
+    "heading": "Check type: {{name}}",
+    "no-ignore-support": "Your current version of Grafana does not support ignoring steps",
+    "steps-label": "Steps:"
+  },
+  "check-warning": {
+    "message": "Check is taking longer than expected (updated {{time}} ago). Inspect server logs for errors or delete and re-create the report to retry."
+  },
+  "checks-status": {
+    "check-types": "Check types",
+    "show-status": "Show checks status"
+  },
+  "feature-flag-missing": {
+    "description": "The Grafana Advisor requires the <1>grafanaAdvisor</1> feature toggle to be enabled.",
+    "instructions-link": "Instructions to enable the feature toggle:",
+    "title": "Missing feature flag."
+  },
+  "home": {
+    "error-body": "Check server logs for more details, refresh the report or open a support ticket if the problem persists.",
+    "error-title": "Failed to load checks",
+    "feedback-title": "Share your thoughts about Grafana Advisor.",
+    "give-feedback": "Give feedback",
+    "last-checked": "Last checked:",
+    "loading": "Loading...",
+    "no-issues": "No issues found.",
+    "partial-results-body": "Found too many reports to process. Please delete them and refresh.",
+    "partial-results-title": "Partial results",
+    "report-in-progress": "Report in progress -",
+    "results-may-change": "results may change as checks complete",
+    "silenced-text": "Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility.",
+    "silenced-title": "Some issues have been silenced",
+    "subtitle": "Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues.",
+    "title": "Advisor"
+  },
+  "issue-description": {
+    "ask-assistant": "Ask Assistant",
+    "generate-ai-suggestion": "Generate AI suggestion",
+    "hide-ai-suggestion": "Hide AI suggestion",
+    "hide-issue": "Hide issue",
+    "retry-check": "Retry check",
+    "show-issue": "Show issue"
+  },
+  "llm-suggestion": {
+    "ai-generated": "AI Generated",
+    "generating": "Generating AI suggestion..."
+  },
+  "more-info": {
+    "analyzed-count_one": "{{count}} {{typeName}}(s) analyzed",
+    "analyzed-count_other": "{{count}} {{typeName}}(s) analyzed",
+    "description": "Below you can find the summary of checks we ran that were passing or not applicable to your instance. Good news, you're doing great in those areas:",
+    "label": "No action needed"
+  },
+  "no-checks": {
+    "description-line1": "Advisor can analyze your Grafana setup and look for potential issues.",
+    "description-line2": "Once a report is generated, it will be automatically updated periodically.",
+    "documentation-link": "Check the <2>documentation</2> for more information.",
+    "generate-report": "Generate report",
+    "running-checks": "Running checks...",
+    "title": "No checks run yet"
+  }
+}

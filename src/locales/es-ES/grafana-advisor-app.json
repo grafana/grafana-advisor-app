@@ -1,0 +1,100 @@
+{
+  "actions": {
+    "configuration": "Configuración",
+    "configure-application": "Configurar aplicación",
+    "confirm": "Confirmar",
+    "delete-body": "Grafana mantiene un historial de informes, esta acción los eliminará todos. No es reversible.",
+    "delete-reports": "Eliminar informes",
+    "delete-title": "¿Eliminar informes?",
+    "error-deleting-checks": "Error al eliminar verificaciones: {{status}} {{statusText}}",
+    "error-running-checks": "Error al ejecutar verificaciones: {{status}} {{statusText}}",
+    "hide-silenced": "Ocultar problemas silenciados",
+    "refresh": "Actualizar",
+    "running-checks": "Ejecutando verificaciones...",
+    "show-silenced": "Mostrar problemas silenciados"
+  },
+  "app-config": {
+    "description": "Habilitar o deshabilitar los pasos para cada tipo de verificación.",
+    "empty": "No hay tipos de verificación disponibles",
+    "error": "Error al cargar los tipos de verificación",
+    "loading": "Cargando tipos de verificación...",
+    "title": "Tipos de verificación disponibles"
+  },
+  "check-drill-down": {
+    "step-failed_one": "{{stepName}} falló para {{count}} {{typeName}}{{plural}}.",
+    "step-failed_many": "{{stepName}} falló para {{count}} {{typeName}}{{plural}}.",
+    "step-failed_other": "{{stepName}} falló para {{count}} {{typeName}}{{plural}}."
+  },
+  "check-error": {
+    "message": "La verificación no se completó. Consulte los registros del servidor para más detalles o inténtelo de nuevo."
+  },
+  "check-summary-title": {
+    "high_one": "{{count}} elemento necesita ser corregido",
+    "high_many": "{{count}} elementos necesitan ser corregidos",
+    "high_other": "{{count}} elementos necesitan ser corregidos",
+    "low_one": "{{count}} elemento puede necesitar su atención",
+    "low_many": "{{count}} elementos pueden necesitar su atención",
+    "low_other": "{{count}} elementos pueden necesitar su atención"
+  },
+  "check-type-item": {
+    "heading": "Tipo de verificación: {{name}}",
+    "no-ignore-support": "Su versión actual de Grafana no admite ignorar pasos",
+    "steps-label": "Pasos:"
+  },
+  "check-warning": {
+    "message": "La verificación está tardando más de lo esperado (actualizada hace {{time}}). Inspeccione los registros del servidor en busca de errores o elimine y vuelva a crear el informe para reintentar."
+  },
+  "checks-status": {
+    "check-types": "Tipos de verificación",
+    "show-status": "Mostrar estado de las verificaciones"
+  },
+  "feature-flag-missing": {
+    "description": "Grafana Advisor requiere que el indicador de función <1>grafanaAdvisor</1> esté habilitado.",
+    "instructions-link": "Instrucciones para habilitar el indicador de función:",
+    "title": "Indicador de función faltante."
+  },
+  "home": {
+    "error-body": "Consulte los registros del servidor para más detalles, actualice el informe o abra un ticket de soporte si el problema persiste.",
+    "error-title": "Error al cargar las verificaciones",
+    "feedback-title": "Comparta sus opiniones sobre Grafana Advisor.",
+    "give-feedback": "Dar opinión",
+    "last-checked": "Última verificación:",
+    "loading": "Cargando...",
+    "no-issues": "No se encontraron problemas.",
+    "partial-results-body": "Se encontraron demasiados informes para procesar. Por favor, elimínelos y actualice.",
+    "partial-results-title": "Resultados parciales",
+    "report-in-progress": "Informe en progreso -",
+    "results-may-change": "los resultados pueden cambiar a medida que se completen las verificaciones",
+    "silenced-text": "Los problemas silenciados no aparecen en este informe. Use el icono del ojo en la esquina superior derecha para gestionar la visibilidad.",
+    "silenced-title": "Algunos problemas han sido silenciados",
+    "subtitle": "Le ayuda a mantener sus instancias de Grafana funcionando de manera fluida y segura ejecutando verificaciones y sugiriendo acciones para corregir los problemas identificados.",
+    "title": "Advisor"
+  },
+  "issue-description": {
+    "ask-assistant": "Preguntar al Asistente",
+    "generate-ai-suggestion": "Generar sugerencia de IA",
+    "hide-ai-suggestion": "Ocultar sugerencia de IA",
+    "hide-issue": "Ocultar problema",
+    "retry-check": "Reintentar verificación",
+    "show-issue": "Mostrar problema"
+  },
+  "llm-suggestion": {
+    "ai-generated": "Generado por IA",
+    "generating": "Generando sugerencia de IA..."
+  },
+  "more-info": {
+    "analyzed-count_one": "{{count}} {{typeName}} analizado",
+    "analyzed-count_many": "{{count}} {{typeName}} analizados",
+    "analyzed-count_other": "{{count}} {{typeName}} analizados",
+    "description": "A continuación puede encontrar el resumen de las verificaciones que pasaron o no eran aplicables a su instancia. Buenas noticias, lo está haciendo muy bien en esas áreas:",
+    "label": "No se requiere acción"
+  },
+  "no-checks": {
+    "description-line1": "Advisor puede analizar su configuración de Grafana y buscar posibles problemas.",
+    "description-line2": "Una vez generado un informe, se actualizará automáticamente de forma periódica.",
+    "documentation-link": "Consulte la <2>documentación</2> para más información.",
+    "generate-report": "Generar informe",
+    "running-checks": "Ejecutando verificaciones...",
+    "title": "Aún no se han ejecutado verificaciones"
+  }
+}
