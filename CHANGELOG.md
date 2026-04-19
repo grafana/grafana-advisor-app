@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+### Bug Fixes
+
+- Fix assistant button in light theme (#284)
+
 ## 1.0.0
 
 ### Features
