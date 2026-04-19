@@ -195,10 +195,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   // Rainbow-style gradient for Assistant integration (matches Grafana Assistant button branding)
   assistantButton: css({
     border: '1px solid transparent',
-    background: `linear-gradient(rgb(55 57 64), rgb(55 57 64)) padding-box,
+    background: `linear-gradient(${theme.colors.secondary.main}, ${theme.colors.secondary.main}) padding-box,
+      linear-gradient(${theme.colors.background.canvas}, ${theme.colors.background.canvas}) padding-box,
       linear-gradient(135deg, #F97316 0%, #A855F7 100%) border-box`,
     '&:hover:not(:disabled)': {
-      background: `linear-gradient(rgb(55 57 64), rgb(55 57 64)) padding-box,
+      background: `linear-gradient(${theme.colors.emphasize(theme.colors.secondary.main, 0.05)}, ${theme.colors.emphasize(theme.colors.secondary.main, 0.05)}) padding-box,
+        linear-gradient(${theme.colors.background.canvas}, ${theme.colors.background.canvas}) padding-box,
         linear-gradient(135deg, #fb923c 0%, #c084fc 100%) border-box`,
     },
   }),
