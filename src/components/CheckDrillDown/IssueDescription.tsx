@@ -6,6 +6,7 @@ import { t } from '@grafana/i18n';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useAssistantHelp, useLLMSuggestion } from 'api/api';
+import { translateLinkMessage } from 'utils';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
@@ -140,6 +141,7 @@ export function IssueDescription({
           />
         )}
         {links.map((link) => {
+          const translatedMessage = translateLinkMessage(link.message);
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
@@ -148,7 +150,7 @@ export function IssueDescription({
                 icon={getIcon(link.message)}
                 variant="primary"
                 data-testid={testIds.CheckDrillDown.actionLink(item, link.message)}
-                tooltip={link.message}
+                tooltip={translatedMessage}
               />
             </a>
           );

@@ -6,6 +6,7 @@ import { t, Trans } from '@grafana/i18n';
 import { IGNORE_STEPS_ANNOTATION, IGNORE_STEPS_ANNOTATION_LIST } from 'api/api';
 import { CheckType } from 'generated';
 import { testIds } from 'components/testIds';
+import { translateStepTitle, translateStepDescription, translateCheckTypeName } from 'utils';
 
 interface CheckTypeItemProps {
   checkType: CheckType;
@@ -25,7 +26,7 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
 
   return (
     <Card className={s.checkTypeCard}>
-      <Card.Heading>{t('check-type-item.heading', 'Check type: {{name}}', { name: checkType.spec.name })}</Card.Heading>
+      <Card.Heading>{t('check-type-item.heading', 'Check type: {{name}}', { name: translateCheckTypeName(checkType.spec.name, checkType.spec.name) })}</Card.Heading>
       <Card.Description>
         <div><Trans i18nKey="check-type-item.steps-label">Steps:</Trans></div>
         <ul className={s.stepsList}>
@@ -49,7 +50,7 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
                   />
                 </div>
                 <div className={s.stepDescription}>
-                  <strong>{step.title}</strong> - {step.description}
+                  <strong>{translateStepTitle(step.stepID, step.title)}</strong> - {translateStepDescription(step.stepID, step.description)}
                 </div>
               </Stack>
             </li>
