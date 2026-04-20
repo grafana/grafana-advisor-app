@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Stack, useStyles2, Icon, Collapse } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
+import { t } from '@grafana/i18n';
 import { CheckStatus } from 'types';
 import CheckWarning from './CheckWarning';
 import CheckError from './CheckError';
@@ -29,12 +30,12 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
               <div className={styles.collapseLabel}>
                 {hasError && <Icon name="exclamation-circle" className={styles.errorIcon} />}
                 {hasOldChecks && !hasError && <Icon name="exclamation-triangle" className={styles.warningIcon} />}
-                <span>Show checks status</span>
+                <span>{t('checks-status.show-status', 'Show checks status')}</span>
               </div>
             }
             className={styles.collapseContainer}
           >
-            <div className={styles.checksHeader}>Check types</div>
+            <div className={styles.checksHeader}>{t('checks-status.check-types', 'Check types')}</div>
             <div className={styles.checksContainer}>
               {checkStatuses.map((check, index) => {
                 return (

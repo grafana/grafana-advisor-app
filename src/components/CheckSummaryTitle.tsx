@@ -2,6 +2,7 @@ import React from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, IconName, Icon, Stack } from '@grafana/ui';
+import { t } from '@grafana/i18n';
 import { Severity, type CheckSummary as CheckSummaryType } from 'types';
 
 export const IconBySeverity: Record<string, IconName> = {
@@ -15,8 +16,8 @@ export function CheckSummaryTitle({ checkSummary }: { checkSummary: CheckSummary
   const icon = IconBySeverity[checkSummary.severity];
   const totalIssueCount = Object.values(checkSummary.checks).reduce((acc, check) => acc + check.issueCount, 0);
   const titleText: Record<string, string> = {
-    [Severity.High]: `${totalIssueCount} items needs to be fixed`,
-    [Severity.Low]: `${totalIssueCount} items may need your attention`,
+    [Severity.High]: t('check-summary-title.high', '{{count}} items needs to be fixed', { count: totalIssueCount }),
+    [Severity.Low]: t('check-summary-title.low', '{{count}} items may need your attention', { count: totalIssueCount }),
   };
 
   return (

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, FieldSet, LoadingPlaceholder } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { useCheckTypes, useSkipCheckTypeStep } from 'api/api';
 import { CheckTypeList } from './CheckTypeList';
 
@@ -19,11 +20,11 @@ export const AppConfig = () => {
   }, [refetch, updateCheckTypeState.isLoading]);
 
   return (
-    <FieldSet label="Available Check Types">
-      <div className={s.description}>Enable or disable the steps for each check type.</div>
-      {isLoading && <LoadingPlaceholder text="Loading check types..." />}
-      {isError && <div>Error loading check types</div>}
-      {!isLoading && !isError && !checkTypes?.length && <div>No check types available</div>}
+    <FieldSet label={t('app-config.title', 'Available Check Types')}>
+      <div className={s.description}>{t('app-config.description', 'Enable or disable the steps for each check type.')}</div>
+      {isLoading && <LoadingPlaceholder text={t('app-config.loading', 'Loading check types...')} />}
+      {isError && <div>{t('app-config.error', 'Error loading check types')}</div>}
+      {!isLoading && !isError && !checkTypes?.length && <div>{t('app-config.empty', 'No check types available')}</div>}
       {!isLoading && !isError && checkTypes?.length && (
         <CheckTypeList
           checkTypes={checkTypes}

@@ -3,6 +3,7 @@ import { css } from '@emotion/css';
 import { Alert, EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t, Trans } from '@grafana/i18n';
 import { CheckSummary } from 'components/CheckSummary';
 import { MoreInfo } from 'components/MoreInfo';
 import Actions from 'components/Actions/Actions';
@@ -46,8 +47,8 @@ export default function Home() {
   return (
     <PluginPage
       pageNav={{
-        text: 'Advisor',
-        subTitle: 'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues.',
+        text: t('home.title', 'Advisor'),
+        subTitle: t('home.subtitle', 'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues.'),
       }}
       actions={
         !isEmpty ? (
@@ -66,17 +67,18 @@ export default function Home() {
           <a
             href="https://forms.gle/oFkqRoXS8g8mnTu6A"
             className={styles.feedback}
-            title="Share your thoughts about Grafana Advisor."
+            title={t('home.feedback-title', 'Share your thoughts about Grafana Advisor.')}
             target="_blank"
             rel="noreferrer noopener"
           >
-            Give feedback
+            <Trans i18nKey="home.give-feedback">Give feedback</Trans>
           </a>
         </div>
 
         {!isEmpty && (
           <div className={styles.lastChecked}>
-            Last checked: <strong>{summaries ? formatDate(summaries.high.created) : '...'}</strong>
+            <Trans i18nKey="home.last-checked">Last checked:</Trans>{' '}
+            <strong>{summaries ? formatDate(summaries.high.created) : '...'}</strong>
           </div>
         )}
       </Stack>
@@ -85,23 +87,25 @@ export default function Home() {
         {/* Loading */}
         {isLoading && (
           <div className={styles.loading}>
-            <LoadingPlaceholder text="Loading..." />
+            <LoadingPlaceholder text={t('home.loading', 'Loading...')} />
           </div>
         )}
 
         {/* Partial results */}
         {partialResults && (
-          <Alert title="Partial results" className={styles.error} severity="warning">
-            Found too many reports to process. Please delete them and refresh.
+          <Alert title={t('home.partial-results-title', 'Partial results')} className={styles.error} severity="warning">
+            <Trans i18nKey="home.partial-results-body">
+              Found too many reports to process. Please delete them and refresh.
+            </Trans>
           </Alert>
         )}
 
         {/* Error */}
         {isError && (
-          <Alert title="Failed to load checks" className={styles.error}>
+          <Alert title={t('home.error-title', 'Failed to load checks')} className={styles.error}>
             {isFetchError(error)
               ? `${error.status} ${error.statusText}`
-              : 'Check server logs for more details, refresh the report or open a support ticket if the problem persists.'}
+              : t('home.error-body', 'Check server logs for more details, refresh the report or open a support ticket if the problem persists.')}
           </Alert>
         )}
 
@@ -109,7 +113,7 @@ export default function Home() {
         {isEmpty && <NoChecksEmptyState isCompleted={isCompleted} />}
 
         {/* All issues resolved */}
-        {isHealthy && <EmptyState variant="completed" message="No issues found." />}
+        {isHealthy && <EmptyState variant="completed" message={t('home.no-issues', 'No issues found.')} />}
 
         {/* Checks */}
         {!isLoading && !isError && summaries && !isEmpty && (
@@ -118,15 +122,18 @@ export default function Home() {
             {!isCompleted && (
               <div className={styles.incompleteWarning}>
                 <Icon name="hourglass" />
-                Report in progress -
-                <span className={styles.incompleteInfo}> results may change as checks complete</span>
+                <Trans i18nKey="home.report-in-progress">Report in progress -</Trans>
+                <span className={styles.incompleteInfo}>
+                  {' '}
+                  <Trans i18nKey="home.results-may-change">results may change as checks complete</Trans>
+                </span>
               </div>
             )}
 
             <InfoNotification
               id="some-issues-silenced"
-              title="Some issues have been silenced"
-              text="Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility."
+              title={t('home.silenced-title', 'Some issues have been silenced')}
+              text={t('home.silenced-text', "Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility.")}
               displayCondition={!showHiddenIssues && hasHiddenIssues}
             />
 

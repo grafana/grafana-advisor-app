@@ -16,6 +16,8 @@ import { useAssistant } from '@grafana/assistant';
 import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
 import { usePluginContext } from 'contexts/Context';
 import { llm } from '@grafana/llm';
+import { t } from '@grafana/i18n';
+import { translateStepTitle, translateStepDescription, translateStepResolution, translateCheckTypeName } from 'utils';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
@@ -61,8 +63,8 @@ export function useCheckSummaries() {
       const checkTypeDefinition = checkTypes.find((ct) => ct.metadata.name === checkType);
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status?.report?.count ?? 0;
-      checkSummary[Severity.High].checks[checkType].typeName =
-        checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType;
+      const rawTypeName = checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType;
+      checkSummary[Severity.High].checks[checkType].typeName = translateCheckTypeName(checkType, rawTypeName);
       checkSummary[Severity.High].checks[checkType].name = check.metadata.name ?? '';
       checkSummary[Severity.Low].checks[checkType].name = check.metadata.name ?? '';
       const canRetry = !!checkTypeDefinition?.metadata.annotations?.[RETRY_ANNOTATION];
@@ -147,12 +149,12 @@ export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>):
             (acc, step) => ({
               ...acc,
               [step.stepID]: {
-                name: step.title,
-                description: step.description,
+                name: translateStepTitle(step.stepID, step.title),
+                description: translateStepDescription(step.stepID, step.description),
                 stepID: step.stepID,
                 issueCount: 0,
                 issues: [],
-                resolution: step.resolution,
+                resolution: translateStepResolution(step.stepID, step.resolution),
               },
             }),
             {}
@@ -164,14 +166,14 @@ export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>):
 
   return {
     high: {
-      name: 'Action needed',
+      name: t('backend.severity.action-needed', 'Action needed'),
       description: 'These checks require immediate action.',
       severity: Severity.High,
       checks: generateChecks(),
       created: new Date(0),
     },
     low: {
-      name: 'Investigation needed',
+      name: t('backend.severity.investigation-needed', 'Investigation needed'),
       description: 'These checks require further investigation.',
       severity: Severity.Low,
       checks: generateChecks(),
