@@ -45,10 +45,7 @@ export default function Home() {
 
   return (
     <PluginPage
-      pageNav={{
-        text: 'Advisor',
-        subTitle: 'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues.',
-      }}
+      subTitle="Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues."
       actions={
         !isEmpty ? (
           <Actions
