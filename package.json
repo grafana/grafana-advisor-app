@@ -83,7 +83,7 @@
     "react-use": "17.6.0",
     "rxjs": "7.8.2"
   },
-  "packageManager": "npm@11.12.1",
+  "packageManager": "npm@11.13.0",
   "overrides": {
     "@grafana/llm": {
       "@grafana/data": "$@grafana/data",
