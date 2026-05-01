@@ -21,6 +21,4 @@ jobs:
       - name: Build plugin
         run: npm run build
       - name: Compatibility check
-        # Temporarily non-blocking until Grafana dependency versions are aligned (see fix-grafana-deps branch)
-        continue-on-error: true
         run: npx --yes @grafana/levitate@latest is-compatible --path $(find ./src -type f \( -name "module.ts" -o -name "module.tsx" \)) --target @grafana/data,@grafana/ui,@grafana/runtime
