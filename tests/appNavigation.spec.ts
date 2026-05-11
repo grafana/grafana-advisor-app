@@ -55,7 +55,7 @@ async function runChecks(gotoPage: (path?: string) => Promise<AppPage>, page: Pa
   await expect(page.getByText('Last checked')).toBeVisible();
 }
 
-async function createEmptyDatasource(page: Page): Promise<string> {
+async function createEmptyDatasource(page: Page, grafanaVersion: string): Promise<string> {
   // Navigate to datasources page
   await page.goto('/connections/datasources');
   // Wait for the page to load
@@ -64,7 +64,13 @@ async function createEmptyDatasource(page: Page): Promise<string> {
   // Select the "Prometheus" option
   await page.getByRole('button', { name: 'Prometheus' }).click();
   // Get the name of the datasource
-  const dsName = await page.locator('#basic-settings-name').inputValue();
+  let dsName = '';
+  if (grafanaVersion.startsWith('13.0') || grafanaVersion.startsWith('12')) {
+    dsName = await page.locator('#basic-settings-name').inputValue();
+  } else {
+    await expect(page.getByRole('button', { name: 'Edit title' })).toBeVisible();
+    dsName = await page.locator('#basic-settings-name').inputValue();
+  }
   return dsName;
 }
 
@@ -82,7 +88,7 @@ test.describe('navigating app', () => {
 
   test('it should detect an issue and fix it', async ({ gotoPage, page, grafanaVersion }) => {
     await expectEmptyReport(gotoPage, page);
-    const dsName = await createEmptyDatasource(page);
+    const dsName = await createEmptyDatasource(page, grafanaVersion);
     // Now go back to the advisor page and regenerate the report
     await runChecks(gotoPage, page);
 
@@ -121,7 +127,7 @@ test.describe('navigating app', () => {
     }
 
     await expectEmptyReport(gotoPage, page);
-    await createEmptyDatasource(page);
+    await createEmptyDatasource(page, grafanaVersion);
     await runChecks(gotoPage, page);
 
     // Page should now show a report
@@ -149,9 +155,9 @@ test.describe('navigating app', () => {
     await expect(page.getByText('Health check failed')).toBeVisible();
   });
 
-  test('it should silence a check', async ({ gotoPage, page }) => {
+  test('it should silence a check', async ({ gotoPage, page, grafanaVersion }) => {
     await expectEmptyReport(gotoPage, page);
-    const dsName = await createEmptyDatasource(page);
+    const dsName = await createEmptyDatasource(page, grafanaVersion);
     await runChecks(gotoPage, page);
 
     // Page should now show a report
