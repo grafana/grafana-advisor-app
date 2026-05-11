@@ -69,7 +69,7 @@ async function createEmptyDatasource(page: Page, grafanaVersion: string): Promis
     dsName = await page.locator('#basic-settings-name').inputValue();
   } else {
     await expect(page.getByRole('button', { name: 'Edit title' })).toBeVisible();
-    dsName = await page.locator('#basic-settings-name').inputValue();
+    dsName = await page.getByRole('heading', { level: 1 }).innerText();
   }
   return dsName;
 }
