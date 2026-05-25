@@ -88,6 +88,31 @@
     "@grafana/llm": {
       "@grafana/data": "$@grafana/data",
       "@grafana/runtime": "$@grafana/runtime"
-    }
+    },
+    "@hono/node-server": "1.19.13",
+    "@protobufjs/utf8": "1.1.1",
+    "brace-expansion@^1": "1.1.13",
+    "brace-expansion@^2": "2.0.3",
+    "brace-expansion@^5": "5.0.6",
+    "dompurify": "3.4.0",
+    "fast-uri": "3.1.2",
+    "flatted": "3.4.2",
+    "hono": "4.12.18",
+    "immutable": "5.1.5",
+    "ip-address": "10.1.1",
+    "js-cookie": "3.0.7",
+    "lodash": "4.18.1",
+    "path-to-regexp@^8": "8.4.0",
+    "picomatch@^2": "2.3.2",
+    "picomatch@^4": "4.0.4",
+    "postcss": "8.5.10",
+    "protobufjs": "7.5.8",
+    "protocol-buffers-schema": "3.6.1",
+    "qs": "6.15.2",
+    "serialize-javascript": "7.0.5",
+    "uuid": "13.0.1",
+    "ws": "8.20.1",
+    "yaml@^1": "1.10.3",
+    "yaml@^2": "2.8.3"
   }
 }
