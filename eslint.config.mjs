@@ -33,6 +33,8 @@ export default defineConfig([
       'playwright/.auth/',
       '**/.idea',
       '**/.eslintcache',
+      // generated types fail jsdoc/check-alignment
+      'src/generated/',
     ],
   },
   ...baseConfig,
