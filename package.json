@@ -91,7 +91,7 @@
       "@grafana/data": "$@grafana/data",
       "@grafana/runtime": "$@grafana/runtime"
     },
-    "dompurify": "3.4.0",
+    "dompurify": "3.4.8",
     "immutable": "5.1.5",
     "js-cookie": "3.0.7",
     "uuid": "13.0.1"
