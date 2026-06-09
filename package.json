@@ -94,6 +94,6 @@
     "dompurify": "3.4.0",
     "immutable": "5.1.5",
     "js-cookie": "3.0.7",
-    "uuid": "13.0.1"
+    "uuid": "13.0.2"
   }
 }
