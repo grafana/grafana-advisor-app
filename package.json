@@ -87,6 +87,12 @@
   },
   "packageManager": "npm@11.16.0",
   "overrides": {
+    "@grafana/assistant": {
+      "@grafana/data": "$@grafana/data",
+      "@grafana/runtime": "$@grafana/runtime",
+      "@grafana/schema": "$@grafana/schema",
+      "@grafana/ui": "$@grafana/ui"
+    },
     "@grafana/llm": {
       "@grafana/data": "$@grafana/data",
       "@grafana/runtime": "$@grafana/runtime"
