@@ -99,7 +99,7 @@
     },
     "dompurify": "3.4.8",
     "immutable": "5.1.5",
-    "js-cookie": "3.0.7",
+    "js-cookie": "3.0.8",
     "uuid": "13.0.2"
   }
 }
