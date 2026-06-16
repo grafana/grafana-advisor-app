@@ -21,7 +21,7 @@
     "@grafana/tsconfig": "2.1.0",
     "@playwright/test": "1.60.0",
     "@stylistic/eslint-plugin-ts": "4.4.1",
-    "@swc/core": "1.15.40",
+    "@swc/core": "1.15.41",
     "@swc/helpers": "0.5.23",
     "@swc/jest": "0.2.39",
     "@testing-library/jest-dom": "6.9.1",
@@ -97,7 +97,7 @@
       "@grafana/data": "$@grafana/data",
       "@grafana/runtime": "$@grafana/runtime"
     },
-    "dompurify": "3.4.8",
+    "dompurify": "3.4.9",
     "immutable": "5.1.5",
     "js-cookie": "3.0.7",
     "uuid": "13.0.2"
