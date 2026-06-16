@@ -1,0 +1,14 @@
+services:
+  grafana:
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
+    # Using the latest Grafana (top of the main branch)
+    build:
+      args:
+        grafana_version: ${GRAFANA_VERSION:-main}
+    environment:
+      - GF_FEATURE_TOGGLES_GRAFANAADVISOR=true
+      - GF_PLUGINS_PREINSTALL_DISABLED=true # Avoid installing the plugin from catalog
+    volumes:
+      - ./custom.ini:/etc/grafana/grafana.ini

@@ -1,0 +1,223 @@
+import React, { useState, useCallback } from 'react';
+import { css, cx } from '@emotion/css';
+import { Button, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2, IconName } from '@grafana/data';
+import { useNavigate } from 'react-router-dom';
+import { testIds } from 'components/testIds';
+import { useAssistantHelp, useLLMSuggestion } from 'api/api';
+import { LLMSuggestionContent } from './LLMSuggestionContent';
+import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
+
+interface IssueDescriptionProps {
+  item: string;
+  isHidden: boolean;
+  isRetrying?: boolean;
+  canRetry?: boolean;
+  isCompleted?: boolean;
+  checkType: string;
+  checkName: string;
+  itemID: string;
+  stepID: string;
+  links: Array<{ url: string; message: string }>;
+  onHideIssue: (isHidden: boolean) => void;
+  onRetryCheck: () => void;
+}
+
+export function IssueDescription({
+  item,
+  isHidden,
+  isRetrying,
+  canRetry,
+  isCompleted,
+  checkType,
+  checkName,
+  itemID,
+  stepID,
+  links,
+  onHideIssue,
+  onRetryCheck,
+}: IssueDescriptionProps) {
+  const styles = useStyles2(getStyles);
+  const navigate = useNavigate();
+  const [llmSectionOpen, setLlmSectionOpen] = useState(false);
+  const { getSuggestion, response, isAvailable: isLLMAvailable, isLoading: isLLMLoading } = useLLMSuggestion();
+  const { askAssistant, isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistantHelp();
+  const { trackCheckInteraction } = useInteractionTracker();
+  const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
+
+  const handleStepClick = useCallback(
+    (item: string) => {
+      const params = new URLSearchParams(location.search);
+      params.set('scrollToStep', item);
+      navigate({ search: params.toString() }, { replace: true });
+    },
+    [navigate]
+  );
+
+  const handleAISuggestionClick = useCallback(() => {
+    if (!llmSectionOpen) {
+      getSuggestion(checkName, stepID, itemID);
+    }
+    setLlmSectionOpen(!llmSectionOpen);
+    trackCheckInteraction(CheckInteractionType.AI_SUGGESTION_CLICKED, checkType, stepID);
+  }, [llmSectionOpen, getSuggestion, checkName, stepID, itemID, trackCheckInteraction, checkType]);
+
+  const handleAskAssistantClick = useCallback(() => {
+    askAssistant(checkName, stepID, itemID);
+    trackCheckInteraction(CheckInteractionType.ASSISTANT_CLICKED, checkType, stepID);
+  }, [askAssistant, checkName, stepID, itemID, trackCheckInteraction, checkType]);
+
+  const handleSilenceClick = useCallback(() => {
+    onHideIssue(!isHidden);
+    trackCheckInteraction(CheckInteractionType.SILENCE_CLICKED, checkType, stepID, {
+      silenced: !isHidden,
+    });
+  }, [onHideIssue, isHidden, trackCheckInteraction, checkType, stepID]);
+
+  const handleRetryClick = () => {
+    onRetryCheck();
+    trackCheckInteraction(CheckInteractionType.REFRESH_CLICKED, checkType, stepID);
+  };
+
+  const handleResolutionClick = useCallback(() => {
+    handleStepClick(item);
+    trackCheckInteraction(CheckInteractionType.RESOLUTION_CLICKED, checkType, stepID);
+  }, [handleStepClick, item, trackCheckInteraction, checkType, stepID]);
+
+  return (
+    <div className={isHidden ? styles.issueHidden : styles.issue}>
+      <div className={styles.issueReason}>
+        {item}
+        {isLLMAvailable && !isAssistantAvailable && (
+          <Button
+            className={styles.issueLink}
+            icon="ai"
+            variant={llmSectionOpen ? 'primary' : 'secondary'}
+            title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            onClick={handleAISuggestionClick}
+            aria-label={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            tooltip={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+          />
+        )}
+        <Button
+          className={styles.issueLink}
+          icon={isHidden ? 'bell' : 'bell-slash'}
+          variant="secondary"
+          data-testid={testIds.CheckDrillDown.hideButton(item)}
+          onClick={handleSilenceClick}
+          aria-label={isHidden ? 'Show issue' : 'Hide issue'}
+          tooltip={isHidden ? 'Show issue' : 'Hide issue'}
+        />
+        {canRetry && (
+          <Button
+            className={styles.issueLink}
+            icon={isRetrying || localIsRetrying ? 'spinner' : 'sync'}
+            variant="secondary"
+            disabled={isRetrying || localIsRetrying || !isCompleted}
+            data-testid={testIds.CheckDrillDown.retryButton(item)}
+            onClick={() => {
+              setLocalIsRetrying(true);
+              handleRetryClick();
+              setTimeout(() => {
+                // isRetrying and isCompleted can be either instantly true or take some time to change value
+                // so this ensures that the user is getting instant visual feedback that the check is being retried
+                setLocalIsRetrying(false);
+              }, 1000);
+            }}
+            aria-label="Retry check"
+            tooltip="Retry check"
+          />
+        )}
+        {isAssistantAvailable && (
+          <Button
+            className={cx(styles.issueLink, styles.assistantButton)}
+            icon={isAssistantLoading ? 'spinner' : 'ai'}
+            variant="secondary"
+            disabled={isAssistantLoading}
+            onClick={handleAskAssistantClick}
+            tooltip="Ask Assistant"
+          />
+        )}
+        {links.map((link) => {
+          const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
+          return (
+            <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
+              <Button
+                className={styles.issueLink}
+                icon={getIcon(link.message)}
+                variant="primary"
+                data-testid={testIds.CheckDrillDown.actionLink(item, link.message)}
+                tooltip={link.message}
+              />
+            </a>
+          );
+        })}
+        {llmSectionOpen && <LLMSuggestionContent isLoading={isLLMLoading} response={response} />}
+      </div>
+    </div>
+  );
+}
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  issue: css({
+    color: theme.colors.text.secondary,
+    backgroundColor: theme.colors.background.secondary,
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+    borderColor: 'transparent',
+    borderStyle: 'solid',
+    ':hover': {
+      borderColor: theme.colors.border.strong,
+      borderStyle: 'solid',
+    },
+  }),
+  issueHidden: css({
+    color: theme.colors.text.secondary,
+    backgroundColor: theme.colors.background.secondary,
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+    borderColor: 'transparent',
+    borderStyle: 'solid',
+    ':hover': {
+      borderColor: theme.colors.border.strong,
+      borderStyle: 'solid',
+    },
+    opacity: 0.6,
+  }),
+  issueReason: css({
+    color: theme.colors.text.primary,
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
+  issueLink: css({
+    float: 'right',
+    marginLeft: theme.spacing(1),
+  }),
+  // Rainbow-style gradient for Assistant integration (matches Grafana Assistant button branding)
+  assistantButton: css({
+    border: '1px solid transparent',
+    background: `linear-gradient(${theme.colors.secondary.main}, ${theme.colors.secondary.main}) padding-box,
+      linear-gradient(${theme.colors.background.canvas}, ${theme.colors.background.canvas}) padding-box,
+      linear-gradient(135deg, #F97316 0%, #A855F7 100%) border-box`,
+    '&:hover:not(:disabled)': {
+      background: `linear-gradient(${theme.colors.emphasize(theme.colors.secondary.main, 0.05)}, ${theme.colors.emphasize(theme.colors.secondary.main, 0.05)}) padding-box,
+        linear-gradient(${theme.colors.background.canvas}, ${theme.colors.background.canvas}) padding-box,
+        linear-gradient(135deg, #fb923c 0%, #c084fc 100%) border-box`,
+    },
+  }),
+});
+
+const getIcon = (message: string): IconName => {
+  message = message.toLowerCase();
+  if (message.includes('fix')) {
+    return 'wrench';
+  } else if (message.includes('info')) {
+    return 'document-info';
+  } else if (message.includes('upgrade')) {
+    return 'arrow-up';
+  } else if (message.includes('delete')) {
+    return 'trash-alt';
+  } else if (message.includes('admin') || message.includes('settings') || message.includes('config')) {
+    return 'cog';
+  }
+  return 'info-circle';
+};
