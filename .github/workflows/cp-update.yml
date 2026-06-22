@@ -5,22 +5,25 @@ on:
   schedule:
     - cron: '0 0 1 * *' # run once a month on the 1st day
 
-# To use the default github token with the following elevated permissions make sure to check:
-# **Allow GitHub Actions to create and approve pull requests** in https://github.com/ORG_NAME/REPO_NAME/settings/actions.
-# Alternatively create a fine-grained personal access token for your repository with
-# `contents: read and write` and `pull requests: read and write` and pass it to the action.
+# Uses a short-lived GitHub App token minted via Vault (create-github-app-token)
+# so the action can open PRs that also modify workflow files. The token's scope is
+# defined by the `Create Plugin Update` permission-set for this repo in
+# grafana/deployment_tools (terraform/repositories/grafana-advisor-app/github-app-configs/config.yaml).
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write # Needed for create-github-app-token
+      pull-requests: write
     steps:
-      - uses: grafana/plugin-actions/create-plugin-update@8c65927553042c5cf701877636dd37344a8a0ce1 # v1
-        # Uncomment to use a fine-grained personal access token instead of default github token
-        # (For more info on how to generate the token see https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
-        # with:
-        # Make sure to save the token in your repository secrets
-        # token: $
+      - id: get-github-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
+        with:
+          github_app: grafana-plugins-platform-bot
+      - uses: grafana/plugin-actions/create-plugin-update@b82357e85d512c678416146ca4e9f8672bd108da # create-plugin-update/v2.0.2
+        with:
+          token: ${{ steps.get-github-token.outputs.token }}
