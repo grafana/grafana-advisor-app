@@ -50,4 +50,4 @@ export const {
   useListCheckTypeQuery,
   useUpdateCheckTypeMutation,
 } = advisorAPIv0alpha1;
-export { type Check, type CheckType } from './endpoints.gen'; // eslint-disable-line
+export { type Check, type CheckType } from './endpoints.gen';
