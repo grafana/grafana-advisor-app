@@ -29,6 +29,11 @@
       "enabled": false
     },
     {
+      "groupName": "All non-major npm dependencies",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+    },
+    {
       "groupName": "Testing tools",
       "matchPackageNames": [
         "/^jest$/",

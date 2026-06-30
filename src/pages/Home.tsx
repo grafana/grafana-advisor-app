@@ -48,7 +48,10 @@ export default function Home() {
     <PluginPage
       pageNav={{
         text: t('home.title', 'Advisor'),
-        subTitle: t('home.subtitle', 'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues.'),
+        subTitle: t(
+          'home.subtitle',
+          'Helps you keep your Grafana instances running smoothly and securely by running checks and suggest actions to fix identified issues.'
+        ),
       }}
       actions={
         !isEmpty ? (
@@ -105,7 +108,10 @@ export default function Home() {
           <Alert title={t('home.error-title', 'Failed to load checks')} className={styles.error}>
             {isFetchError(error)
               ? `${error.status} ${error.statusText}`
-              : t('home.error-body', 'Check server logs for more details, refresh the report or open a support ticket if the problem persists.')}
+              : t(
+                  'home.error-body',
+                  'Check server logs for more details, refresh the report or open a support ticket if the problem persists.'
+                )}
           </Alert>
         )}
 
@@ -133,7 +139,10 @@ export default function Home() {
             <InfoNotification
               id="some-issues-silenced"
               title={t('home.silenced-title', 'Some issues have been silenced')}
-              text={t('home.silenced-text', "Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility.")}
+              text={t(
+                'home.silenced-text',
+                "Silenced issues don't appear in this report. Use the eye icon in the top right corner to manage visibility."
+              )}
               displayCondition={!showHiddenIssues && hasHiddenIssues}
             />
 
