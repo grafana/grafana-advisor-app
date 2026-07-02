@@ -2,13 +2,16 @@ import React from 'react';
 import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
+import { t } from '@grafana/i18n';
 
 export default function CheckError() {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.errorContainer}>
-      <span className={styles.errorText}>Check failed to complete. See server logs for details or try again.</span>
+      <span className={styles.errorText}>
+        {t('check-error.message', 'Check failed to complete. See server logs for details or try again.')}
+      </span>
     </div>
   );
 }

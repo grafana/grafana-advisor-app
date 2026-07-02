@@ -2,6 +2,7 @@ import React from 'react';
 import { css } from '@emotion/css';
 import { Button, Card, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import Markdown from 'react-markdown';
 
 interface LLMSuggestionContentProps {
@@ -18,14 +19,14 @@ export function LLMSuggestionContent({ isLoading, response }: LLMSuggestionConte
         {isLoading ? (
           <div className={styles.loadingContainer}>
             <Button icon="spinner" variant="secondary" size="sm" disabled>
-              Generating AI suggestion...
+              {t('llm-suggestion.generating', 'Generating AI suggestion...')}
             </Button>
           </div>
         ) : (
           <div className={styles.llmMarkdownWrapper}>
             <div className={styles.aiLabel}>
               <Button icon="ai" size="xs" variant="secondary" fill="text" disabled>
-                AI Generated
+                {t('llm-suggestion.ai-generated', 'AI Generated')}
               </Button>
             </div>
             <Markdown>{response ?? ''}</Markdown>

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { css } from '@emotion/css';
 import { Collapse, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { type CheckSummary as CheckSummaryType } from 'types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IssueDescription } from './IssueDescription';
@@ -93,8 +94,12 @@ export default function CheckDrillDown({
                   label={
                     <div className={styles.description}>
                       <div>
-                        {step.name} failed for {issues.length} {check.typeName || check.type}
-                        {issues.length > 1 ? 's' : ''}.
+                        {t('check-drill-down.step-failed', '{{stepName}} failed for {{count}} {{typeName}}{{plural}}.', {
+                          stepName: step.name,
+                          count: issues.length,
+                          typeName: check.typeName || check.type,
+                          plural: issues.length > 1 ? 's' : '',
+                        })}
                       </div>
                       <div
                         className={styles.resolution}

@@ -857,6 +857,8 @@ export type CheckOperatorState = {
 export type CheckErrorLink = {
   /** Human readable error message */
   message: string;
+  /** i18n key for the message. Frontend uses this with @grafana/i18n's t(key, fallback). */
+  messageKey?: string;
   /** URL to a page with more information about the error */
   url: string;
 };
@@ -968,9 +970,12 @@ export type Status = {
 export type Patch = object;
 export type CheckTypeStep = {
   description: string;
+  descriptionKey?: string;
   resolution: string;
+  resolutionKey?: string;
   stepID: string;
   title: string;
+  titleKey?: string;
 };
 export type CheckTypeSpec = {
   name: string;
