@@ -1,12 +1,32 @@
 import React, { Suspense, lazy } from 'react';
 import { AppPlugin, type AppRootProps } from '@grafana/data';
 import { LoadingPlaceholder } from '@grafana/ui';
-import { initPluginTranslations } from '@grafana/i18n';
+import { initPluginTranslations, type ResourceLoader } from '@grafana/i18n';
+import { getBackendSrv } from '@grafana/runtime';
 import pluginJson from './plugin.json';
 import { AppConfig } from './components/AppConfig/AppConfig';
 import { useCompletedChecks, useCreateChecks, useRetryCheck } from './api/api';
+import { BASE_URL } from './generated/baseAPI';
 
-await initPluginTranslations(pluginJson.id);
+// backendLoader fetches translations for strings the backend owns (check step
+// titles/descriptions/resolutions and failure-link messages). The backend
+// serves a flat { key -> string } map at /translations?lang={locale}. Keys
+// arrive on step/link objects as titleKey/descriptionKey/resolutionKey/messageKey
+// and are resolved via tBackend(key, fallback).
+const backendLoader: ResourceLoader = async (locale) => {
+  try {
+    const response = await getBackendSrv().get<{ translations?: Record<string, string> }>(
+      `${BASE_URL}/translations`,
+      { lang: locale }
+    );
+    return response?.translations ?? {};
+  } catch (error) {
+    console.error('Failed to load advisor backend translations', error);
+    return {};
+  }
+};
+
+await initPluginTranslations(pluginJson.id, [backendLoader]);
 
 const LazyApp = lazy(() => import('./components/App/App'));
 

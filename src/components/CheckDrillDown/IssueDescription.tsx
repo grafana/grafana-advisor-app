@@ -6,7 +6,7 @@ import { t } from '@grafana/i18n';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useAssistantHelp, useLLMSuggestion } from 'api/api';
-import { translateLinkMessage } from 'utils';
+import { tBackend } from 'utils';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
@@ -20,7 +20,7 @@ interface IssueDescriptionProps {
   checkName: string;
   itemID: string;
   stepID: string;
-  links: Array<{ url: string; message: string }>;
+  links: Array<{ url: string; message: string; messageKey?: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
 }
@@ -141,7 +141,7 @@ export function IssueDescription({
           />
         )}
         {links.map((link) => {
-          const translatedMessage = translateLinkMessage(link.message);
+          const translatedMessage = tBackend(link.messageKey, link.message);
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>

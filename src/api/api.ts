@@ -17,11 +17,12 @@ import { CheckReportFailure, CheckTypeSpec } from 'generated/endpoints.gen';
 import { usePluginContext } from 'contexts/Context';
 import { llm } from '@grafana/llm';
 import { t } from '@grafana/i18n';
-import { translateStepTitle, translateStepDescription, translateStepResolution, translateCheckTypeName } from 'utils';
+import { tBackend } from 'utils';
 
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 export const CHECK_TYPE_NAME_ANNOTATION = 'advisor.grafana.app/checktype-name';
+export const CHECK_TYPE_NAME_KEY_ANNOTATION = 'advisor.grafana.app/checktype-name-key';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
 export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
@@ -64,7 +65,8 @@ export function useCheckSummaries() {
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status?.report?.count ?? 0;
       const rawTypeName = checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType;
-      checkSummary[Severity.High].checks[checkType].typeName = translateCheckTypeName(checkType, rawTypeName);
+      const typeNameKey = checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_KEY_ANNOTATION];
+      checkSummary[Severity.High].checks[checkType].typeName = tBackend(typeNameKey, rawTypeName);
       checkSummary[Severity.High].checks[checkType].name = check.metadata.name ?? '';
       checkSummary[Severity.Low].checks[checkType].name = check.metadata.name ?? '';
       const canRetry = !!checkTypeDefinition?.metadata.annotations?.[RETRY_ANNOTATION];
@@ -149,12 +151,12 @@ export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>):
             (acc, step) => ({
               ...acc,
               [step.stepID]: {
-                name: translateStepTitle(step.stepID, step.title),
-                description: translateStepDescription(step.stepID, step.description),
+                name: tBackend(step.titleKey, step.title),
+                description: tBackend(step.descriptionKey, step.description),
                 stepID: step.stepID,
                 issueCount: 0,
                 issues: [],
-                resolution: translateStepResolution(step.stepID, step.resolution),
+                resolution: tBackend(step.resolutionKey, step.resolution),
               },
             }),
             {}
@@ -166,15 +168,15 @@ export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>):
 
   return {
     high: {
-      name: t('backend.severity.action-needed', 'Action needed'),
-      description: 'These checks require immediate action.',
+      name: t('severity.high.name', 'Action needed'),
+      description: t('severity.high.description', 'These checks require immediate action.'),
       severity: Severity.High,
       checks: generateChecks(),
       created: new Date(0),
     },
     low: {
-      name: t('backend.severity.investigation-needed', 'Investigation needed'),
-      description: 'These checks require further investigation.',
+      name: t('severity.low.name', 'Investigation needed'),
+      description: t('severity.low.description', 'These checks require further investigation.'),
       severity: Severity.Low,
       checks: generateChecks(),
       created: new Date(0),
