@@ -51,20 +51,18 @@ jobs:
         if: contains(github.event.pull_request.labels.*.name, 'claude-gate')
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Get Anthropic API key from Vault
-        id: vault
-        if: contains(github.event.pull_request.labels.*.name, 'claude-gate')
-        uses: grafana/shared-workflows/actions/get-vault-secrets@e46fe1e9a2bf9e618bcf8d8d32f3a7381b45c06d # get-vault-secrets/v2.0.0
-        with:
-          export_env: false
-          repo_secrets: |
-            ANTHROPIC_API_KEY=anthropic:api-key
-
       - name: Claude review
         if: contains(github.event.pull_request.labels.*.name, 'claude-gate')
         uses: anthropics/claude-code-action@e90deca47693f9457b72f2b53c17d7c445a87342 # v1.0.171
         with:
-          anthropic_api_key: ${{ fromJSON(steps.vault.outputs.secrets).ANTHROPIC_API_KEY }}
+          # Workload identity federation: the workflow's GitHub OIDC token is
+          # exchanged for a short-lived Anthropic token, no static API key.
+          # These identifiers are non-secret; substituting them only breaks the
+          # exchange, so they live in the file where changes are PR-reviewed.
+          # Never set ANTHROPIC_API_KEY on this job, it silently shadows WIF.
+          anthropic_federation_rule_id: fdrl_REPLACE_ME
+          anthropic_organization_id: 44210b8f-90d7-4121-8221-7bb85b5fbd58
+          anthropic_service_account_id: svac_REPLACE_ME
           github_token: ${{ steps.app-token.outputs.token }}
           prompt: |
             This is a Renovate dependency update PR that needs a merge/no-merge decision.
