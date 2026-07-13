@@ -6,15 +6,21 @@
     "github>grafana/grafana-renovate-config//presets/labels",
     "github>grafana/grafana-renovate-config//presets/npm"
   ],
-  "schedule": ["before 6am on the first day of the week"],
+  "schedule": [
+    "before 6am on the first day of the week"
+  ],
   "extends": [
     "github>grafana/grafana-catalog-team//renovate/renovate"
   ],
   "packageRules": [
     {
       "groupName": "Grafana packages",
-      "matchPackageNames": ["/^@grafana//"],
-      "matchDepTypes": ["dependencies"],
+      "matchPackageNames": [
+        "/^@grafana//"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
       "enabled": false
     },
     {
@@ -26,13 +32,22 @@
         "/^@types/react-dom/",
         "/^react-router-dom$/"
       ],
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
       "groupName": "All non-major npm dependencies",
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ]
     },
     {
       "groupName": "Testing tools",
@@ -77,27 +92,37 @@
     },
     {
       "description": "Automerge pilot: minor/major updates need an approval from the Claude gate workflow before GitHub auto-merge fires",
-      "matchUpdateTypes": ["minor", "major"],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
       "automerge": true,
-      "addLabels": ["claude-gate"]
+      "addLabels": [
+        "claude-gate"
+      ]
     },
     {
       "description": "Automerge pilot: clear-cut updates get a direct bot approval, required CI checks still gate the merge",
-      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "matchUpdateTypes": [
+        "patch",
+        "pin",
+        "digest"
+      ],
       "automerge": true,
-      "addLabels": ["automerge-direct"]
+      "addLabels": [
+        "automerge-direct"
+      ]
     },
     {
       "description": "Automerge pilot: dev dependencies get a direct bot approval, required CI checks still gate the merge",
-      "matchDepTypes": ["devDependencies"],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "automerge": true,
-      "addLabels": ["automerge-direct"]
+      "addLabels": [
+        "automerge-direct"
+      ]
     }
-  ],
-  "ignorePaths": [
-    "**/node_modules/**",
-    "**/bower_components/**",
-    ".config/**"
   ],
   "github-actions": {
     "enabled": true,
