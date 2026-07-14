@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.2
+
+### Bug Fixes
+
+- Defer check-type registration to createChecks (#350)
+- Remove levitate Grafana API compatibility check (#291)
+- Remove duplicated Advisor breadcrumb (#286)
+
+### Dependencies
+
+- Update dependencies
+
 ## 1.0.1
 
 ### Bug Fixes
