@@ -21,7 +21,9 @@ concurrency:
 jobs:
   approve:
     name: Renovate approve
-    if: github.event.pull_request.user.login == 'renovate-sh-app[bot]'
+    # pull_request branch filters only match the base branch, so the head
+    # branch has to be checked here at the job level.
+    if: github.event.pull_request.user.login == 'renovate-sh-app[bot]' && startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-latest
     steps:
       # Only judge PRs whose deterministic checks already passed cleanly.
