@@ -70,6 +70,9 @@ jobs:
           anthropic_organization_id: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
           anthropic_service_account_id: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
           github_token: ${{ steps.app-token.outputs.token }}
+          # The action refuses bot-initiated runs by default; renovate is the
+          # only actor that can reach this step (job-level author gate above).
+          allowed_bots: renovate-sh-app
           prompt: |
             This is a Renovate dependency update PR that needs a merge/no-merge decision.
             Repository: ${{ github.repository }}, PR number: ${{ github.event.pull_request.number }}.
