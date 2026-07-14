@@ -34,6 +34,8 @@ jest.unmock('api/api');
 // Mock the generated API hooks
 const mockListCheckQuery = jest.fn();
 const mockListCheckTypeQuery = jest.fn();
+const mockLazyListCheckTypeQueryTrigger = jest.fn();
+const mockLazyListCheckTypeQuery = jest.fn().mockReturnValue([mockLazyListCheckTypeQueryTrigger, { isLoading: false }]);
 const mockCreateCheckMutation = jest.fn();
 const mockDeleteCheckMutation = jest.fn();
 const mockUpdateCheckMutation = jest.fn();
@@ -49,6 +51,7 @@ const mockCreateRegisterMutation = jest.fn().mockReturnValue([
 jest.mock('generated', () => ({
   useListCheckQuery: (arg0: any, arg1: any) => mockListCheckQuery(arg0, arg1),
   useListCheckTypeQuery: (arg0: any, arg1: any) => mockListCheckTypeQuery(arg0, arg1),
+  useLazyListCheckTypeQuery: () => mockLazyListCheckTypeQuery(),
   useCreateCheckMutation: () => mockCreateCheckMutation(),
   useDeleteCheckMutation: () => mockDeleteCheckMutation(),
   useUpdateCheckMutation: () => mockUpdateCheckMutation(),
@@ -676,15 +679,13 @@ describe('API Hooks', () => {
       ];
 
       mockCreateCheckMutation.mockReturnValue([mockCreateCheck, { isError: false }]);
-      mockListCheckTypeQuery.mockReturnValue({
-        data: { items: mockCheckTypes },
-        isLoading: false,
-        isError: false,
+      mockLazyListCheckTypeQueryTrigger.mockReturnValue({
+        unwrap: jest.fn().mockResolvedValue({ items: mockCheckTypes }),
       });
 
       const { result } = renderHook(() => useCreateChecks());
-      await waitFor(() => {
-        result.current.createChecks();
+      await act(async () => {
+        await result.current.createChecks();
       });
 
       expect(mockCreateCheck).toHaveBeenCalledWith({
