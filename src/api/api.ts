@@ -3,6 +3,7 @@ import {
   Check,
   useListCheckQuery,
   useListCheckTypeQuery,
+  useLazyListCheckTypeQuery,
   useCreateCheckMutation,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
@@ -290,31 +291,56 @@ export function useLastChecks() {
 }
 
 export function useCreateChecks() {
-  const { checkTypes } = useCheckTypes();
+  const [createRegister] = useCreateRegisterMutation();
+  const [fetchCheckTypes] = useLazyListCheckTypeQuery();
   const [createCheck, createCheckState] = useCreateCheckMutation();
+  const [isCreating, setIsCreating] = useState(false);
 
-  const createChecks = useCallback(() => {
-    if (!checkTypes) {
-      return;
-    }
-    for (const type of checkTypes) {
-      createCheck({
-        check: {
-          kind: 'Check',
-          apiVersion: 'advisor.grafana.app/v0alpha1',
-          spec: { data: {} },
-          metadata: {
-            generateName: 'check-',
-            labels: { 'advisor.grafana.app/type': type.metadata.name ?? '' },
-            namespace: config.namespace,
+  // Register + fetch check types lazily, only when the user actually triggers a
+  // run. This hook is exposed as an extension point that mounts on every
+  // datasource page, so doing this at render time (via useCheckTypes/useRegister)
+  // would hit the /register endpoint on every page view even when no checks are run.
+  const createChecks = useCallback(async () => {
+    setIsCreating(true);
+    try {
+      // Registration is on-demand in MT and idempotent; best-effort so a failure
+      // here still lets us attempt to list already-registered check types.
+      try {
+        await createRegister().unwrap();
+      } catch (error) {
+        console.error('Failed to register check types:', error);
+      }
+
+      const checkTypes = (await fetchCheckTypes({}).unwrap()).items;
+      if (!checkTypes) {
+        return;
+      }
+      for (const type of checkTypes) {
+        createCheck({
+          check: {
+            kind: 'Check',
+            apiVersion: 'advisor.grafana.app/v0alpha1',
+            spec: { data: {} },
+            metadata: {
+              generateName: 'check-',
+              labels: { 'advisor.grafana.app/type': type.metadata.name ?? '' },
+              namespace: config.namespace,
+            },
+            status: { report: { count: 0, failures: [] } },
           },
-          status: { report: { count: 0, failures: [] } },
-        },
-      });
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create checks:', error);
+    } finally {
+      setIsCreating(false);
     }
-  }, [createCheck, checkTypes]);
+  }, [createRegister, fetchCheckTypes, createCheck]);
 
-  return { createChecks, createCheckState };
+  return {
+    createChecks,
+    createCheckState: { ...createCheckState, isLoading: isCreating || createCheckState.isLoading },
+  };
 }
 
 export function useDeleteChecks() {

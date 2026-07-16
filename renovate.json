@@ -1,19 +1,26 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "ignorePresets": [
-    "github>grafana/grafana-renovate-config//presets/automerge"
+    "github>grafana/grafana-renovate-config//presets/base",
+    "github>grafana/grafana-renovate-config//presets/automerge",
+    "github>grafana/grafana-renovate-config//presets/labels",
+    "github>grafana/grafana-renovate-config//presets/npm"
   ],
-  "schedule": ["before 6am on the first day of the week"],
+  "schedule": [
+    "before 6am on the first day of the week"
+  ],
   "extends": [
-    "config:best-practices",
-    ":disableDependencyDashboard",
-    ":preserveSemverRanges",
-    "github>grafana/grafana-renovate-config//presets/plugin-ci-workflows"
+    "github>grafana/grafana-catalog-team//renovate/renovate"
   ],
   "packageRules": [
     {
       "groupName": "Grafana packages",
-      "matchPackageNames": ["/^@grafana//"],
-      "matchDepTypes": ["dependencies"],
+      "matchPackageNames": [
+        "/^@grafana//"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
       "enabled": false
     },
     {
@@ -25,13 +32,22 @@
         "/^@types/react-dom/",
         "/^react-router-dom$/"
       ],
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
       "groupName": "All non-major npm dependencies",
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"]
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ]
     },
     {
       "groupName": "Testing tools",
@@ -73,16 +89,45 @@
         "/^prettier$/",
         "/^@types/eslint/"
       ]
+    },
+    {
+      "description": "Automerge pilot: minor/major updates need an approval from the Claude gate workflow before GitHub auto-merge fires",
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "claude-gate"
+      ]
+    },
+    {
+      "description": "Automerge pilot: clear-cut updates get a direct bot approval, required CI checks still gate the merge",
+      "matchUpdateTypes": [
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "automerge-direct"
+      ]
+    },
+    {
+      "description": "Automerge pilot: dev dependencies get a direct bot approval, required CI checks still gate the merge",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "automerge": true,
+      "addLabels": [
+        "automerge-direct"
+      ]
     }
   ],
-  "ignorePaths": [".config/**"],
   "github-actions": {
     "enabled": true,
     "groupName": "GitHub Actions"
   },
   "commitMessagePrefix": "chore(deps): ",
-  "minimumReleaseAge": "14 days",
-  "rebaseWhen": "behind-base-branch",
-  "rangeStrategy": "bump",
-  "branchPrefix": "renovate/"
+  "rangeStrategy": "bump"
 }
