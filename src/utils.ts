@@ -19,17 +19,19 @@ export const isOld = (check: CheckStatus) => {
   return tenMinutesAgo > check.lastUpdate;
 };
 
-// tBackend resolves a translation key that the backend has assigned to a
-// user-facing string it emits (step titles, descriptions, resolutions, and
-// failure-link messages). If key is missing (older backend, or the specific
-// string is not translated yet), it returns fallback — the backend's English.
+// tBackend resolves a translation for a user-facing string the backend owns
+// (check step titles, descriptions, resolutions, check type names, and
+// failure-link messages). Callers construct the key from IDs already present
+// in the API response — see the callers in api.ts / CheckTypeItem.tsx /
+// IssueDescription.tsx for the specific conventions.
 //
-// i18next's t() extractor only sees static literals, so these dynamic keys
-// aren't extracted into locale files. That's intentional: the backend owns
-// these strings and ships them via the /translations endpoint at runtime.
-export function tBackend(key: string | undefined, fallback: string): string {
-  if (!key) {
-    return fallback;
-  }
+// If the key isn't found in the loaded /translations map (e.g. the backend
+// hasn't shipped that locale yet), tBackend returns fallback — the backend's
+// English rendered by the Go step's Description()/Resolution()/Run() code.
+//
+// i18next's t() extractor only sees static literals; these dynamic keys are
+// intentionally not extracted into the frontend's own locale files. The
+// backend owns them and ships them via /translations at runtime.
+export function tBackend(key: string, fallback: string): string {
   return t(key, fallback);
 }

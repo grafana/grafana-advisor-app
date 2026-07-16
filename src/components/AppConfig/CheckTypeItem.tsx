@@ -5,7 +5,6 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
 import {
   CHECK_TYPE_NAME_ANNOTATION,
-  CHECK_TYPE_NAME_KEY_ANNOTATION,
   IGNORE_STEPS_ANNOTATION,
   IGNORE_STEPS_ANNOTATION_LIST,
 } from 'api/api';
@@ -29,8 +28,7 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
   const canIgnoreSteps = checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION] !== '';
   const ignoreSteps = checkType.metadata.annotations?.[IGNORE_STEPS_ANNOTATION_LIST]?.split(',').filter(Boolean) || [];
   const rawTypeName = checkType.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType.spec.name;
-  const typeNameKey = checkType.metadata.annotations?.[CHECK_TYPE_NAME_KEY_ANNOTATION];
-  const translatedTypeName = tBackend(typeNameKey, rawTypeName);
+  const translatedTypeName = tBackend(`advisor.${checkType.spec.name}.name`, rawTypeName);
 
   return (
     <Card className={s.checkTypeCard}>
@@ -58,7 +56,7 @@ export const CheckTypeItem: React.FC<CheckTypeItemProps> = ({
                   />
                 </div>
                 <div className={s.stepDescription}>
-                  <strong>{tBackend(step.titleKey, step.title)}</strong> - {tBackend(step.descriptionKey, step.description)}
+                  <strong>{tBackend(`advisor.${checkType.spec.name}.${step.stepID}.title`, step.title)}</strong> - {tBackend(`advisor.${checkType.spec.name}.${step.stepID}.description`, step.description)}
                 </div>
               </Stack>
             </li>

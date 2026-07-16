@@ -20,7 +20,7 @@ interface IssueDescriptionProps {
   checkName: string;
   itemID: string;
   stepID: string;
-  links: Array<{ url: string; message: string; messageKey?: string }>;
+  links: Array<{ url: string; message: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
 }
@@ -141,7 +141,13 @@ export function IssueDescription({
           />
         )}
         {links.map((link) => {
-          const translatedMessage = tBackend(link.messageKey, link.message);
+          // Backend link messages are runtime strings (e.g. "Fix me", "View plugin").
+          // Frontend derives a stable i18n key by slugifying the English message.
+          // A dynamic message like "Install Amazon Managed Service for Prometheus"
+          // slugifies to a key that isn't in en-US.json; tBackend falls back to
+          // the raw English, so dynamic links display in the backend's rendered form.
+          const slug = link.message.toLowerCase().replace(/\s+/g, '-');
+          const translatedMessage = tBackend(`advisor.link.${slug}`, link.message);
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>

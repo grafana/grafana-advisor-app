@@ -23,7 +23,6 @@ import { tBackend } from 'utils';
 export const STATUS_ANNOTATION = 'advisor.grafana.app/status';
 export const CHECK_TYPE_LABEL = 'advisor.grafana.app/type';
 export const CHECK_TYPE_NAME_ANNOTATION = 'advisor.grafana.app/checktype-name';
-export const CHECK_TYPE_NAME_KEY_ANNOTATION = 'advisor.grafana.app/checktype-name-key';
 export const RETRY_ANNOTATION = 'advisor.grafana.app/retry';
 export const IGNORE_STEPS_ANNOTATION = 'advisor.grafana.app/ignore-steps';
 export const IGNORE_STEPS_ANNOTATION_LIST = 'advisor.grafana.app/ignore-steps-list';
@@ -66,8 +65,7 @@ export function useCheckSummaries() {
 
       checkSummary[Severity.High].checks[checkType].totalCheckCount = check.status?.report?.count ?? 0;
       const rawTypeName = checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_ANNOTATION] ?? checkType;
-      const typeNameKey = checkTypeDefinition?.metadata.annotations?.[CHECK_TYPE_NAME_KEY_ANNOTATION];
-      checkSummary[Severity.High].checks[checkType].typeName = tBackend(typeNameKey, rawTypeName);
+      checkSummary[Severity.High].checks[checkType].typeName = tBackend(`advisor.${checkType}.name`, rawTypeName);
       checkSummary[Severity.High].checks[checkType].name = check.metadata.name ?? '';
       checkSummary[Severity.Low].checks[checkType].name = check.metadata.name ?? '';
       const canRetry = !!checkTypeDefinition?.metadata.annotations?.[RETRY_ANNOTATION];
@@ -152,12 +150,12 @@ export function getEmptyCheckSummary(checkTypes: Record<string, CheckTypeSpec>):
             (acc, step) => ({
               ...acc,
               [step.stepID]: {
-                name: tBackend(step.titleKey, step.title),
-                description: tBackend(step.descriptionKey, step.description),
+                name: tBackend(`advisor.${checkType.name}.${step.stepID}.title`, step.title),
+                description: tBackend(`advisor.${checkType.name}.${step.stepID}.description`, step.description),
                 stepID: step.stepID,
                 issueCount: 0,
                 issues: [],
-                resolution: tBackend(step.resolutionKey, step.resolution),
+                resolution: tBackend(`advisor.${checkType.name}.${step.stepID}.resolution`, step.resolution),
               },
             }),
             {}

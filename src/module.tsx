@@ -7,12 +7,23 @@ import pluginJson from './plugin.json';
 import { AppConfig } from './components/AppConfig/AppConfig';
 import { useCompletedChecks, useCreateChecks, useRetryCheck } from './api/api';
 import { BASE_URL } from './generated/baseAPI';
+import { loadResources } from './i18n/loadResources';
 
-// backendLoader fetches translations for strings the backend owns (check step
-// titles/descriptions/resolutions and failure-link messages). The backend
-// serves a flat { key -> string } map at /translations?lang={locale}. Keys
-// arrive on step/link objects as titleKey/descriptionKey/resolutionKey/messageKey
-// and are resolved via tBackend(key, fallback).
+// Two loaders feed the same i18next namespace:
+//
+//   loadResources     — plugin-owned frontend strings (button labels, section
+//                       headers, tooltips). Bundled with the plugin.
+//   backendLoader     — backend-owned strings (check step titles, descriptions,
+//                       resolutions, failure-link messages) fetched at runtime
+//                       from the advisor API's /translations endpoint.
+//
+// Keys the backendLoader map uses are constructed client-side from IDs already
+// present in the API response — see tBackend callers in api.ts,
+// CheckTypeItem.tsx, IssueDescription.tsx:
+//
+//   advisor.{checkTypeID}.name
+//   advisor.{checkTypeID}.{stepID}.{title,description,resolution}
+//   advisor.link.{slugified-message}
 const backendLoader: ResourceLoader = async (locale) => {
   try {
     const response = await getBackendSrv().get<{ translations?: Record<string, string> }>(
@@ -26,7 +37,7 @@ const backendLoader: ResourceLoader = async (locale) => {
   }
 };
 
-await initPluginTranslations(pluginJson.id, [backendLoader]);
+await initPluginTranslations(pluginJson.id, [loadResources, backendLoader]);
 
 const LazyApp = lazy(() => import('./components/App/App'));
 
