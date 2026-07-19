@@ -17,7 +17,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@grafana/eslint-config": "10.0.0",
-    "@grafana/plugin-e2e": "3.9.2",
+    "@grafana/plugin-e2e": "3.10.0",
     "@grafana/tsconfig": "2.2.0",
     "@playwright/test": "1.61.1",
     "@stylistic/eslint-plugin-ts": "4.4.1",
@@ -85,7 +85,7 @@
     "react-use": "17.6.1",
     "rxjs": "7.8.2"
   },
-  "packageManager": "npm@12.0.0",
+  "packageManager": "npm@12.0.1",
   "overrides": {
     "@grafana/assistant": {
       "@grafana/data": "$@grafana/data",
@@ -97,7 +97,7 @@
       "@grafana/data": "$@grafana/data",
       "@grafana/runtime": "$@grafana/runtime"
     },
-    "dompurify": "3.4.11",
+    "dompurify": "3.4.12",
     "immutable": "5.1.9",
     "js-cookie": "3.0.8",
     "uuid": "14.0.1"
