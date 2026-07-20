@@ -6,9 +6,6 @@
     "github>grafana/grafana-renovate-config//presets/labels",
     "github>grafana/grafana-renovate-config//presets/npm"
   ],
-  "schedule": [
-    "before 6am on the first day of the week"
-  ],
   "extends": [
     "github>grafana/grafana-catalog-team//renovate/renovate"
   ],
