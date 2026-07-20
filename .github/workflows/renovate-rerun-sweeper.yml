@@ -9,7 +9,7 @@ name: Renovate rerun sweeper
 
 on:
   schedule:
-    - cron: '23 * * * *'
+    - cron: '23 7-15 * * 1-4'
   workflow_dispatch:
 
 permissions:
