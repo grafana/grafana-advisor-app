@@ -11,26 +11,13 @@
   ],
   "packageRules": [
     {
+      "description": "Runtime @grafana packages are provided by Grafana itself, bumping them raises the effective minimum Grafana version and must happen deliberately together with grafanaDependency",
       "groupName": "Grafana packages",
       "matchPackageNames": [
         "/^@grafana//"
       ],
       "matchDepTypes": [
         "dependencies"
-      ],
-      "enabled": false
-    },
-    {
-      "groupName": "React and React DOM",
-      "matchPackageNames": [
-        "/^react$/",
-        "/^@types/react/",
-        "/^react-dom$/",
-        "/^@types/react-dom/",
-        "/^react-router-dom$/"
-      ],
-      "matchUpdateTypes": [
-        "major"
       ],
       "enabled": false
     },
@@ -44,47 +31,6 @@
         "patch",
         "pin",
         "digest"
-      ]
-    },
-    {
-      "groupName": "Testing tools",
-      "matchPackageNames": [
-        "/^jest$/",
-        "/^jest-/",
-        "/^@jest//",
-        "/^@testing-library//",
-        "/^@playwright//",
-        "/^playwright$/",
-        "/^@types/jest/",
-        "/^@types/testing-library/"
-      ]
-    },
-    {
-      "groupName": "Build tools",
-      "matchPackageNames": [
-        "/^webpack$/",
-        "/^webpack-/",
-        "/-webpack-plugin$/",
-        "/-loader$/",
-        "/^@swc//",
-        "/^swc-/",
-        "/^terser-/",
-        "/^copy-webpack-plugin$/",
-        "/^fork-ts-checker-webpack-plugin$/",
-        "/^replace-in-file-webpack-plugin$/",
-        "/^ts-node$/"
-      ]
-    },
-    {
-      "groupName": "TypeScript and linting",
-      "matchPackageNames": [
-        "/^typescript$/",
-        "/^@typescript-eslint//",
-        "/^eslint$/",
-        "/^eslint-/",
-        "/^@stylistic//",
-        "/^prettier$/",
-        "/^@types/eslint/"
       ]
     },
     {
@@ -103,17 +49,8 @@
       "matchUpdateTypes": [
         "patch",
         "pin",
-        "digest"
-      ],
-      "automerge": true,
-      "addLabels": [
-        "automerge-direct"
-      ]
-    },
-    {
-      "description": "Automerge pilot: dev dependencies get a direct bot approval, required CI checks still gate the merge",
-      "matchDepTypes": [
-        "devDependencies"
+        "digest",
+        "lockFileMaintenance"
       ],
       "automerge": true,
       "addLabels": [
