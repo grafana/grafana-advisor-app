@@ -8,7 +8,7 @@ export const renderWithRouter = (ui: React.ReactElement, { route = '/' } = {}) =
   return waitFor(() =>
     render(
       <ContextProvider>
-        <MemoryRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }} initialEntries={[route]}>
+        <MemoryRouter initialEntries={[route]}>
           {ui}
         </MemoryRouter>
       </ContextProvider>

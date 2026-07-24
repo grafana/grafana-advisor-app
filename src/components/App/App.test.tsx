@@ -26,7 +26,7 @@ describe('Components/App', () => {
 
   test('renders without an error"', async () => {
     render(
-      <BrowserRouter basename="/" future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter basename="/">
         <App {...props} />
       </BrowserRouter>
     );

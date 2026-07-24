@@ -30,9 +30,7 @@ const defaultProps = {
 };
 
 const renderWithRouter = (component: React.ReactElement) => {
-  return render(
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>{component}</BrowserRouter>
-  );
+  return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
 describe('IssueDescription', () => {
