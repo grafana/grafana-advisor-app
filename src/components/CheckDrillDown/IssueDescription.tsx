@@ -20,7 +20,7 @@ interface IssueDescriptionProps {
   checkName: string;
   itemID: string;
   stepID: string;
-  links: Array<{ url: string; message: string }>;
+  links: Array<{ url: string; message: string; messageKey?: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
 }
@@ -141,13 +141,12 @@ export function IssueDescription({
           />
         )}
         {links.map((link) => {
-          // Backend link messages are runtime strings (e.g. "Fix me", "View plugin").
-          // Frontend derives a stable i18n key by slugifying the English message.
-          // A dynamic message like "Install Amazon Managed Service for Prometheus"
-          // slugifies to a key that isn't in en-US.json; tBackend falls back to
-          // the raw English, so dynamic links display in the backend's rendered form.
-          const slug = link.message.toLowerCase().replace(/\s+/g, '-');
-          const translatedMessage = tBackend(`advisor.link.${slug}`, link.message);
+          // Newer backends ship the i18n key explicitly as messageKey, so the key
+          // stays valid even if the English text changes. For older backends we
+          // fall back to slugifying the English message; if that derived key isn't
+          // in the translations map, tBackend falls back to the raw English.
+          const key = link.messageKey ?? `advisor.link.${link.message.toLowerCase().replace(/\s+/g, '-')}`;
+          const translatedMessage = tBackend(key, link.message);
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
