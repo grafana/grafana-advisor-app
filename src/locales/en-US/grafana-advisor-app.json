@@ -21,8 +21,7 @@
     "title": "Available Check Types"
   },
   "check-drill-down": {
-    "step-failed_one": "{{stepName}} failed for {{count}} {{typeName}}{{plural}}.",
-    "step-failed_other": "{{stepName}} failed for {{count}} {{typeName}}{{plural}}."
+    "step-failed": "{{stepName}} failed for {{typeName}} ({{issueCount}})"
   },
   "check-error": {
     "message": "Check failed to complete. See server logs for details or try again."

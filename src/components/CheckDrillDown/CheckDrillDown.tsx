@@ -94,11 +94,10 @@ export default function CheckDrillDown({
                   label={
                     <div className={styles.description}>
                       <div>
-                        {t('check-drill-down.step-failed', '{{stepName}} failed for {{count}} {{typeName}}{{plural}}.', {
+                        {t('check-drill-down.step-failed', '{{stepName}} failed for {{typeName}} ({{issueCount}})', {
                           stepName: step.name,
-                          count: issues.length,
+                          issueCount: issues.length,
                           typeName: check.typeName || check.type,
-                          plural: issues.length > 1 ? 's' : '',
                         })}
                       </div>
                       <div

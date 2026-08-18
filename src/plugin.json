@@ -51,5 +51,5 @@
     "grafanaDependency": ">=12.3.0-0 <12.4.0 || >=12.4.1-0",
     "plugins": []
   },
-  "languages": ["en-US", "es-ES", "de-DE"]
+  "languages": ["en-US"]
 }

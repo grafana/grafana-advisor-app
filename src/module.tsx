@@ -26,9 +26,14 @@ import { loadResources } from './i18n/loadResources';
 //   advisor.link.{slugified-message}
 const backendLoader: ResourceLoader = async (locale) => {
   try {
+    // showErrorAlert: false — a missing or failing /translations endpoint (e.g. an
+    // older Grafana without it) must degrade silently to the English fallback, not
+    // pop a global error toast at the user.
     const response = await getBackendSrv().get<{ translations?: Record<string, string> }>(
       `${BASE_URL}/translations`,
-      { lang: locale }
+      { lang: locale },
+      undefined,
+      { showErrorAlert: false }
     );
     return response?.translations ?? {};
   } catch (error) {
