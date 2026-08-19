@@ -81,7 +81,7 @@ describe('CheckSummary', () => {
     await user.click(screen.getByText(/Test Check/i));
 
     // Check if drilldown content is visible
-    expect(screen.getByText('Step 1 failed for test (2)')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 failed for 2 item(s)')).toBeInTheDocument();
 
     // Click to expand step 1
     await user.click(screen.getByText(/Step 1/i));

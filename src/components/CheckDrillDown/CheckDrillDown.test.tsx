@@ -32,6 +32,7 @@ describe('Components/CheckDrillDown', () => {
 
     // Plugins
     checkSummaries.high.checks.plugin.issueCount = 0;
+    checkSummaries.high.checks.plugin.steps.step1.name = 'Plugin Step';
     checkSummaries.high.checks.plugin.steps.step1.issues = [];
     defaultProps = {
       checkSummary: checkSummaries.high,
@@ -48,7 +49,7 @@ describe('Components/CheckDrillDown', () => {
 
   test('should not display a check that has no issues', async () => {
     renderWithRouter(<CheckDrillDown {...defaultProps} />);
-    expect(screen.queryByText(/Step 1 failed for plugin/im)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Plugin Step failed for/im)).not.toBeInTheDocument();
   });
 
   test('should display a summary of the failing steps', async () => {
@@ -135,13 +136,13 @@ describe('Components/CheckDrillDown', () => {
   test('should hide a hidden issue', async () => {
     checkSummaries.high.checks.datasource.steps.step1.issues[0].isHidden = true;
     renderWithRouter(<CheckDrillDown {...defaultProps} checkSummary={checkSummaries.high} />);
-    expect(screen.queryByText(/Step 1 failed for datasource/im)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Step 1 failed for 1 item/im)).not.toBeInTheDocument();
   });
 
   test('should show a hidden issue if the showHiddenIssues prop is true', async () => {
     checkSummaries.high.checks.datasource.steps.step1.issues[0].isHidden = true;
     renderWithRouter(<CheckDrillDown {...defaultProps} checkSummary={checkSummaries.high} showHiddenIssues={true} />);
-    expect(screen.getByText(/Step 1 failed for datasource/im)).toBeInTheDocument();
+    expect(screen.getByText(/Step 1 failed for 1 item/im)).toBeInTheDocument();
   });
 
   test('should not trigger onToggle when clicking on a link in the resolution', async () => {

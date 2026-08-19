@@ -21,7 +21,7 @@
     "title": "Tipos de verificación disponibles"
   },
   "check-drill-down": {
-    "step-failed": "{{stepName}} falló para {{typeName}} ({{issueCount}})"
+    "step-failed": "{{stepName}} falló para {{issueCount}} elemento(s)"
   },
   "check-error": {
     "message": "La verificación no se completó. Consulte los registros del servidor para más detalles o inténtelo de nuevo."

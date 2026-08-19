@@ -21,7 +21,7 @@
     "title": "Verfügbare Prüfungstypen"
   },
   "check-drill-down": {
-    "step-failed": "{{stepName}} ist für {{typeName}} fehlgeschlagen ({{issueCount}})"
+    "step-failed": "{{stepName}} ist für {{issueCount}} Element(e) fehlgeschlagen"
   },
   "check-error": {
     "message": "Prüfung konnte nicht abgeschlossen werden. Überprüfen Sie die Serverprotokolle für Details oder versuchen Sie es erneut."
