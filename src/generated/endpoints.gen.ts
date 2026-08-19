@@ -857,6 +857,9 @@ export type CheckOperatorState = {
 export type CheckErrorLink = {
   /** Human readable error message */
   message: string;
+  /** i18n key for the message (e.g. "advisor.link.fix-me"), so the
+    frontend can translate without deriving the key from the text */
+  messageKey?: string;
   /** URL to a page with more information about the error */
   url: string;
 };

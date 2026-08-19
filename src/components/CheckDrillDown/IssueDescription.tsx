@@ -2,9 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { css, cx } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, IconName } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
 import { useAssistantHelp, useLLMSuggestion } from 'api/api';
+import { tBackend } from 'utils';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
@@ -18,7 +20,7 @@ interface IssueDescriptionProps {
   checkName: string;
   itemID: string;
   stepID: string;
-  links: Array<{ url: string; message: string }>;
+  links: Array<{ url: string; message: string; messageKey?: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
 }
@@ -93,10 +95,10 @@ export function IssueDescription({
             className={styles.issueLink}
             icon="ai"
             variant={llmSectionOpen ? 'primary' : 'secondary'}
-            title={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            title={llmSectionOpen ? t('issue-description.hide-ai-suggestion', 'Hide AI suggestion') : t('issue-description.generate-ai-suggestion', 'Generate AI suggestion')}
             onClick={handleAISuggestionClick}
-            aria-label={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
-            tooltip={llmSectionOpen ? 'Hide AI suggestion' : 'Generate AI suggestion'}
+            aria-label={llmSectionOpen ? t('issue-description.hide-ai-suggestion', 'Hide AI suggestion') : t('issue-description.generate-ai-suggestion', 'Generate AI suggestion')}
+            tooltip={llmSectionOpen ? t('issue-description.hide-ai-suggestion', 'Hide AI suggestion') : t('issue-description.generate-ai-suggestion', 'Generate AI suggestion')}
           />
         )}
         <Button
@@ -105,8 +107,8 @@ export function IssueDescription({
           variant="secondary"
           data-testid={testIds.CheckDrillDown.hideButton(item)}
           onClick={handleSilenceClick}
-          aria-label={isHidden ? 'Show issue' : 'Hide issue'}
-          tooltip={isHidden ? 'Show issue' : 'Hide issue'}
+          aria-label={isHidden ? t('issue-description.show-issue', 'Show issue') : t('issue-description.hide-issue', 'Hide issue')}
+          tooltip={isHidden ? t('issue-description.show-issue', 'Show issue') : t('issue-description.hide-issue', 'Hide issue')}
         />
         {canRetry && (
           <Button
@@ -124,8 +126,8 @@ export function IssueDescription({
                 setLocalIsRetrying(false);
               }, 1000);
             }}
-            aria-label="Retry check"
-            tooltip="Retry check"
+            aria-label={t('issue-description.retry-check', 'Retry check')}
+            tooltip={t('issue-description.retry-check', 'Retry check')}
           />
         )}
         {isAssistantAvailable && (
@@ -135,10 +137,16 @@ export function IssueDescription({
             variant="secondary"
             disabled={isAssistantLoading}
             onClick={handleAskAssistantClick}
-            tooltip="Ask Assistant"
+            tooltip={t('issue-description.ask-assistant', 'Ask Assistant')}
           />
         )}
         {links.map((link) => {
+          // Newer backends ship the i18n key explicitly as messageKey, so the key
+          // stays valid even if the English text changes. For older backends we
+          // fall back to slugifying the English message; if that derived key isn't
+          // in the translations map, tBackend falls back to the raw English.
+          const key = link.messageKey ?? `advisor.link.${link.message.toLowerCase().replace(/\s+/g, '-')}`;
+          const translatedMessage = tBackend(key, link.message);
           const extraProps = link.url.startsWith('http') ? { target: 'blank', rel: 'noopener noreferrer' } : {};
           return (
             <a key={link.url} href={link.url} onClick={handleResolutionClick} {...extraProps}>
@@ -147,7 +155,7 @@ export function IssueDescription({
                 icon={getIcon(link.message)}
                 variant="primary"
                 data-testid={testIds.CheckDrillDown.actionLink(item, link.message)}
-                tooltip={link.message}
+                tooltip={translatedMessage}
               />
             </a>
           );
