@@ -1,4 +1,4 @@
-import { usePluginInteractionReporter } from '@grafana/runtime';
+import { config, usePluginInteractionReporter } from '@grafana/runtime';
 import { useCallback } from 'react';
 
 // Enums for interaction types
@@ -28,6 +28,17 @@ function normalizeEventName(name: string): string {
 // Custom hook for tracking user interactions
 export function useInteractionTracker() {
   const report = usePluginInteractionReporter();
+
+  // App view tracking — fired once when the Advisor page is opened. Reports the
+  // user's configured language so we can measure how many people use Advisor in
+  // a language other than English.
+  const trackAppTranslated = useCallback(() => {
+    const language = config.bootData.user.language;
+    report('grafana_plugin_advisor_app_translated', {
+      language: language || 'default',
+      is_default_language: !language || language.startsWith('en'),
+    });
+  }, [report]);
 
   // Group toggle tracking
   const trackGroupToggle = useCallback(
@@ -71,6 +82,7 @@ export function useInteractionTracker() {
   );
 
   return {
+    trackAppTranslated,
     trackGroupToggle,
     trackCheckInteraction,
     trackGlobalAction,
