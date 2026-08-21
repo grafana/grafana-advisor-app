@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { Alert, EmptyState, Icon, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { isFetchError, PluginPage } from '@grafana/runtime';
@@ -11,9 +11,17 @@ import { useCheckSummaries, useCompletedChecks, useRetryCheck } from 'api/api';
 import { formatDate } from 'utils';
 import { InfoNotification } from 'components/InfoNotification/InfoNotification';
 import { NoChecksEmptyState } from 'components/NoChecksEmptyState';
+import { useInteractionTracker } from 'api/useInteractionTracker';
 
 export default function Home() {
   const styles = useStyles2(getStyles);
+  const { trackAppTranslated } = useInteractionTracker();
+
+  // Track a single app-view event per page open, capturing the UI language.
+  useEffect(() => {
+    trackAppTranslated();
+  }, [trackAppTranslated]);
+
   const {
     summaries,
     isLoading,

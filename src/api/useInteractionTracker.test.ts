@@ -1,15 +1,26 @@
 import { renderHook } from '@testing-library/react';
 import { useInteractionTracker, CheckInteractionType, GlobalActionType } from './useInteractionTracker';
-import { usePluginInteractionReporter } from '@grafana/runtime';
+import { config, usePluginInteractionReporter } from '@grafana/runtime';
 
 // Mock @grafana/runtime
 jest.mock('@grafana/runtime', () => ({
   usePluginInteractionReporter: jest.fn(),
+  config: {
+    bootData: {
+      user: {
+        language: 'en-US',
+      },
+    },
+  },
 }));
 
 const mockUsePluginInteractionReporter = usePluginInteractionReporter as jest.MockedFunction<
   typeof usePluginInteractionReporter
 >;
+
+const setUserLanguage = (language: string) => {
+  config.bootData.user.language = language;
+};
 
 describe('useInteractionTracker', () => {
   let mockReport: jest.Mock;
@@ -21,6 +32,44 @@ describe('useInteractionTracker', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('trackAppTranslated', () => {
+    it('should track app view with a non-English language flagged as not default', () => {
+      setUserLanguage('es-ES');
+      const { result } = renderHook(() => useInteractionTracker());
+
+      result.current.trackAppTranslated();
+
+      expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_app_translated', {
+        language: 'es-ES',
+        is_default_language: false,
+      });
+    });
+
+    it('should flag English as the default language', () => {
+      setUserLanguage('en-US');
+      const { result } = renderHook(() => useInteractionTracker());
+
+      result.current.trackAppTranslated();
+
+      expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_app_translated', {
+        language: 'en-US',
+        is_default_language: true,
+      });
+    });
+
+    it('should label an unset language as the default', () => {
+      setUserLanguage('');
+      const { result } = renderHook(() => useInteractionTracker());
+
+      result.current.trackAppTranslated();
+
+      expect(mockReport).toHaveBeenCalledWith('grafana_plugin_advisor_app_translated', {
+        language: 'default',
+        is_default_language: true,
+      });
+    });
   });
 
   describe('trackGroupToggle', () => {
