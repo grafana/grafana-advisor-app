@@ -62,7 +62,7 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
 const getStyles = (theme: GrafanaTheme2) => ({
   statusSection: css({
     position: 'relative',
-    zIndex: 1001,
+    zIndex: theme.zIndex.dropdown,
   }),
   collapseLabel: css({
     display: 'flex',
@@ -75,15 +75,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     },
   }),
   checksContainer: css({
-    maxWidth: '300px',
+    maxWidth: theme.spacing(37.5),
     padding: theme.spacing(2),
     backgroundColor: theme.colors.background.primary,
-    borderRadius: theme.shape.radius.default,
+    borderRadius: theme.shape.radius.lg,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(1),
-    position: 'relative',
-    zIndex: 1002,
   }),
   checkItem: css({
     display: 'flex',
@@ -94,7 +92,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.success.text,
   }),
   spinnerIcon: css({
-    color: theme.colors.primary.text,
+    color: theme.colors.text.secondary,
   }),
   errorIcon: css({
     color: theme.colors.error.text,
