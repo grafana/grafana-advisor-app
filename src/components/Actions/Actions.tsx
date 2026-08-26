@@ -121,7 +121,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-end',
-    minWidth: '200px',
+    minWidth: theme.spacing(25),
     marginTop: theme.spacing(1),
   }),
   actionsContainer: css({

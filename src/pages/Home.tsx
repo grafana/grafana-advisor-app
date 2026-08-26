@@ -194,7 +194,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginTop: theme.spacing(-1),
   }),
   feedback: css({
-    margin: '6px',
+    margin: theme.spacing(0.75),
     color: theme.colors.text.link,
     fontSize: theme.typography.bodySmall.fontSize,
     '&:hover': {
