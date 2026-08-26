@@ -44,7 +44,7 @@ const getStyles = (severity: Severity) => (theme: GrafanaTheme2) => {
     checks: css({
       padding: theme.spacing(2),
       paddingTop: 0,
-      backgrounColor: theme.colors.background.primary,
+      backgroundColor: theme.colors.background.primary,
     }),
   };
 };

@@ -170,6 +170,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   issue: css({
     color: theme.colors.text.secondary,
     backgroundColor: theme.colors.background.secondary,
+    borderRadius: theme.shape.radius.default,
     padding: theme.spacing(2),
     marginBottom: theme.spacing(1),
     borderColor: 'transparent',
@@ -182,6 +183,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   issueHidden: css({
     color: theme.colors.text.secondary,
     backgroundColor: theme.colors.background.secondary,
+    borderRadius: theme.shape.radius.default,
     padding: theme.spacing(2),
     marginBottom: theme.spacing(1),
     borderColor: 'transparent',

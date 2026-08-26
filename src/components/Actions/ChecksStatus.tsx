@@ -22,7 +22,7 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
   return (
     <Stack direction="row" gap={1}>
       {(!allChecksCompleted || hasError) && (
-        <div>
+        <div className={styles.statusSection}>
           <Collapse
             isOpen={isStatusExpanded}
             onToggle={() => setIsStatusExpanded(!isStatusExpanded)}
@@ -60,6 +60,10 @@ export default function ChecksStatus({ checkStatuses }: RunningChecksStatusProps
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  statusSection: css({
+    position: 'relative',
+    zIndex: theme.zIndex.dropdown,
+  }),
   collapseLabel: css({
     display: 'flex',
     alignItems: 'center',
@@ -74,7 +78,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     maxWidth: theme.spacing(37.5),
     padding: theme.spacing(2),
     backgroundColor: theme.colors.background.primary,
-    borderRadius: theme.shape.radius.default,
+    borderRadius: theme.shape.radius.lg,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(1),
@@ -88,7 +92,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.success.text,
   }),
   spinnerIcon: css({
-    color: theme.colors.primary.text,
+    color: theme.colors.text.secondary,
   }),
   errorIcon: css({
     color: theme.colors.error.text,
