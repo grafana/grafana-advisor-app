@@ -18,7 +18,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@grafana/eslint-config": "10.0.0",
-    "@grafana/plugin-e2e": "3.11.1",
+    "@grafana/plugin-e2e": "3.12.0",
     "@grafana/tsconfig": "2.2.0",
     "@playwright/test": "1.63.0",
     "@stylistic/eslint-plugin-ts": "4.4.1",
@@ -99,7 +99,7 @@
       "@grafana/data": "$@grafana/data",
       "@grafana/runtime": "$@grafana/runtime"
     },
-    "dompurify": "3.4.14",
+    "dompurify": "3.4.15",
     "immutable": "5.1.9",
     "js-cookie": "3.0.8",
     "uuid": "14.0.2"
