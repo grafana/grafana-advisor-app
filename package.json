@@ -74,7 +74,7 @@
     "@grafana/assistant": "0.1.24",
     "@grafana/data": "13.1.0-27110140411",
     "@grafana/i18n": "13.1.0-27110140411",
-    "@grafana/llm": "0.22.1",
+    "@grafana/llm": "1.0.9",
     "@grafana/runtime": "13.1.0-27110140411",
     "@grafana/schema": "13.1.0-27110140411",
     "@grafana/ui": "13.1.0-27110140411",
