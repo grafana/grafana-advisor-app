@@ -11,15 +11,10 @@
   ],
   "packageRules": [
     {
-      "description": "Runtime @grafana packages are provided by Grafana itself, bumping them raises the effective minimum Grafana version and must happen deliberately together with grafanaDependency",
       "groupName": "Grafana packages",
       "matchPackageNames": [
         "/^@grafana//"
-      ],
-      "matchDepTypes": [
-        "dependencies"
-      ],
-      "enabled": false
+      ]
     },
     {
       "groupName": "All non-major npm dependencies",
