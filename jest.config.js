@@ -3,7 +3,7 @@
 process.env.TZ = 'UTC';
 
 const path = require('path');
-const { grafanaESModules } = require('./.config/jest/utils');
+const { grafanaESModules, nodeModulesToTransform } = require('./.config/jest/utils');
 
 module.exports = {
   // Jest configuration provided by Grafana scaffolding
@@ -16,4 +16,6 @@ module.exports = {
     // Add @grafana/llm mock
     '^@grafana/llm$': path.resolve(__dirname, 'src/__mocks__/grafana-llm.ts'),
   },
+  // @grafana/data pulls in @react-hookz/web (and its dep @ver0/deep-equal), which only ship ESM builds
+  transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, '@react-hookz/web', '@ver0/deep-equal'])],
 };
