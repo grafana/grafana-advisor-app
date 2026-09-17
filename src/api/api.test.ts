@@ -655,14 +655,14 @@ describe('API Hooks', () => {
       expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isHidden).toBe(false);
       expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(1);
 
-      await waitFor(() => {
+      act(() => {
         result.current.handleHideIssue('step1', 'item1', true);
       });
       expect(result.current.summaries.high.checks.type1.steps.step1.issues[0].isHidden).toBe(true);
       expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(0);
 
       // Still counts as an issue if showHiddenIssues is true
-      await waitFor(() => {
+      act(() => {
         result.current.setShowHiddenIssues(true);
       });
       expect(result.current.summaries.high.checks.type1.steps.step1.issueCount).toBe(1);

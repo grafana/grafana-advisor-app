@@ -1,6 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import CheckDrillDown, { CheckDrillDownProps } from './CheckDrillDown';
 import { CheckSummaries, Severity } from 'types';
 import { getEmptyCheckSummary, getEmptyCheckTypes } from 'api/api';
@@ -65,8 +64,7 @@ describe('Components/CheckDrillDown', () => {
   test('should display the failing items under the step', async () => {
     renderWithRouter(<CheckDrillDown {...defaultProps} />);
     // Click on the step
-    const user = userEvent.setup();
-    await user.click(screen.getByText(/Step 1 failed/i));
+    fireEvent.click(screen.getByText(/Step 1 failed/i));
     expect(
       await screen.findByText(checkSummaries.high.checks.datasource.steps.step1.issues[0].item)
     ).toBeInTheDocument();
@@ -75,8 +73,7 @@ describe('Components/CheckDrillDown', () => {
   test('should display a button if the step issue has a link', async () => {
     renderWithRouter(<CheckDrillDown {...defaultProps} />);
     // Click on the step
-    const user = userEvent.setup();
-    await user.click(screen.getByText(/Step 1 failed/i));
+    fireEvent.click(screen.getByText(/Step 1 failed/i));
     expect(
       await screen.findByRole('button', {
         name: checkSummaries.high.checks.datasource.steps.step1.issues[0].links[0].message,
@@ -103,11 +100,10 @@ describe('Components/CheckDrillDown', () => {
   test('should display a retry button if the step issue has a retry annotation', async () => {
     renderWithRouter(<CheckDrillDown {...defaultProps} />);
     // Click on the step
-    const user = userEvent.setup();
-    await user.click(screen.getByText(/Step 1 failed/i));
+    fireEvent.click(screen.getByText(/Step 1 failed/i));
     expect(screen.getByRole('button', { name: 'Retry check' })).toBeInTheDocument();
     // Click on the retry button
-    await user.click(screen.getByRole('button', { name: 'Retry check' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry check' }));
     expect(defaultProps.retryCheck).toHaveBeenCalledWith('datasource', 'item1');
   });
 
@@ -115,8 +111,7 @@ describe('Components/CheckDrillDown', () => {
     defaultProps.isCompleted = false;
     renderWithRouter(<CheckDrillDown {...defaultProps} />);
     // Click on the step
-    const user = userEvent.setup();
-    await user.click(screen.getByText(/Step 1 failed/i));
+    fireEvent.click(screen.getByText(/Step 1 failed/i));
 
     const retryButton = screen.getByRole('button', { name: 'Retry check' });
     expect(retryButton).toHaveAttribute('aria-disabled', 'true');
@@ -126,10 +121,9 @@ describe('Components/CheckDrillDown', () => {
     const handleHideIssue = jest.fn();
     renderWithRouter(<CheckDrillDown {...defaultProps} handleHideIssue={handleHideIssue} />);
     // Click on the step
-    const user = userEvent.setup();
-    await user.click(screen.getByText(/Step 1 failed/i));
+    fireEvent.click(screen.getByText(/Step 1 failed/i));
     // Click on the hide button
-    await user.click(screen.getByRole('button', { name: 'Hide issue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hide issue' }));
     expect(handleHideIssue).toHaveBeenCalledWith('step1', 'item1', true);
   });
 
@@ -153,8 +147,6 @@ describe('Components/CheckDrillDown', () => {
     // Render the component
     await renderWithRouter(<CheckDrillDown {...defaultProps} />);
 
-    const user = userEvent.setup();
-
     // Find the collapse component by its label text
     const collapseHeader = screen.getByText(/Step 1 failed/i);
     expect(collapseHeader).toBeInTheDocument();
@@ -167,19 +159,19 @@ describe('Components/CheckDrillDown', () => {
     expect(screen.queryByRole('button', { name: 'More info' })).not.toBeInTheDocument();
 
     // Click on the resolution link
-    await user.click(resolutionLink);
+    fireEvent.click(resolutionLink);
 
     // Verify that the collapse did not toggle (the content inside should still not be visible)
     expect(screen.queryByRole('button', { name: 'More info' })).not.toBeInTheDocument();
 
     // Additional verification: click on the collapse header to ensure it still works normally
-    await user.click(collapseHeader);
+    fireEvent.click(collapseHeader);
 
     // Now the collapse should be open with content visible
     expect(screen.getByRole('button', { name: 'More info' })).toBeInTheDocument();
 
     // Click on the resolution link again when the collapse is open
-    await user.click(resolutionLink);
+    fireEvent.click(resolutionLink);
 
     // The collapse should still remain open (not toggled by the link click)
     expect(screen.getByRole('button', { name: 'More info' })).toBeInTheDocument();
