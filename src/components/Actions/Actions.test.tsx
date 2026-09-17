@@ -1,6 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Actions from './Actions';
 
 const mockUseCreateChecks = jest.fn();
@@ -12,7 +11,6 @@ jest.mock('api/api', () => ({
 }));
 
 describe('Actions', () => {
-  const user = userEvent.setup();
   const defaultProps = {
     isCompleted: true,
     checkStatuses: [],
@@ -72,7 +70,7 @@ describe('Actions', () => {
   it('shows confirmation modal when delete reports button clicked', async () => {
     render(<Actions {...defaultProps} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
-    await user.click(deleteButton);
+    fireEvent.click(deleteButton);
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /delete reports\?/i })).toBeInTheDocument();
@@ -89,10 +87,10 @@ describe('Actions', () => {
 
     render(<Actions {...defaultProps} />);
     const deleteButton = screen.getByRole('button', { name: /delete reports/i });
-    await user.click(deleteButton);
+    fireEvent.click(deleteButton);
 
     const confirmButton = screen.getByRole('button', { name: /confirm/i });
-    await user.click(confirmButton);
+    fireEvent.click(confirmButton);
 
     await waitFor(() => {
       expect(mockDeleteFn).toHaveBeenCalled();
@@ -126,7 +124,7 @@ describe('Actions', () => {
 
     render(<Actions {...defaultProps} />);
     const refreshButton = screen.getByRole('button', { name: /refresh/i });
-    await user.click(refreshButton);
+    fireEvent.click(refreshButton);
 
     await waitFor(() => {
       expect(mockCreateFn).toHaveBeenCalled();
@@ -138,7 +136,7 @@ describe('Actions', () => {
     render(<Actions {...defaultProps} setShowHiddenIssues={mockSetShowHiddenIssues} />);
 
     const toggleButton = screen.getByRole('button', { name: /show silenced issues/i });
-    await user.click(toggleButton);
+    fireEvent.click(toggleButton);
 
     await waitFor(() => {
       expect(mockSetShowHiddenIssues).toHaveBeenCalledWith(true);
