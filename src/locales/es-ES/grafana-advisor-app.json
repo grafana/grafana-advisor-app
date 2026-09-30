@@ -46,11 +46,6 @@
     "check-types": "Tipos de verificación",
     "show-status": "Mostrar estado de las verificaciones"
   },
-  "feature-flag-missing": {
-    "description": "Grafana Advisor requiere que el indicador de función <1>grafanaAdvisor</1> esté habilitado.",
-    "instructions-link": "Instrucciones para habilitar el indicador de función:",
-    "title": "Indicador de función faltante."
-  },
   "home": {
     "error-body": "Consulte los registros del servidor para más detalles, actualice el informe o abra un ticket de soporte si el problema persiste.",
     "error-title": "Error al cargar las verificaciones",

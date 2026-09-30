@@ -44,11 +44,6 @@
     "check-types": "Prüfungstypen",
     "show-status": "Prüfungsstatus anzeigen"
   },
-  "feature-flag-missing": {
-    "description": "Grafana Advisor erfordert, dass der Feature-Toggle <1>grafanaAdvisor</1> aktiviert ist.",
-    "instructions-link": "Anleitung zum Aktivieren des Feature-Toggles:",
-    "title": "Feature-Flag fehlt."
-  },
   "home": {
     "error-body": "Überprüfen Sie die Serverprotokolle für weitere Details, aktualisieren Sie den Bericht oder eröffnen Sie ein Support-Ticket, wenn das Problem weiterhin besteht.",
     "error-title": "Prüfungen konnten nicht geladen werden",
