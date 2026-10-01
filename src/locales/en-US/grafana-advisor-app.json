@@ -44,11 +44,6 @@
     "check-types": "Check types",
     "show-status": "Show checks status"
   },
-  "feature-flag-missing": {
-    "description": "The Grafana Advisor requires the <1>grafanaAdvisor</1> feature toggle to be enabled.",
-    "instructions-link": "Instructions to enable the feature toggle:",
-    "title": "Missing feature flag."
-  },
   "home": {
     "error-body": "Check server logs for more details, refresh the report or open a support ticket if the problem persists.",
     "error-title": "Failed to load checks",

@@ -10,8 +10,7 @@ A centralized view to help Grafana administrators keep their instances running s
 
 ## Requirements
 
-- Grafana v12.0.0
-- The `grafanaAdvisor` [feature toggle](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/feature-toggles/) must be enabled.
+- Grafana v13.2.0 or later
 - (Optional) If the [Grafana LLM app](https://grafana.com/grafana/plugins/grafana-llm-app/) is installed, the Advisor will use it to generate suggestions for issues.
 
 ## Features

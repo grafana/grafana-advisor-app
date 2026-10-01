@@ -4,6 +4,15 @@ import { AppRootProps, PluginType } from '@grafana/data';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
+jest.mock('../../pages/Home', () => ({
+  __esModule: true,
+  default: () => <div>Home page</div>,
+}));
+
+jest.mock('contexts/Context', () => ({
+  ContextProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe('Components/App', () => {
   let props: AppRootProps;
 
@@ -31,7 +40,6 @@ describe('Components/App', () => {
       </BrowserRouter>
     );
 
-    // Checks if the instructions to enable the feature toggle are rendered
-    expect(await screen.findByText('Missing feature flag.')).toBeInTheDocument();
+    expect(await screen.findByText('Home page')).toBeInTheDocument();
   });
 });
