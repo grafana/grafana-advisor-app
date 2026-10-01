@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+
+### Features
+
+- Add localization for en-US, es-ES, de-DE (#280)
+
+### Chores
+
+- Update Advisor UI with new Grafana UI changes (#416)
+- Remove grafanaAdvisor feature toggle usage (#456)
+
+### Dependencies
+
+- Update dependencies
+
 ## 1.0.2
 
 ### Bug Fixes
