@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+### Dependencies
+
+- Update dependencies
+
 ## 1.1.0
 
 ### Features
