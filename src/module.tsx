@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { AppPlugin, type AppRootProps } from '@grafana/data';
+import { AppPlugin } from '@grafana/data';
 import { LoadingPlaceholder } from '@grafana/ui';
 import { initPluginTranslations, type ResourceLoader } from '@grafana/i18n';
 import { getBackendSrv } from '@grafana/runtime';
