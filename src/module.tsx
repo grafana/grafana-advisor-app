@@ -1,6 +1,5 @@
-import React, { lazy } from 'react';
+import { lazy } from 'react';
 import { AppPlugin } from '@grafana/data';
-import { LoadingPlaceholder } from '@grafana/ui';
 import { initPluginTranslations, type ResourceLoader } from '@grafana/i18n';
 import { getBackendSrv } from '@grafana/runtime';
 import pluginJson from './plugin.json';
