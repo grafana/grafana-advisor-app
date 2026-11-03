@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { lazy } from 'react';
 import { AppPlugin, type AppRootProps } from '@grafana/data';
 import { LoadingPlaceholder } from '@grafana/ui';
 import { initPluginTranslations, type ResourceLoader } from '@grafana/i18n';
@@ -44,13 +44,7 @@ const backendLoader: ResourceLoader = async (locale) => {
 
 await initPluginTranslations(pluginJson.id, [loadResources, backendLoader]);
 
-const LazyApp = lazy(() => import('./components/App/App'));
-
-const App = (props: AppRootProps) => (
-  <Suspense fallback={<LoadingPlaceholder text="" />}>
-    <LazyApp {...props} />
-  </Suspense>
-);
+const App = lazy(() => import('./components/App/App'));
 
 function useCompletedChecksExposed(context?: { names?: string[]; checkType?: string }) {
   return useCompletedChecks(context?.names, context?.checkType);
