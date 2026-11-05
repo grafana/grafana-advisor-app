@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/grafana/grafana-advisor-app/compare/v1.1.1...v1.1.2) (2026-11-05)
+
+
+### Bug Fixes
+
+* **loading:** remove top level Suspense from App ([#514](https://github.com/grafana/grafana-advisor-app/issues/514)) ([632d738](https://github.com/grafana/grafana-advisor-app/commit/632d73850b7066f47b062c12a64099a41790dfd2))
+
 ## 1.1.1
 
 ### Dependencies
