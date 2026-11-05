@@ -39,6 +39,14 @@ jobs:
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
       argo-workflow-slack-channel: '#grafana-catalog-ci'
+      # Auto-approve every Argo stage (no manual "Resume"). Deploying to prod walks
+      # through dev, ops, prod-canary and prod, so all of them need a value.
+      auto-approve-durations: |-
+        {"dev": 0, "ops": 0, "prod-canary": 0, "prod": 0}
+
+      # release-please already creates the (published) GitHub Release for the tag;
+      # don't let the CD workflow turn it back into a draft.
+      github-draft-release: false
 
       # Other CI inputs
       run-playwright: true
