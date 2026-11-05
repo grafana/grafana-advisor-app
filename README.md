@@ -4,6 +4,10 @@ An app for visualising checks that require immediate action or investigation.
 
 ![Screenshot](docs/screenshot.png)
 
+## Releasing
+
+See [RELEASING.md](RELEASING.md).
+
 ## Development
 
 Follow these steps once you have pulled the repo:
