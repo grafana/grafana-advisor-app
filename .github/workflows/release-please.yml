@@ -1,0 +1,20 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run release-please
+        uses: grafana/plugin-ci-workflows/actions/plugins/release-please@plugins-release-please/v2.0.2
