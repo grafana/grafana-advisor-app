@@ -21,6 +21,8 @@
     "title": "Available Check Types"
   },
   "check-drill-down": {
+    "plugin-updates_one": "Updates available for {{count}} plugin",
+    "plugin-updates_other": "Updates available for {{count}} plugins",
     "step-failed": "{{stepName}} failed for {{issueCount}} item(s)"
   },
   "check-error": {

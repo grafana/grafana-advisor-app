@@ -21,6 +21,8 @@
     "title": "Verfügbare Prüfungstypen"
   },
   "check-drill-down": {
+    "plugin-updates_one": "Update für {{count}} Plugin verfügbar",
+    "plugin-updates_other": "Updates für {{count}} Plugins verfügbar",
     "step-failed": "{{stepName}} ist für {{issueCount}} Element(e) fehlgeschlagen"
   },
   "check-error": {

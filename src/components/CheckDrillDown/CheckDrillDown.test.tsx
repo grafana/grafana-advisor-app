@@ -56,6 +56,54 @@ describe('Components/CheckDrillDown', () => {
     expect(await screen.findByText(/Step 1 failed/im)).toBeInTheDocument();
   });
 
+  test.each([1, 11])('should describe updates for %i plugins without reporting a failed check', (count) => {
+    const plugin = checkSummaries.low.checks.plugin;
+    plugin.issueCount = count;
+    plugin.steps = {
+      update: {
+        ...plugin.steps.step1,
+        stepID: 'update',
+        name: 'Update check',
+        issueCount: count,
+        issues: Array.from({ length: count }, (_, i) => ({
+          ...checkSummaries.high.checks.datasource.steps.step1.issues[0],
+          severity: Severity.Low,
+          stepID: 'update',
+          item: `Plugin ${i}`,
+          itemID: `plugin-${i}`,
+        })),
+      },
+    };
+
+    renderWithRouter(<CheckDrillDown {...defaultProps} checkSummary={checkSummaries.low} />);
+
+    expect(screen.getByText(new RegExp(`^Updates available for ${count} plugins?$`))).toBeInTheDocument();
+    expect(screen.queryByText(/failed for/i)).not.toBeInTheDocument();
+  });
+
+  test('should preserve failure wording for other plugin steps', () => {
+    const plugin = checkSummaries.high.checks.plugin;
+    plugin.issueCount = 1;
+    plugin.steps.step1.issues = [{ ...checkSummaries.high.checks.datasource.steps.step1.issues[0] }];
+
+    renderWithRouter(<CheckDrillDown {...defaultProps} />);
+
+    expect(screen.getByText('Plugin Step failed for 1 item(s)')).toBeInTheDocument();
+    expect(screen.queryByText(/Updates available/i)).not.toBeInTheDocument();
+  });
+
+  test('should preserve failure wording for update steps in other check types', () => {
+    const datasource = checkSummaries.high.checks.datasource;
+    datasource.steps = {
+      update: { ...datasource.steps.step1, stepID: 'update', name: 'Update check' },
+    };
+
+    renderWithRouter(<CheckDrillDown {...defaultProps} />);
+
+    expect(screen.getByText('Update check failed for 1 item(s)')).toBeInTheDocument();
+    expect(screen.queryByText(/Updates available/i)).not.toBeInTheDocument();
+  });
+
   test('should display a the resolution of a step', async () => {
     renderWithRouter(<CheckDrillDown {...defaultProps} />);
     expect(await screen.findByText(checkSummaries.high.checks.datasource.steps.step1.resolution)).toBeInTheDocument();
