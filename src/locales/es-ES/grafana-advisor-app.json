@@ -21,6 +21,8 @@
     "title": "Tipos de verificación disponibles"
   },
   "check-drill-down": {
+    "plugin-updates_one": "Actualizaciones disponibles para {{count}} plugin",
+    "plugin-updates_other": "Actualizaciones disponibles para {{count}} plugins",
     "step-failed": "{{stepName}} falló para {{issueCount}} elemento(s)"
   },
   "check-error": {

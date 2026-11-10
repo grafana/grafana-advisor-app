@@ -94,10 +94,14 @@ export default function CheckDrillDown({
                   label={
                     <div className={styles.description}>
                       <div>
-                        {t('check-drill-down.step-failed', '{{stepName}} failed for {{issueCount}} item(s)', {
-                          stepName: step.name,
-                          issueCount: issues.length,
-                        })}
+                        {check.type === 'plugin' && step.stepID === 'update'
+                          ? t('check-drill-down.plugin-updates', 'Updates available for {{count}} plugins', {
+                              count: issues.length,
+                            })
+                          : t('check-drill-down.step-failed', '{{stepName}} failed for {{issueCount}} item(s)', {
+                              stepName: step.name,
+                              issueCount: issues.length,
+                            })}
                       </div>
                       <div
                         className={styles.resolution}
