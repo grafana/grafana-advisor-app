@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/grafana/grafana-advisor-app/compare/v1.1.2...v1.1.3) (2026-11-10)
+
+
+### Bug Fixes
+
+* clarify available plugin updates in Advisor ([#522](https://github.com/grafana/grafana-advisor-app/issues/522)) ([f330427](https://github.com/grafana/grafana-advisor-app/commit/f3304278625cfc0fecc5958f2fb9f72e7ffacab7))
+
 ## [1.1.2](https://github.com/grafana/grafana-advisor-app/compare/v1.1.1...v1.1.2) (2026-11-05)
 
 
