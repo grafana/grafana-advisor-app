@@ -38,5 +38,4 @@ auto-approved, so there is no manual "Resume" step. Progress is reported in
 `#grafana-catalog-ci`.
 
 Deploy `main` right after merging the release PR, so the deployed version matches the tag.
-The GitHub Release gets the signed plugin ZIPs attached when `prod` is deployed.
 
