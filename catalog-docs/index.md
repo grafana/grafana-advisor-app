@@ -14,7 +14,7 @@ Grafana Advisor runs regular health checks on your Grafana instance and recommen
 
 Before you use the app, ensure you have:
 
-- **Grafana permissions:** The `Organization administrator` role. Only organization administrators can configure apps, and the Advisor page requires the `Admin` role.
+- **Grafana permissions:** The `Admin` role. Only users with the `Admin` role can open the Advisor page and configure apps.
 - **Grafana version:** Grafana 13.2 or later.
 
 Grafana Advisor is enabled automatically when it's installed, so you don't need to enable it.

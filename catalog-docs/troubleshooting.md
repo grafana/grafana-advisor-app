@@ -21,7 +21,7 @@ These errors occur on the [configuration page](./configure.md).
 **Solutions:**
 
 1. Reload the page.
-1. Confirm you're signed in with the `Organization administrator` role.
+1. Confirm you're signed in with the `Admin` role.
 1. Open the browser developer tools and check the console and network requests for the failing Advisor API call.
 
 ### "No check types available"

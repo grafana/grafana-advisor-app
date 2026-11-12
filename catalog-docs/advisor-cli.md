@@ -106,7 +106,7 @@ gcx push checks/check-manual
 Replace the following placeholders:
 
 - _`<CHECK_TYPE>`_: The check type to run, for example `datasource`.
-- _`<NAMESPACE>`_: The namespace of your Grafana instance, or `default` for on-premises instances.
+- _`<NAMESPACE>`_: The namespace of your Grafana instance, or `default` for self-managed instances.
 
 Wait for the check to run, then read the results:
 

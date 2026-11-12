@@ -9,13 +9,13 @@ keywords:
 sidebar_position: 4
 ---
 
-This document explains how to choose which checks Grafana Advisor runs.
+Choose which checks Grafana Advisor runs by turning the steps of each check type on or off.
 
 ## Before you begin
 
 Before you configure the app, ensure you have:
 
-- **Grafana permissions:** The `Organization administrator` role. Only organization administrators can configure apps.
+- **Grafana permissions:** The `Admin` role. Only users with the `Admin` role can configure apps.
 
 ## Open the configuration page
 
@@ -41,7 +41,7 @@ Each check type is shown as a card named **Check type: `<name>`**, with the foll
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
 | **Step switch** | Turns one step of the check type on or off. Advisor skips a step when its switch is off, so it no longer appears in the report. Every step is on by default. | No       |
 
-Changes apply when you flip a switch. There's no separate save button.
+Changes apply when you turn a step on or off. There's no separate save button.
 
 > [!NOTE]
 > If a card shows "Your current version of Grafana does not support ignoring steps", the switches are disabled. Upgrade Grafana to use them.

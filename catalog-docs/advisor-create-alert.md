@@ -8,13 +8,13 @@ keywords:
 sidebar_position: 6
 ---
 
-This document explains how to create a Grafana alert that monitors Advisor check results and fires when Advisor detects failures.
+Create a Grafana alert rule that monitors Advisor check results and fires when Advisor detects failures.
 
 ## Before you begin
 
 Before you create the alert, ensure you have:
 
-- **Grafana permissions:** The `Organization administrator` role, to create a service account and a data source, and permission to create alert rules.
+- **Grafana permissions:** The `Admin` role, to create a service account and a data source, and permission to create alert rules.
 - **Plugins:** The [Infinity data source](https://grafana.com/grafana/plugins/yesoreyeram-infinity-datasource/), version 3.3.0 or later, which supports the JQ parser used in this guide.
 
 ## Create a service account and token
@@ -44,7 +44,7 @@ The Infinity data source queries the Advisor HTTP API using the service account 
 1. Configure the data source:
    - **Name:** Enter a descriptive name, for example `Advisor API`.
    - **Auth type:** Select **Bearer Token**, then paste the service account token in **Auth details**.
-   - **Allowed hosts:** Enter your Grafana URL, for example `https://your-grafana-host.com`, and click **Add**.
+   - **Allowed hosts:** Enter `https://<GRAFANA_HOST>` and click **Add**. Replace _`<GRAFANA_HOST>`_ with the host of your Grafana instance.
 1. Click **Save & test** to verify the connection.
 
 ## Create the alert rule

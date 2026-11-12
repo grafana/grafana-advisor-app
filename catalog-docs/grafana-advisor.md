@@ -12,13 +12,13 @@ Grafana Advisor is a monitoring tool that helps administrators keep their Grafan
 
 ## Before you begin
 
-- **Grafana permissions:** At least the `Admin` role.
+- **Grafana permissions:** The `Admin` role.
 
 ## Generate your first report
 
 To generate a report:
 
-1. Log in to Grafana with an administrator account.
+1. Log in to Grafana as a user with the `Admin` role.
 1. Click **Administration** in the left-side menu.
 1. Click **Advisor**.
 1. If this is your first time, click **Generate report**.
