@@ -101,7 +101,7 @@
       "react": "$react"
     },
     "dompurify": "3.4.17",
-    "immutable": "5.1.9",
+    "immutable": "5.1.10",
     "js-cookie": "3.0.8",
     "uuid": "14.0.3"
   }
