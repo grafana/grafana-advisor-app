@@ -51,5 +51,6 @@
     "grafanaDependency": ">=13.2.0-0",
     "plugins": []
   },
-  "languages": ["en-US", "es-ES", "de-DE"]
+  "languages": ["en-US", "es-ES", "de-DE"],
+  "docsPath": "catalog-docs"
 }
