@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/grafana/grafana-advisor-app/compare/v1.1.3...v1.1.4) (2026-11-17)
+
+
+### Miscellaneous Chores
+
+* release 1.1.4 ([#536](https://github.com/grafana/grafana-advisor-app/issues/536)) ([1c9d3b8](https://github.com/grafana/grafana-advisor-app/commit/1c9d3b8aec7488c0d741fc7791ca92c6a7880de5))
+
 ## [1.1.3](https://github.com/grafana/grafana-advisor-app/compare/v1.1.2...v1.1.3) (2026-11-10)
 
 
