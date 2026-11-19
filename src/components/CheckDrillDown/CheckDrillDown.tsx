@@ -126,6 +126,7 @@ export default function CheckDrillDown({
                           checkType={check.type}
                           itemID={issue.itemID}
                           stepID={step.stepID}
+                          failure={issue}
                           links={issue.links}
                           onHideIssue={(isHidden) => handleHideIssue(step.stepID, issue.itemID, isHidden)}
                           onRetryCheck={() => retryCheck(check.name, issue.itemID)}

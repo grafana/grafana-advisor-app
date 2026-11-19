@@ -1,11 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
+import { OpenAssistantButton, useAssistant } from '@grafana/assistant';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { useNavigate } from 'react-router-dom';
 import { testIds } from 'components/testIds';
-import { useAssistantHelp, useLLMSuggestion } from 'api/api';
+import { llmRequest, useLLMSuggestion } from 'api/api';
+import { CheckReportFailure } from 'generated/endpoints.gen';
 import { tBackend } from 'utils';
 import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
@@ -20,6 +22,7 @@ interface IssueDescriptionProps {
   checkName: string;
   itemID: string;
   stepID: string;
+  failure: CheckReportFailure;
   links: Array<{ url: string; message: string; messageKey?: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
@@ -35,6 +38,7 @@ export function IssueDescription({
   checkName,
   itemID,
   stepID,
+  failure,
   links,
   onHideIssue,
   onRetryCheck,
@@ -43,7 +47,7 @@ export function IssueDescription({
   const navigate = useNavigate();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isAvailable: isLLMAvailable, isLoading: isLLMLoading } = useLLMSuggestion();
-  const { askAssistant, isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistantHelp();
+  const { isAvailable: isAssistantAvailable } = useAssistant();
   const { trackCheckInteraction } = useInteractionTracker();
   const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
 
@@ -65,9 +69,8 @@ export function IssueDescription({
   }, [llmSectionOpen, getSuggestion, checkName, stepID, itemID, trackCheckInteraction, checkType]);
 
   const handleAskAssistantClick = useCallback(() => {
-    askAssistant(checkName, stepID, itemID);
     trackCheckInteraction(CheckInteractionType.ASSISTANT_CLICKED, checkType, stepID);
-  }, [askAssistant, checkName, stepID, itemID, trackCheckInteraction, checkType]);
+  }, [trackCheckInteraction, checkType, stepID]);
 
   const handleSilenceClick = useCallback(() => {
     onHideIssue(!isHidden);
@@ -131,14 +134,16 @@ export function IssueDescription({
           />
         )}
         {isAssistantAvailable && (
-          <Button
-            className={cx(styles.issueLink, styles.assistantButton)}
-            icon={isAssistantLoading ? 'spinner' : 'ai'}
-            variant="secondary"
-            disabled={isAssistantLoading}
-            onClick={handleAskAssistantClick}
-            tooltip={t('issue-description.ask-assistant', 'Ask Assistant')}
-          />
+          <span className={styles.issueLink}>
+            <OpenAssistantButton
+              origin="grafana-advisor-app"
+              prompt={llmRequest(failure)}
+              title={t('issue-description.ask-assistant', 'Ask Assistant')}
+              iconOnlyButton
+              size="lg"
+              onClick={handleAskAssistantClick}
+            />
+          </span>
         )}
         {links.map((link) => {
           // Newer backends ship the i18n key explicitly as messageKey, so the key
@@ -201,18 +206,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   issueLink: css({
     float: 'right',
     marginLeft: theme.spacing(1),
-  }),
-  // Rainbow-style gradient for Assistant integration (matches Grafana Assistant button branding)
-  assistantButton: css({
-    border: '1px solid transparent',
-    background: `linear-gradient(${theme.colors.secondary.main}, ${theme.colors.secondary.main}) padding-box,
-      linear-gradient(${theme.colors.background.canvas}, ${theme.colors.background.canvas}) padding-box,
-      linear-gradient(135deg, #F97316 0%, #A855F7 100%) border-box`,
-    '&:hover:not(:disabled)': {
-      background: `linear-gradient(${theme.colors.emphasize(theme.colors.secondary.main, 0.05)}, ${theme.colors.emphasize(theme.colors.secondary.main, 0.05)}) padding-box,
-        linear-gradient(${theme.colors.background.canvas}, ${theme.colors.background.canvas}) padding-box,
-        linear-gradient(135deg, #fb923c 0%, #c084fc 100%) border-box`,
-    },
   }),
 });
 

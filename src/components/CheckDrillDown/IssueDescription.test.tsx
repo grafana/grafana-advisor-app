@@ -3,15 +3,39 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { IssueDescription } from './IssueDescription';
-import { useAssistantHelp, useLLMSuggestion } from 'api/api';
+import { useLLMSuggestion } from 'api/api';
+import { useAssistant, OpenAssistantButton } from '@grafana/assistant';
 
 // Mock dependencies
 jest.mock('api/api');
+const mockTrackCheckInteraction = jest.fn();
+jest.mock('../../api/useInteractionTracker', () => ({
+  ...jest.requireActual('../../api/useInteractionTracker'),
+  useInteractionTracker: () => ({ trackCheckInteraction: mockTrackCheckInteraction }),
+}));
+jest.mock('@grafana/assistant', () => ({
+  useAssistant: jest.fn(),
+  OpenAssistantButton: jest.fn(({ title, onClick }) => (
+    <button aria-label={title} onClick={onClick}>
+      {title}
+    </button>
+  )),
+}));
 
 const mockUseLLMSuggestion = useLLMSuggestion as jest.MockedFunction<typeof useLLMSuggestion>;
-const mockUseAssistantHelp = useAssistantHelp as jest.MockedFunction<typeof useAssistantHelp>;
+const mockUseAssistant = useAssistant as jest.MockedFunction<typeof useAssistant>;
+const mockOpenAssistantButton = OpenAssistantButton as jest.MockedFunction<typeof OpenAssistantButton>;
 
-const defaultProps = {
+const setAssistantAvailable = (isAvailable: boolean) =>
+  mockUseAssistant.mockReturnValue({
+    isAvailable,
+    isLoading: false,
+    openAssistant: jest.fn(),
+    closeAssistant: jest.fn(),
+    toggleAssistant: jest.fn(),
+  });
+
+const defaultProps: React.ComponentProps<typeof IssueDescription> = {
   item: 'Dashboard "Test Dashboard" has performance issues',
   isHidden: false,
   isRetrying: false,
@@ -21,6 +45,14 @@ const defaultProps = {
   checkName: 'check1',
   itemID: 'item1',
   stepID: 'step1',
+  failure: {
+    stepID: 'step1',
+    itemID: 'item1',
+    item: 'Dashboard "Test Dashboard" has performance issues',
+    severity: 'high',
+    moreInfo: 'Some more info',
+    links: [],
+  },
   links: [
     { url: 'https://example.com/fix', message: 'Fix this issue' },
     { url: '/local/help', message: 'More info' },
@@ -38,6 +70,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('IssueDescription', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    setAssistantAvailable(false);
     jest.useRealTimers(); // Ensure real timers are used by default
   });
 
@@ -69,15 +102,42 @@ describe('IssueDescription', () => {
   });
 
   it('renders the Ask Assistant button when the Assistant plugin is available', () => {
-    mockUseAssistantHelp.mockReturnValue({
-      askAssistant: jest.fn(),
-      isAvailable: true,
-      isLoading: false,
-    });
+    setAssistantAvailable(true);
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
     expect(screen.queryByRole('button', { name: 'Generate AI suggestion' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Ask Assistant' })).toBeInTheDocument();
+  });
+
+  it('does not render the Ask Assistant button when the Assistant plugin is unavailable', () => {
+    renderWithRouter(<IssueDescription {...defaultProps} />);
+    expect(screen.queryByRole('button', { name: 'Ask Assistant' })).toBeNull();
+    expect(mockOpenAssistantButton).not.toHaveBeenCalled();
+  });
+
+  it('passes an icon-only Assistant button a prompt built from the failure', () => {
+    setAssistantAvailable(true);
+
+    renderWithRouter(<IssueDescription {...defaultProps} />);
+
+    expect(mockOpenAssistantButton).toHaveBeenCalledWith(
+      expect.objectContaining({
+        origin: 'grafana-advisor-app',
+        iconOnlyButton: true,
+        prompt: expect.stringContaining('Step ID: step1'),
+      }),
+      undefined
+    );
+  });
+
+  it('tracks a click on the Assistant button', async () => {
+    setAssistantAvailable(true);
+    const user = userEvent.setup();
+
+    renderWithRouter(<IssueDescription {...defaultProps} />);
+    await user.click(screen.getByRole('button', { name: 'Ask Assistant' }));
+
+    expect(mockTrackCheckInteraction).toHaveBeenCalledWith('assistant_clicked', 'dashboard-performance', 'step1');
   });
 
   it('prefers Assistant when both the LLM and Assistant plugins are available', () => {
@@ -88,11 +148,7 @@ describe('IssueDescription', () => {
       isLoading: false,
     });
 
-    mockUseAssistantHelp.mockReturnValue({
-      askAssistant: jest.fn(),
-      isAvailable: true,
-      isLoading: false,
-    });
+    setAssistantAvailable(true);
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
     expect(screen.queryByRole('button', { name: 'Generate AI suggestion' })).toBeNull();
