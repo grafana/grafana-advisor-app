@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { IssueDescription } from './IssueDescription';
 import { useLLMSuggestion } from 'api/api';
-import { useAssistant, OpenAssistantButton } from '@grafana/assistant';
+import { useAssistant } from '@grafana/assistant';
 
 // Mock dependencies
 jest.mock('api/api');
@@ -15,22 +15,17 @@ jest.mock('../../api/useInteractionTracker', () => ({
 }));
 jest.mock('@grafana/assistant', () => ({
   useAssistant: jest.fn(),
-  OpenAssistantButton: jest.fn(({ title, onClick }) => (
-    <button aria-label={title} onClick={onClick}>
-      {title}
-    </button>
-  )),
 }));
 
 const mockUseLLMSuggestion = useLLMSuggestion as jest.MockedFunction<typeof useLLMSuggestion>;
 const mockUseAssistant = useAssistant as jest.MockedFunction<typeof useAssistant>;
-const mockOpenAssistantButton = OpenAssistantButton as jest.MockedFunction<typeof OpenAssistantButton>;
+const mockOpenAssistant = jest.fn();
 
 const setAssistantAvailable = (isAvailable: boolean) =>
   mockUseAssistant.mockReturnValue({
     isAvailable,
     isLoading: false,
-    openAssistant: jest.fn(),
+    openAssistant: mockOpenAssistant,
     closeAssistant: jest.fn(),
     toggleAssistant: jest.fn(),
   });
@@ -108,22 +103,21 @@ describe('IssueDescription', () => {
   it('does not render the Ask Assistant button when the Assistant plugin is unavailable', () => {
     renderWithRouter(<IssueDescription {...defaultProps} />);
     expect(screen.queryByRole('button', { name: 'Ask Assistant' })).toBeNull();
-    expect(mockOpenAssistantButton).not.toHaveBeenCalled();
   });
 
-  it('passes an icon-only Assistant button a prompt built from the failure', () => {
+  it('opens the Assistant with a prompt built from the failure when the button is clicked', async () => {
     setAssistantAvailable(true);
+    const user = userEvent.setup();
 
     renderWithRouter(<IssueDescription {...defaultProps} />);
+    await user.click(screen.getByRole('button', { name: 'Ask Assistant' }));
 
-    expect(mockOpenAssistantButton).toHaveBeenCalledWith(
-      expect.objectContaining({
-        origin: 'grafana-advisor-app',
-        iconOnlyButton: true,
-        prompt: expect.stringContaining('Step ID: step1'),
-      }),
-      undefined
-    );
+    expect(mockOpenAssistant).toHaveBeenCalledTimes(1);
+    expect(mockOpenAssistant).toHaveBeenCalledWith({
+      origin: 'grafana-advisor-app',
+      prompt: expect.stringContaining('Step ID: step1'),
+      autoSend: true,
+    });
   });
 
   it('tracks a click on the Assistant button', async () => {

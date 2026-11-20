@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { css } from '@emotion/css';
 import { Button, useStyles2 } from '@grafana/ui';
-import { OpenAssistantButton, useAssistant } from '@grafana/assistant';
+import { useAssistant } from '@grafana/assistant';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +40,7 @@ export function IssueDescription({
   const navigate = useNavigate();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);
   const { getSuggestion, response, isAvailable: isLLMAvailable, isLoading: isLLMLoading } = useLLMSuggestion();
-  const { isAvailable: isAssistantAvailable } = useAssistant();
+  const { isAvailable: isAssistantAvailable, openAssistant } = useAssistant();
   const { trackCheckInteraction } = useInteractionTracker();
   const [localIsRetrying, setLocalIsRetrying] = useState(isRetrying);
 
@@ -63,7 +63,8 @@ export function IssueDescription({
 
   const handleAskAssistantClick = useCallback(() => {
     trackCheckInteraction(CheckInteractionType.ASSISTANT_CLICKED, checkType, stepID);
-  }, [trackCheckInteraction, checkType, stepID]);
+    openAssistant?.({ origin: 'grafana-advisor-app', prompt: llmRequest(failure), autoSend: true });
+  }, [trackCheckInteraction, checkType, stepID, openAssistant, failure]);
 
   const handleSilenceClick = useCallback(() => {
     onHideIssue(!isHidden);
@@ -127,16 +128,14 @@ export function IssueDescription({
           />
         )}
         {isAssistantAvailable && (
-          <span className={styles.issueLink}>
-            <OpenAssistantButton
-              origin="grafana-advisor-app"
-              prompt={llmRequest(failure)}
-              title={t('issue-description.ask-assistant', 'Ask Assistant')}
-              iconOnlyButton
-              size="lg"
-              onClick={handleAskAssistantClick}
-            />
-          </span>
+          <Button
+            className={styles.issueLink}
+            icon="ai-sparkle"
+            variant="secondary"
+            onClick={handleAskAssistantClick}
+            aria-label={t('issue-description.ask-assistant', 'Ask Assistant')}
+            tooltip={t('issue-description.ask-assistant', 'Ask Assistant')}
+          />
         )}
         {links.map((link) => {
           // Newer backends ship the i18n key explicitly as messageKey, so the key
