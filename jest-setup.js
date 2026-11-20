@@ -16,9 +16,4 @@ jest.mock('api/api', () => ({
     isAvailable: false,
     isLoading: false,
   }),
-  useAssistantHelp: jest.fn().mockReturnValue({
-    askAssistant: jest.fn(),
-    isAvailable: false,
-    isLoading: false,
-  }),
 }));

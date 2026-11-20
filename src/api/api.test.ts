@@ -14,19 +14,14 @@ import {
   IGNORE_STEPS_ANNOTATION_LIST,
   useLLMSuggestion,
   _resetRegistration,
-  useAssistantHelp,
+  llmRequest,
 } from './api';
 import { config } from '@grafana/runtime';
 import { usePluginContext } from 'contexts/Context';
-import { useAssistant } from '@grafana/assistant';
 
 jest.mock('contexts/Context');
 
 const mockUsePluginContext = usePluginContext as jest.MockedFunction<typeof usePluginContext>;
-
-jest.mock('@grafana/assistant');
-
-const mockUseAssistant = useAssistant as jest.MockedFunction<typeof useAssistant>;
 
 // Unmock the api module for this test file so we can test the real implementations
 jest.unmock('api/api');
@@ -1154,56 +1149,23 @@ describe('API Hooks', () => {
     });
   });
 
-  describe('useAssistantHelp', () => {
-    it('invokes Assistant', async () => {
-      const mockOpenAssistant = jest.fn();
-      mockUseAssistant.mockReturnValue({
-        isAvailable: true,
-        isLoading: false,
-        openAssistant: mockOpenAssistant,
-        closeAssistant: jest.fn(),
-        toggleAssistant: jest.fn(),
+  describe('llmRequest', () => {
+    it('builds the Assistant prompt from a failure', () => {
+      const prompt = llmRequest({
+        stepID: 'step1',
+        itemID: 'item1',
+        item: 'Item one',
+        severity: 'high',
+        moreInfo: 'moreInfo',
+        links: [{ message: 'Fix it', url: '/fix' }],
       });
 
-      const mockGetCheck = jest.fn();
-      mockLazyGetCheckQuery.mockReturnValue([mockGetCheck, { isError: false }]);
-
-      mockGetCheck.mockResolvedValue({
-        data: {
-          metadata: { name: 'check1', annotations: {} },
-          status: {
-            report: {
-              failures: [
-                {
-                  stepID: 'step1',
-                  itemID: 'item1',
-                  item: 'item1',
-                  severity: 'High',
-                  moreInfo: 'moreInfo',
-                  links: [],
-                },
-              ],
-            },
-          },
-        },
-      });
-
-      const { result } = renderHook(() => useAssistantHelp());
-
-      expect(result.current.isAvailable).toBe(true);
-
-      await act(async () => {
-        result.current.askAssistant('check1', 'step1', 'item1');
-      });
-
-      // Wait for the assertions to pass
-      await waitFor(() => {
-        expect(mockGetCheck).toHaveBeenCalledWith({ name: 'check1' });
-        expect(mockOpenAssistant).toHaveBeenCalledWith({
-          origin: 'grafana-advisor-app',
-          prompt: expect.stringContaining('Step ID: step1'),
-        });
-      });
+      expect(prompt).toContain('Step ID: step1');
+      expect(prompt).toContain('Item ID: item1');
+      expect(prompt).toContain('Item: Item one');
+      expect(prompt).toContain('Severity: high');
+      expect(prompt).toContain('More info: moreInfo');
+      expect(prompt).toContain('Links: Fix it (/fix)');
     });
   });
 });
