@@ -13,36 +13,29 @@ import { LLMSuggestionContent } from './LLMSuggestionContent';
 import { useInteractionTracker, CheckInteractionType } from '../../api/useInteractionTracker';
 
 interface IssueDescriptionProps {
-  item: string;
   isHidden: boolean;
   isRetrying?: boolean;
   canRetry?: boolean;
   isCompleted?: boolean;
   checkType: string;
   checkName: string;
-  itemID: string;
-  stepID: string;
   failure: CheckReportFailure;
-  links: Array<{ url: string; message: string; messageKey?: string }>;
   onHideIssue: (isHidden: boolean) => void;
   onRetryCheck: () => void;
 }
 
 export function IssueDescription({
-  item,
   isHidden,
   isRetrying,
   canRetry,
   isCompleted,
   checkType,
   checkName,
-  itemID,
-  stepID,
   failure,
-  links,
   onHideIssue,
   onRetryCheck,
 }: IssueDescriptionProps) {
+  const { item, itemID, stepID, links } = failure;
   const styles = useStyles2(getStyles);
   const navigate = useNavigate();
   const [llmSectionOpen, setLlmSectionOpen] = useState(false);

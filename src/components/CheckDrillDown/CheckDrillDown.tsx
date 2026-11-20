@@ -117,17 +117,13 @@ export default function CheckDrillDown({
                     return (
                       <div key={issue.item} ref={issue.item === scrollToStep ? scrollToRef : null}>
                         <IssueDescription
-                          item={issue.item}
                           isHidden={issue.isHidden}
                           isRetrying={issue.isRetrying}
                           canRetry={check.canRetry}
                           isCompleted={isCompleted}
                           checkName={check.name}
                           checkType={check.type}
-                          itemID={issue.itemID}
-                          stepID={step.stepID}
                           failure={issue}
-                          links={issue.links}
                           onHideIssue={(isHidden) => handleHideIssue(step.stepID, issue.itemID, isHidden)}
                           onRetryCheck={() => retryCheck(check.name, issue.itemID)}
                         />

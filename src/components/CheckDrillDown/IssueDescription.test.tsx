@@ -36,27 +36,23 @@ const setAssistantAvailable = (isAvailable: boolean) =>
   });
 
 const defaultProps: React.ComponentProps<typeof IssueDescription> = {
-  item: 'Dashboard "Test Dashboard" has performance issues',
   isHidden: false,
   isRetrying: false,
   canRetry: true,
   isCompleted: true,
   checkType: 'dashboard-performance',
   checkName: 'check1',
-  itemID: 'item1',
-  stepID: 'step1',
   failure: {
     stepID: 'step1',
     itemID: 'item1',
     item: 'Dashboard "Test Dashboard" has performance issues',
     severity: 'high',
     moreInfo: 'Some more info',
-    links: [],
+    links: [
+      { url: 'https://example.com/fix', message: 'Fix this issue' },
+      { url: '/local/help', message: 'More info' },
+    ],
   },
-  links: [
-    { url: 'https://example.com/fix', message: 'Fix this issue' },
-    { url: '/local/help', message: 'More info' },
-  ],
   onHideIssue: jest.fn(),
   onRetryCheck: jest.fn(),
 };
@@ -81,7 +77,7 @@ describe('IssueDescription', () => {
   it('renders issue description with all buttons', () => {
     renderWithRouter(<IssueDescription {...defaultProps} />);
 
-    expect(screen.getByText(defaultProps.item)).toBeInTheDocument();
+    expect(screen.getByText(defaultProps.failure.item)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Hide issue' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Retry check' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Fix this issue' })).toBeInTheDocument();
