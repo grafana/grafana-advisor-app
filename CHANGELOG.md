@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/grafana/grafana-advisor-app/compare/v1.1.4...v1.1.5) (2026-11-25)
+
+
+### Bug Fixes
+
+* **ci:** pin renovate-approve to the evaluated commit and mint the token after claude ([#544](https://github.com/grafana/grafana-advisor-app/issues/544)) ([02e45ad](https://github.com/grafana/grafana-advisor-app/commit/02e45ad7b49896792ee04742fea42bdd5fac27c1))
+
 ## [1.1.4](https://github.com/grafana/grafana-advisor-app/compare/v1.1.3...v1.1.4) (2026-11-17)
 
 
